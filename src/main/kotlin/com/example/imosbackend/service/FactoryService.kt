@@ -11,7 +11,7 @@ import java.time.temporal.ChronoUnit
 class FactoryService(
     val factoryRep: FactoryRep
 ) {
-
+    //신용희 IQ 생각보다 높지 않음
     fun getFactories(filter:FactoryFilter): List<FactoryResponseModel?> {
         val result = factoryRep.getFactoryList(
             site = "imos",

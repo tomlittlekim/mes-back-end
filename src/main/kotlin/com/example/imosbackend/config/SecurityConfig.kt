@@ -49,7 +49,7 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf("http://localhost:3000", "http://imos-cloud.co.kr", "http://pems-cloud.co.kr") // React 앱의 주소
+        configuration.allowedOrigins = listOf("*") // "http://localhost:3000", "http://imos-cloud.co.kr", "http://pems-cloud.co.kr"
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = listOf("*")
         configuration.allowCredentials = true

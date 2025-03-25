@@ -1,6 +1,8 @@
 package com.example.imosbackend.config
 
+import com.example.imosbackend.security.ExceptionHandlerFilter
 import com.example.imosbackend.security.JwtAuthenticationFilter
+import com.example.imosbackend.security.JwtSecurityFilter
 import com.example.imosbackend.security.JwtTokenProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -35,6 +37,10 @@ class SecurityConfig(
             .addFilterBefore(
                 JwtAuthenticationFilter(jwtTokenProvider),
                 UsernamePasswordAuthenticationFilter::class.java
+            )
+            .addFilterBefore(
+                ExceptionHandlerFilter(),
+                JwtSecurityFilter::class.java
             )
 
         return http.build()

@@ -5,6 +5,15 @@ input FactoryFilter {
     flagActive: String,
 }
 
+input FactoryInput {
+    factoryName: String
+    factoryCode: String
+    address: String
+    telNo: String
+    officerName: String
+    flagActive: String
+}
+
 type Factory {
     factoryId: String
     factoryName: String
@@ -12,9 +21,18 @@ type Factory {
     address: String
     telNo: String
     officerName: String
-    flagActive:Boolean
+    flagActive:String
+    createUser:String
+    createDate:String
+    updateUser:String
+    updateDate:String
 }
 
 type Query {
-    factories(filter:FactoryFilter): [Factory]!
+    factories(filter:FactoryFilter): [Factory]
+}
+
+type Mutation {
+    createFactory(input: [FactoryInput]): Boolean
+    deleteFactory(factoryId: String!): Boolean!
 }

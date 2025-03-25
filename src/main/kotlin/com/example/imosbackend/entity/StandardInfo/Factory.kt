@@ -1,59 +1,68 @@
-package com.example.imosbackend.entity
+package com.example.imosbackend.entity.StandardInfo
 
 import jakarta.persistence.*
 import java.time.LocalDate
 
 @Entity
 @Table(name = "FACTORY")
-class Factory {
+class Factory (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SEQ", nullable = false)
-    var id: Int? = null
+    var id: Int? = null,
 
     @Column(name = "SITE", nullable = false, length = 20)
-    var site: String? = null
+    var site: String? = null,
 
     @Column(name = "COMP_CD", nullable = false, length = 20)
-    var compCd: String? = null
+    var compCd: String? = null,
 
     @Column(name = "FACTORY_ID", nullable = false, length = 100)
-    var factoryId: String? = null
+    var factoryId: String? = null,
 
     @Column(name = "FACTORY_NAME", length = 100)
-    var factoryName: String? = null
+    var factoryName: String? = null,
 
     @Column(name = "FACTORY_CODE", length = 20)
-    var factoryCode: String? = null
+    var factoryCode: String? = null,
 
     @Column(name = "ADDRESS", length = 200)
-    var address: String? = null
+    var address: String? = null,
 
     @Column(name = "TEL_NO", length = 100)
-    var telNo: String? = null
+    var telNo: String? = null,
 
     @Column(name = "OFFICER_NAME", length = 100)
-    var officerName: String? = null
+    var officerName: String? = null,
 
     @Column(name = "FLAG_ACTIVE")
-    var flagActive: Boolean? = null
+    var flagActive: Boolean? = null,
 
     @Column(name = "CREATE_USER", length = 100)
-    var createUser: String? = null
+    var createUser: String? = null,
 
     @Column(name = "CREATE_DATE")
-    var createDate: LocalDate? = null
+    var createDate: LocalDate? = null,
 
     @Column(name = "UPDATE_USER", length = 100)
-    var updateUser: String? = null
+    var updateUser: String? = null,
 
     @Column(name = "UPDATE_DATE")
     var updateDate: LocalDate? = null
-}
+)
 
 data class FactoryFilter(
     var factoryId: String,
     var factoryName: String,
     var factoryCode: String,
     var flagActive: Boolean? = null,
+)
+
+data class FactoryInput(
+    var factoryName: String,
+    var factoryCode: String,
+    val address: String? = null,
+    val telNo: String? = null,
+    val officerName: String? = null,
+    var flagActive: String? = null,
 )

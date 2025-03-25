@@ -1,22 +1,15 @@
 package com.example.imosbackend.repository
 
-import com.example.imosbackend.entity.Factory
-import com.example.imosbackend.service.FactoryResponseModel
+import com.example.imosbackend.entity.StandardInfo.Factory
+import jakarta.transaction.Transactional
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 interface FactoryRep: JpaRepository<Factory,Long>{
     @Query(
         value = """
-            select new com.example.imosbackend.service.FactoryResponseModel(
-                f.factoryId,
-                f.factoryName,
-                f.factoryCode,
-                f.address,
-                f.flagActive,
-                f.telNo,
-                f.officerName
-            ) 
+            select f
             from Factory f
             where f.site = :site
             and   f.compCd = :compCd
@@ -33,5 +26,22 @@ interface FactoryRep: JpaRepository<Factory,Long>{
         factoryName:String,
         factoryCode:String,
         flagActive:Boolean?
-    ):List<FactoryResponseModel?>
+    ):List<Factory?>
+
+    @Transactional
+    @Modifying
+    @Query("""
+        delete 
+        from Factory f 
+        where f.factoryId = :factoryId
+        and   f.site = :site
+        and   f.compCd = :compCd
+        """
+    )
+    fun deleteByFactoryId(
+        site:String,
+        compCd:String,
+        factoryId: String
+    ): Int
+
 }

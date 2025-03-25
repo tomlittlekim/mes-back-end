@@ -1,4 +1,4 @@
-package com.example.imosbackend
+package com.example.imosbackend.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

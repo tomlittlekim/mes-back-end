@@ -1,6 +1,6 @@
-package com.example.imosbackend.repository
+package kr.co.imoscloud.repository
 
-import com.example.imosbackend.entity.StandardInfo.Factory
+import kr.co.imoscloud.entity.StandardInfo.Factory
 import jakarta.transaction.Transactional
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -27,6 +27,22 @@ interface FactoryRep: JpaRepository<Factory,Long>{
         factoryCode:String,
         flagActive:Boolean?
     ):List<Factory?>
+
+    @Query(
+        value = """
+            select f
+            from Factory f
+            where f.site = :site
+            and   f.compCd = :compCd
+            and   f.factoryId IN (:factoryIds)
+        """
+    )
+    fun getFactoryListByIds(
+        site:String,
+        compCd:String,
+        factoryIds:List<String?>
+    ):List<Factory?>
+
 
     @Transactional
     @Modifying

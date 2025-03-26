@@ -1,0 +1,48 @@
+# MaterialIn 타입 정의
+type MaterialInM {
+    seq: Int
+    site: String
+    compCd: String
+    factoryId: String
+    warehouseId: String
+    totalPrice: Int
+    hasInvoice: Boolean
+    remarks: String
+    isActive: Boolean
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+    inManagementId: String
+}
+
+# 입력 타입 정의
+input MaterialInMInput {
+    site: String
+    compCd: String
+    factoryId: String
+    warehouseId: String
+    totalPrice: Int
+    hasInvoice: Boolean
+    remarks: String
+    isActive: Boolean
+}
+
+input MaterialInMFilter {
+    site: String
+    compCd: String
+    factoryId: String
+    warehouseId: String
+}
+
+# 쿼리 정의
+type Query {
+    materialInList(filter: MaterialInMFilter): [MaterialInM]
+}
+
+# 뮤테이션 정의
+type Mutation {
+    createMaterialInM(input: MaterialInMInput!): MaterialInM
+    updateMaterialInM(input: MaterialInMInput!): MaterialInM
+    deleteMaterialInM(inManagementId: String!): Boolean
+}

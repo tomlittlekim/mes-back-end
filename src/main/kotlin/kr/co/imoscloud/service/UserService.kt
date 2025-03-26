@@ -14,7 +14,7 @@ class UserService(
     private val userRepo: UserRepository
 ) {
 
-    fun signUp(req: UserRequest, loginUser: UserPrincipal): User {
+    fun signUp(req: UserInput, loginUser: UserPrincipal): User {
         if (!checkRole(loginUser)) throw IllegalArgumentException("관리자 이상의 등급을 가진 유저가 아닙니다. ")
 
         val modifyReq = modifyReqByRole(loginUser, req)
@@ -33,7 +33,7 @@ class UserService(
         return loginUser.authorities.first().authority == "admin"
     }
 
-    private fun modifyReqByRole(loginUser: UserPrincipal, req: UserRequest): UserRequest {
+    private fun modifyReqByRole(loginUser: UserPrincipal, req: UserInput): UserInput {
         val isDev = loginUser.authorities.first().authority == "dev"
         if (isDev && req.site == null || isDev && req.compCd == null)
             throw IllegalArgumentException("site 또는 compCd 가 비어있습니다. ")
@@ -44,7 +44,7 @@ class UserService(
         }
     }
 
-    private fun generateUser(req: UserRequest): User {
+    private fun generateUser(req: UserInput): User {
         val uuid =  UUID.randomUUID().toString()
         val today = LocalDate.now()
         val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")

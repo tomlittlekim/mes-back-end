@@ -2,8 +2,6 @@ package kr.co.imoscloud.entity
 
 import kr.co.imoscloud.dto.UserRequest
 import jakarta.persistence.*
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 
 @Entity
 @Table(name = "users")

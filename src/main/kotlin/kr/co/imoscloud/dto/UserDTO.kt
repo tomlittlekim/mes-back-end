@@ -1,4 +1,4 @@
-package com.example.imosbackend.dto
+package kr.co.imoscloud.dto
 
 data class UserRequest(
     val id: Long? = null,

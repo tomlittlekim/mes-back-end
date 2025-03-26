@@ -29,14 +29,14 @@ class CommonCol (
     var isActive: Boolean? = true
 
 ) {
-    fun create(userPrincipal: UserPrincipal) {
+    fun createCommonCol(userPrincipal: UserPrincipal) {
         this.inDate = LocalDateTime.now()
         this.inUsrId = userPrincipal.getUserId()
         this.upDate = LocalDateTime.now()
         this.upUsrId = userPrincipal.getUserId()
     }
 
-    fun update(userPrincipal: UserPrincipal) {
+    fun updateCommonCol(userPrincipal: UserPrincipal) {
         this.inDate = this.inDate
         this.inUsrId = this.inUsrId
         this.upDate = LocalDateTime.now()

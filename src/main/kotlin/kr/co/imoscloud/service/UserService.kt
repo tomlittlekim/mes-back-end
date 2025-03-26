@@ -2,6 +2,7 @@ package kr.co.imoscloud.service
 
 import kr.co.imoscloud.dto.UserRequest
 import kr.co.imoscloud.entity.User
+import kr.co.imoscloud.fetcher.UserFetcher.UserInput
 import kr.co.imoscloud.repository.UserRepository
 import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.stereotype.Service

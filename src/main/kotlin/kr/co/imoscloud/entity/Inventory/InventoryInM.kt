@@ -1,4 +1,4 @@
-package com.example.imosbackend.entity.Inventory
+package kr.co.imoscloud.entity.Inventory
 
 import jakarta.persistence.*
 import java.time.LocalDate
@@ -66,5 +66,5 @@ data class InventoryInMInput(
     var totalPrice: Int,
     var hasInvoice: Boolean,
     var remarks: String? = null,
-    var flagActive: Boolean? = null
+    var isActive: Boolean? = null
 )

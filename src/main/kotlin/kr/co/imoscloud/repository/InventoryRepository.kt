@@ -1,6 +1,6 @@
-package com.example.imosbackend.repository
+package kr.co.imoscloud.repository
 
-import com.example.imosbackend.entity.Inventory.InventoryInM
+import kr.co.imoscloud.entity.Inventory.InventoryInM
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
@@ -19,7 +19,22 @@ interface InventoryRep : JpaRepository<InventoryInM, Long>{
 //    """
 //    )
 @Query("""
-        select iim
+        select new kr.co.imoscloud.entity.Inventory.InventoryInM(
+            iim.id,
+            iim.site,
+            iim.compCd,
+            iim.factoryId,
+            iim.warehouseId,
+            iim.totalPrice,
+            iim.hasInvoice,
+            iim.remarks,
+            null,
+            iim.createUser,
+            iim.createDate,
+            iim.updateUser,
+            iim.updateDate,
+            iim.inManagementId
+        )
         from InventoryInM iim
         where 1=1
         and iim.site = :site

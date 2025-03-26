@@ -1,14 +1,14 @@
-package com.example.imosbackend.repository
+package kr.co.imoscloud.repository
 
-import com.example.imosbackend.entity.Factory
-import com.example.imosbackend.service.FactoryResponseModel
+import kr.co.imoscloud.entity.Factory
+import kr.co.imoscloud.service.FactoryResponseModel
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
 interface FactoryRep: JpaRepository<Factory,Long>{
     @Query(
         value = """
-            select new com.example.imosbackend.service.FactoryResponseModel(
+            select new kr.co.imoscloud.service.FactoryResponseModel(
                 f.factoryId,
                 f.factoryName,
                 f.factoryCode,

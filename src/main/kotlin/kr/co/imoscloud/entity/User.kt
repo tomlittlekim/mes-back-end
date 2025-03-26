@@ -1,6 +1,5 @@
-package com.example.imosbackend.entity
+package kr.co.imoscloud.entity
 
-import com.example.imosbackend.dto.UserRequest
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -19,8 +18,11 @@ class User(
     @Column(name = "COMP_CD", length = 20)
     val compCd: String,
 
+    @Column(name = "EMPLOYEE_NUM", length = 20)
+    val employeeNum: String,
+
     @Column(name = "USER_NAME", length = 20)
-    val userName: String? = null,
+    val userName: String,
 
     @Column(name = "USER_ID", length = 100, unique = true)
     val userId: String,
@@ -32,16 +34,16 @@ class User(
     val imagePath: String? = null,
 
     @Column(name = "ROLE_ID", length = 20)
-    val roleId: String? = null,
+    val roleId: String,
 
     @Column(name = "USER_EMAIL", length = 20)
-    val userEmail: String? = null,
+    val userEmail: String,
 
     @Column(name = "PHONE_NUM", length = 11)
-    val phoneNum: String? = null,
+    val phoneNum: String,
 
     @Column(name = "DEPARTMENT_ID", length = 20)
-    val departmentId: String? = null,
+    val departmentId: String,
 
     @Column(name = "TEXT_AREA", length = 1000)
     val textArea: String? = null,

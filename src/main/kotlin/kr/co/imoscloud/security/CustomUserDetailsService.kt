@@ -1,6 +1,6 @@
-package com.example.imosbackend.security
+package kr.co.imoscloud.security
 
-import com.example.imosbackend.repository.UserRepository
+import kr.co.imoscloud.repository.UserRepository
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service

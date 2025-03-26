@@ -1,9 +1,9 @@
-package com.example.imosbackend.fetcher
+package kr.co.imoscloud.fetcher
 
-import com.example.imosbackend.entity.Factory
-import com.example.imosbackend.entity.FactoryFilter
-import com.example.imosbackend.service.FactoryResponseModel
-import com.example.imosbackend.service.FactoryService
+import kr.co.imoscloud.entity.Factory
+import kr.co.imoscloud.entity.FactoryFilter
+import kr.co.imoscloud.service.FactoryResponseModel
+import kr.co.imoscloud.service.FactoryService
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument

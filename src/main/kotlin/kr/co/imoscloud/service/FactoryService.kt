@@ -1,7 +1,7 @@
-package com.example.imosbackend.service
+package kr.co.imoscloud.service
 
-import com.example.imosbackend.entity.*
-import com.example.imosbackend.repository.FactoryRep
+import kr.co.imoscloud.entity.*
+import kr.co.imoscloud.repository.FactoryRep
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate

@@ -1,4 +1,4 @@
-package com.example.imosbackend.security
+package kr.co.imoscloud.security
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.FilterChain

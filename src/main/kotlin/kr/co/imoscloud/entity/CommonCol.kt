@@ -1,6 +1,6 @@
-package com.example.imosbackend.entity
+package kr.co.imoscloud.entity
 
-import com.example.imosbackend.security.UserPrincipal
+import kr.co.imoscloud.security.UserPrincipal
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners
 import jakarta.persistence.MappedSuperclass
@@ -29,14 +29,14 @@ class CommonCol (
     var isActive: Boolean? = true
 
 ) {
-    fun createCommonCol(userPrincipal: UserPrincipal) {
+    fun create(userPrincipal: UserPrincipal) {
         this.inDate = LocalDateTime.now()
         this.inUsrId = userPrincipal.getUserId()
         this.upDate = LocalDateTime.now()
         this.upUsrId = userPrincipal.getUserId()
     }
 
-    fun updateCommonCol(userPrincipal: UserPrincipal) {
+    fun update(userPrincipal: UserPrincipal) {
         this.inDate = this.inDate
         this.inUsrId = this.inUsrId
         this.upDate = LocalDateTime.now()

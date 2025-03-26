@@ -6,7 +6,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.25'
 }
 
-group = 'com.example'
+group = 'kr.co.imoscloud'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -68,4 +68,12 @@ allOpen {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+bootJar {
+    mainClass = 'kr.co.imoscloud.ImosBackEndApplication'
+}
+
+springBoot {
+    mainClass = 'kr.co.imoscloud.ImosBackEndApplication'
 }

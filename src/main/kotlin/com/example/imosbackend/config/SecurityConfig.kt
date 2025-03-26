@@ -40,7 +40,7 @@ class SecurityConfig(
             )
             .addFilterBefore(
                 ExceptionHandlerFilter(),
-                JwtSecurityFilter::class.java
+                JwtAuthenticationFilter::class.java
             )
 
         return http.build()

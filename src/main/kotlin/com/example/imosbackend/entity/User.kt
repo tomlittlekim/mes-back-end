@@ -1,5 +1,6 @@
 package com.example.imosbackend.entity
 
+import com.example.imosbackend.dto.UserRequest
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -18,11 +19,8 @@ class User(
     @Column(name = "COMP_CD", length = 20)
     val compCd: String,
 
-    @Column(name = "EMPLOYEE_NUM", length = 20)
-    val employeeNum: String,
-
     @Column(name = "USER_NAME", length = 20)
-    val userName: String,
+    val userName: String? = null,
 
     @Column(name = "USER_ID", length = 100, unique = true)
     val userId: String,
@@ -34,16 +32,16 @@ class User(
     val imagePath: String? = null,
 
     @Column(name = "ROLE_ID", length = 20)
-    val roleId: String,
+    val roleId: String? = null,
 
     @Column(name = "USER_EMAIL", length = 20)
-    val userEmail: String,
+    val userEmail: String? = null,
 
     @Column(name = "PHONE_NUM", length = 11)
-    val phoneNum: String,
+    val phoneNum: String? = null,
 
     @Column(name = "DEPARTMENT_ID", length = 20)
-    val departmentId: String,
+    val departmentId: String? = null,
 
     @Column(name = "TEXT_AREA", length = 1000)
     val textArea: String? = null,

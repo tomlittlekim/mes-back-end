@@ -27,11 +27,11 @@ type Material {
     updateDate: String
 }
 
-type Query {
+extend type Query {
     materials(filter: MaterialFilter): [Material]
 }
 
-type Mutation {
+extend type Mutation {
     saveMaterials(materials: [MaterialInput!]!): [Material]
     deleteMaterials(ids: [String!]!): Boolean
 }

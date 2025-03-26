@@ -1,7 +1,6 @@
-package kr.co.imoscloud.repository
+package kr.co.imoscloud.service
 
-import kr.co.imoscloud.entity.Material
-import kr.co.imoscloud.service.MaterialResponseModel
+import kr.co.imoscloud.entity.Material.Material
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDate
@@ -9,7 +8,7 @@ import java.time.LocalDate
 interface MaterialRepository : JpaRepository<Material, Int> {
     @Query(
         """
-        SELECT NEW com.example.imosbackend.service.MaterialResponseModel(
+        SELECT NEW kr.co.imoscloud.service.MaterialResponseModel(
             m.systemMaterialId,
             m.type,
             m.name,
@@ -43,4 +42,4 @@ interface MaterialRepository : JpaRepository<Material, Int> {
         fromDate: LocalDate?,
         toDate: LocalDate?
     ): List<MaterialResponseModel>
-} 
+}

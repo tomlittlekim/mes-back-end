@@ -1,9 +1,6 @@
 package com.example.imosbackend.entity
 
-import com.example.imosbackend.dto.UserRequest
 import jakarta.persistence.*
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 
 @Entity
 @Table(name = "users")

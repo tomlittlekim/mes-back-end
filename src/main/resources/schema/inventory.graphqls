@@ -1,5 +1,5 @@
-# MaterialIn 타입 정의
-type MaterialInM {
+# InventoryInM 타입 정의
+type InventoryInM {
     seq: Int
     site: String
     compCd: String
@@ -16,8 +16,8 @@ type MaterialInM {
     inManagementId: String
 }
 
-# 입력 타입 정의
-input MaterialInMInput {
+# InventoryInM 입력 타입 정의
+input InventoryInMInput {
     site: String
     compCd: String
     factoryId: String
@@ -28,7 +28,7 @@ input MaterialInMInput {
     isActive: Boolean
 }
 
-input MaterialInMFilter {
+input InventoryInMFilter {
     site: String
     compCd: String
     factoryId: String
@@ -36,13 +36,12 @@ input MaterialInMFilter {
 }
 
 # 쿼리 정의
-type Query {
-    materialInList(filter: MaterialInMFilter): [MaterialInM]
+extend type Query {
+    getInventoryList(filter: InventoryInMFilter): [InventoryInM]
+    testString: String
 }
 
 # 뮤테이션 정의
-type Mutation {
-    createMaterialInM(input: MaterialInMInput!): MaterialInM
-    updateMaterialInM(input: MaterialInMInput!): MaterialInM
+extend type Mutation {
     deleteMaterialInM(inManagementId: String!): Boolean
 }

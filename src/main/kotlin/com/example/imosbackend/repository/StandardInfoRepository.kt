@@ -28,6 +28,22 @@ interface FactoryRep: JpaRepository<Factory,Long>{
         flagActive:Boolean?
     ):List<Factory?>
 
+    @Query(
+        value = """
+            select f
+            from Factory f
+            where f.site = :site
+            and   f.compCd = :compCd
+            and   f.factoryId IN (:factoryIds)
+        """
+    )
+    fun getFactoryListByIds(
+        site:String,
+        compCd:String,
+        factoryIds:List<String?>
+    ):List<Factory?>
+
+
     @Transactional
     @Modifying
     @Query("""

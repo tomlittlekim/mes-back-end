@@ -50,19 +50,3 @@ class Factory (
     @Column(name = "UPDATE_DATE")
     var updateDate: LocalDate? = null
 )
-
-data class FactoryFilter(
-    var factoryId: String,
-    var factoryName: String,
-    var factoryCode: String,
-    var flagActive: Boolean? = null,
-)
-
-data class FactoryInput(
-    var factoryName: String,
-    var factoryCode: String,
-    val address: String? = null,
-    val telNo: String? = null,
-    val officerName: String? = null,
-    var flagActive: String? = null,
-)

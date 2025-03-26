@@ -1,7 +1,5 @@
 package com.example.imosbackend.fetcher.StandardInfo
 
-import com.example.imosbackend.entity.StandardInfo.FactoryFilter
-import com.example.imosbackend.entity.StandardInfo.FactoryInput
 import com.example.imosbackend.service.FactoryResponseModel
 import com.example.imosbackend.service.FactoryService
 import com.netflix.graphql.dgs.DgsComponent
@@ -19,8 +17,11 @@ class FactoryDataFetcher(
     }
 
     @DgsMutation
-    fun createFactory(@InputArgument("input") factoryInput: List<FactoryInput>): Boolean {
-        factoryService.createFactory(factoryInput)
+    fun saveFactory(
+        @InputArgument("createdRows") createdRows: List<FactoryInput?>,
+        @InputArgument("updatedRows") updatedRows:List<FactoryUpdate?>
+    ): Boolean {
+        factoryService.saveFactory(createdRows,updatedRows)
         return true
     }
 
@@ -30,3 +31,30 @@ class FactoryDataFetcher(
     }
 
 }
+
+data class FactoryFilter(
+    val factoryId: String,
+    val factoryName: String,
+    val factoryCode: String,
+    val flagActive: String? = null,
+)
+
+data class FactoryInput(
+    val factoryName: String,
+    val factoryCode: String,
+    val address: String? = null,
+    val telNo: String? = null,
+    val officerName: String? = null,
+    val flagActive: String? = null,
+)
+
+data class FactoryUpdate(
+    val factoryId: String,
+    val factoryName: String,
+    val factoryCode: String,
+    val address: String? = null,
+    val telNo: String? = null,
+    val officerName: String? = null,
+    val flagActive: String? = null,
+)
+

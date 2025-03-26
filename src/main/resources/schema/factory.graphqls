@@ -14,6 +14,16 @@ input FactoryInput {
     flagActive: String
 }
 
+input FactoryUpdate {
+    factoryId: String
+    factoryName: String
+    factoryCode: String
+    address: String
+    telNo: String
+    officerName: String
+    flagActive: String
+}
+
 type Factory {
     factoryId: String
     factoryName: String
@@ -33,6 +43,6 @@ type Query {
 }
 
 type Mutation {
-    createFactory(input: [FactoryInput]): Boolean
+    saveFactory(createdRows: [FactoryInput], updatedRows: [FactoryUpdate] ): Boolean
     deleteFactory(factoryId: String!): Boolean!
 }

@@ -1,10 +1,10 @@
-package com.example.imosbackend.fetcher
+package kr.co.imoscloud.fetcher
 
-import com.example.imosbackend.security.UserPrincipal
-import com.example.imosbackend.service.UserService
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.security.UserPrincipal
+import kr.co.imoscloud.service.UserService
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 
 @DgsComponent
@@ -30,4 +30,4 @@ class UserFetcher(
         var departmentId: String?=null,
         var textarea: String?=null,
     )
-} 
+}

@@ -1,9 +1,9 @@
-package com.example.imosbackend.config
+package kr.co.imoscloud.config
 
-import com.example.imosbackend.security.ExceptionHandlerFilter
-import com.example.imosbackend.security.JwtAuthenticationFilter
-import com.example.imosbackend.security.JwtSecurityFilter
-import com.example.imosbackend.security.JwtTokenProvider
+import kr.co.imoscloud.security.ExceptionHandlerFilter
+import kr.co.imoscloud.security.JwtAuthenticationFilter
+import kr.co.imoscloud.security.JwtSecurityFilter
+import kr.co.imoscloud.security.JwtTokenProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity

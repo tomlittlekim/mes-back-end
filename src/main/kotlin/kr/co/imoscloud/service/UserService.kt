@@ -1,9 +1,9 @@
-package com.example.imosbackend.service
+package kr.co.imoscloud.service
 
-import com.example.imosbackend.entity.User
-import com.example.imosbackend.fetcher.UserFetcher.UserInput
-import com.example.imosbackend.repository.UserRepository
-import com.example.imosbackend.security.UserPrincipal
+import kr.co.imoscloud.dto.UserRequest
+import kr.co.imoscloud.entity.User
+import kr.co.imoscloud.repository.UserRepository
+import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter

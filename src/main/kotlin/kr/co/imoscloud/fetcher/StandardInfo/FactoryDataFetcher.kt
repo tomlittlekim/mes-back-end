@@ -1,7 +1,7 @@
-package com.example.imosbackend.fetcher.StandardInfo
+package kr.co.imoscloud.fetcher.StandardInfo
 
-import com.example.imosbackend.service.FactoryResponseModel
-import com.example.imosbackend.service.FactoryService
+import kr.co.imoscloud.service.FactoryResponseModel
+import kr.co.imoscloud.service.FactoryService
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery

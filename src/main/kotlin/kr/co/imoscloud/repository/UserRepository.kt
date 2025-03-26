@@ -1,6 +1,6 @@
-package com.example.imosbackend.repository
+package kr.co.imoscloud.repository
 
-import com.example.imosbackend.entity.User
+import kr.co.imoscloud.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 

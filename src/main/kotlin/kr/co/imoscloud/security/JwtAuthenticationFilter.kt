@@ -1,4 +1,4 @@
-package com.example.imosbackend.security
+package kr.co.imoscloud.security
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest

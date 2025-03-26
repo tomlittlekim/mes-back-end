@@ -1,4 +1,4 @@
-package com.example.imosbackend.entity.StandardInfo
+package kr.co.imoscloud.entity.StandardInfo
 
 import jakarta.persistence.*
 import java.time.LocalDate

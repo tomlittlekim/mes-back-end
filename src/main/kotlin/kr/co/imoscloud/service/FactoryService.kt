@@ -1,10 +1,10 @@
-package com.example.imosbackend.service
+package kr.co.imoscloud.service
 
-import com.example.imosbackend.entity.StandardInfo.Factory
-import com.example.imosbackend.fetcher.StandardInfo.FactoryFilter
-import com.example.imosbackend.fetcher.StandardInfo.FactoryInput
-import com.example.imosbackend.fetcher.StandardInfo.FactoryUpdate
-import com.example.imosbackend.repository.FactoryRep
+import kr.co.imoscloud.entity.StandardInfo.Factory
+import kr.co.imoscloud.fetcher.StandardInfo.FactoryFilter
+import kr.co.imoscloud.fetcher.StandardInfo.FactoryInput
+import kr.co.imoscloud.fetcher.StandardInfo.FactoryUpdate
+import kr.co.imoscloud.repository.FactoryRep
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime

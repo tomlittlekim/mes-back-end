@@ -1,4 +1,4 @@
-package com.example.imosbackend
+package kr.co.imoscloud
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

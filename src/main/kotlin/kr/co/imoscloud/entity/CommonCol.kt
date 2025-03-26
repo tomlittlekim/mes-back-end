@@ -1,6 +1,6 @@
-package com.example.imosbackend.entity
+package kr.co.imoscloud.entity
 
-import com.example.imosbackend.security.UserPrincipal
+import kr.co.imoscloud.security.UserPrincipal
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners
 import jakarta.persistence.MappedSuperclass

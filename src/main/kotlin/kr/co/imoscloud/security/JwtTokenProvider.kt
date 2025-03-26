@@ -1,4 +1,4 @@
-package com.example.imosbackend.security
+package kr.co.imoscloud.security
 
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys

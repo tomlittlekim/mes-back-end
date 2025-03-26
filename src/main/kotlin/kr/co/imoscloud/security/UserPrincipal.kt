@@ -1,4 +1,4 @@
-package com.example.imosbackend.security
+package kr.co.imoscloud.security
 
 import lombok.Getter
 import org.springframework.security.core.GrantedAuthority
@@ -35,7 +35,7 @@ class UserPrincipal(
     fun getId(): Long = id
 
     companion object {
-        fun create(user: com.example.imosbackend.entity.User): UserPrincipal {
+        fun create(user: kr.co.imoscloud.entity.User): UserPrincipal {
             val authorities = listOf(SimpleGrantedAuthority(user.roleId))
 
             return UserPrincipal(

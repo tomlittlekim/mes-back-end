@@ -1,6 +1,6 @@
-package com.example.imosbackend.repository
+package kr.co.imoscloud.repository
 
-import com.example.imosbackend.entity.StandardInfo.Factory
+import kr.co.imoscloud.entity.StandardInfo.Factory
 import jakarta.transaction.Transactional
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying

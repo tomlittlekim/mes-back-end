@@ -1,5 +1,6 @@
-package com.example.imosbackend.entity
+package kr.co.imoscloud.entity
 
+import kr.co.imoscloud.dto.UserRequest
 import jakarta.persistence.*
 
 @Entity

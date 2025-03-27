@@ -1,8 +1,8 @@
 package kr.co.imoscloud.repository
 
-import kr.co.imoscloud.entity.standardInfo.Factory
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.standardInfo.CodeClass
+import kr.co.imoscloud.entity.standardInfo.Factory
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query

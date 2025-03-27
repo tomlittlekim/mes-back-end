@@ -1,11 +1,11 @@
 package kr.co.imoscloud.fetcher.standardInfo
 
-import kr.co.imoscloud.service.standardInfo.CommonCodeService
-import kr.co.imoscloud.service.standardInfo.codeClassResponse
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.service.standardInfo.CommonCodeService
+import kr.co.imoscloud.service.standardInfo.codeClassResponse
 
 @DgsComponent
 class CommonCodeFetcher(

@@ -1,9 +1,9 @@
 package kr.co.imoscloud.entity
 
-import kr.co.imoscloud.security.UserPrincipal
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners
 import jakarta.persistence.MappedSuperclass
+import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 

@@ -1,0 +1,22 @@
+input ProductionPlanFilter {
+    prodPlanId: String
+    orderId: String
+    productId: String
+    planStartDate: String
+    planEndDate: String
+}
+
+type ProductionPlan {
+    site: String
+    compCd: String
+    prodPlanId: String
+    orderId: String
+    productId: String
+    planQty: Float
+    planStartDate: String
+    planEndDate: String
+}
+
+extend type Query {
+    productionPlans(filter: ProductionPlanFilter): [ProductionPlan]!
+}

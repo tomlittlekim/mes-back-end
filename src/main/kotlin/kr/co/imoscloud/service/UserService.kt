@@ -24,7 +24,7 @@ class UserService(
     fun signIn(req: UserInput, servletRequest: HttpServletRequest, servletResponse: HttpServletResponse): String {
         val domainNm = servletRequest.serverName
         val targetId = req.userId ?: throw IllegalStateException("UserId를 입력해주세요")
-        return userRepo.findBySiteAndUserIdAndIsActiveIsTrue(domainNm, targetId)
+        return userRepo.findBySiteAndUserIdAndFlagActiveIsTrue(domainNm, targetId)
             ?.let { user ->
                 try {
                     validateUser(req.password, user)

@@ -49,10 +49,13 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf("*") // "http://localhost:3000", "http://imos-cloud.co.kr", "http://pems-cloud.co.kr"
+        configuration.allowedOrigins = listOf("http://localhost:3000", "http://imos-cloud.co.kr", "http://pems-cloud.co.kr")
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = listOf("*")
         configuration.allowCredentials = true
+        //TODO: 헤더값 추후 넣을 예정
+//        configuration.allowedHeaders = listOf()
+//        configuration.exposedHeaders = listOf("Authorization")
         
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)

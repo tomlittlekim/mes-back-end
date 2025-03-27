@@ -30,11 +30,11 @@ input UserInput {
     textArea: String
 }
 
-type Mutation {
+extend type Mutation {
     signUp(input: UserInput!): User!
 }
 
-type Query {
+extend type Query {
     user(id: ID!): User
     users: [User!]!
-} 
+}

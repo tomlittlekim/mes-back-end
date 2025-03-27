@@ -35,6 +35,5 @@ extend type Mutation {
 }
 
 extend type Query {
-    user(id: ID!): User
-    users: [User!]!
+    signIn(input: UserInput!): String
 }

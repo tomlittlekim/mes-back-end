@@ -2,7 +2,10 @@ package kr.co.imoscloud.fetcher
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
+import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.service.UserService
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -11,6 +14,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 class UserFetcher(
     private val userService: UserService
 ) {
+
+    @DgsQuery
+    fun signIn(@InputArgument("input") input: UserInput, req: HttpServletRequest, res: HttpServletResponse): String {
+        return userService.signIn(input, req, res)
+    }
 
     @DgsMutation
     fun signUp(@InputArgument("input") input: UserInput, @AuthenticationPrincipal user: UserPrincipal) {

@@ -21,10 +21,10 @@ class UserService(
     private val jwtProvider: JwtTokenProvider
 ) {
 
-    fun signIn(req: UserInput, servletRequest: HttpServletRequest, servletResponse: HttpServletResponse): Unit {
+    fun signIn(req: UserInput, servletRequest: HttpServletRequest, servletResponse: HttpServletResponse): String {
         val domainNm = servletRequest.serverName
         val targetId = req.userId ?: throw IllegalStateException("UserId를 입력해주세요")
-        userRepo.findBySiteAndUserIdAndIsActiveIsTrue(domainNm, targetId)
+        return userRepo.findBySiteAndUserIdAndIsActiveIsTrue(domainNm, targetId)
             ?.let { user ->
                 try {
                     validateUser(req.password, user)
@@ -37,8 +37,10 @@ class UserService(
                         .httpOnly(true)
                         .build()
                     servletResponse.addHeader("Set-Cookie", cookie.toString())
+                    "${user.userId} 로그인 성공"
                 } catch (e: IllegalArgumentException) {
                     // 비밀번호 불일치 관련 로직 Redis 를 이용한 추가 계발 필요
+                    "로그인 실패"
                 }
             }
             ?:throw IllegalArgumentException("유저가 존재하지 않습니다. ")

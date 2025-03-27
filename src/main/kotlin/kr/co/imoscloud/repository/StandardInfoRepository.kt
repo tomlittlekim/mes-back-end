@@ -1,7 +1,8 @@
 package kr.co.imoscloud.repository
 
-import kr.co.imoscloud.entity.StandardInfo.Factory
+import kr.co.imoscloud.entity.standardInfo.Factory
 import jakarta.transaction.Transactional
+import kr.co.imoscloud.entity.standardInfo.CodeClass
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -59,5 +60,23 @@ interface FactoryRep: JpaRepository<Factory,Long>{
         compCd:String,
         factoryId: String
     ): Int
+}
 
+interface CodeClassRep : JpaRepository<CodeClass,Long>{
+    @Query(
+        value = """
+            select cc
+            from CodeClass cc
+            where cc.site = :site
+            and   cc.compCd = :compCd
+            and   (cc.codeClassId like concat ('%',:codeClassId,'%'))
+            and   (cc.codeClassName like concat ('%',:codeClassName,'%'))
+        """
+    )
+    fun getCodeClassList(
+        site:String,
+        compCd:String,
+        codeClassId:String,
+        codeClassName:String
+    ):List<CodeClass?>
 }

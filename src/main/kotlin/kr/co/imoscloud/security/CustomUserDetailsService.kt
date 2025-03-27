@@ -13,7 +13,7 @@ class CustomUserDetailsService(
 
     @Transactional(readOnly = true)
     fun loadUserBySiteAndUserId(site: String, userId: String): UserDetails {
-        val user = userRepo.findBySiteAndUserIdAndIsActiveIsTrue(site, userId)
+        val user = userRepo.findBySiteAndUserIdAndFlagActiveIsTrue(site, userId)
             ?: throw UsernameNotFoundException("User not found with username: $userId")
         
         return UserPrincipal.create(user)

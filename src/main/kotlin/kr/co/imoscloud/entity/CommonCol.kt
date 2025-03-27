@@ -22,9 +22,6 @@ class CommonCol (
     @Column(name = "CREATE_USER", length = 40)
     var createUser: String? = null,
 
-    @Column(name = "REMARK", length = 250)
-    var remark: String? = null,
-
     @Column(name = "FLAG_ACTIVE")
     var flagActive: Boolean? = true
 

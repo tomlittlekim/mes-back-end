@@ -1,26 +1,27 @@
 input MaterialFilter {
     materialType: String
-    materialId: String
+    systemMaterialId: String
+    userMaterialId: String
     materialName: String
-    flagActive: Boolean
+    flagActive: String
     fromDate: String
     toDate: String
 }
 
 type Material {
-    id: Int
-    type: String
+    seq: Int
+    materialType: String
     systemMaterialId: String
     userMaterialId: String
-    name: String
-    spec: String
+    materialName: String
+    materialStandard: String
     unit: String
     minQuantity: Int
     maxQuantity: Int
-    manufacturer: String
-    supplier: String
-    warehouse: String
-    flagActive: Boolean
+    manufacturerName: String
+    supplierName: String
+    materialStorage: String
+    flagActive: String
     createUser: String
     createDate: String
     updateUser: String
@@ -37,19 +38,19 @@ extend type Mutation {
 }
 
 input MaterialInput {
-    id: Int
-    type: String!
+    seq: Int
+    materialType: String!
     systemMaterialId: String
     userMaterialId: String
-    name: String!
-    spec: String
+    materialName: String!
+    materialStandard: String
     unit: String
     minQuantity: Int
     maxQuantity: Int
-    manufacturer: String
-    supplier: String
-    warehouse: String
-    flagActive: Boolean
+    manufacturerName: String
+    supplierName: String
+    materialStorage: String
+    flagActive: String
     createUser: String
     createDate: String
     updateUser: String

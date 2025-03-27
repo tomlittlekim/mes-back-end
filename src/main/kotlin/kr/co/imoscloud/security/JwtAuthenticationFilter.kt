@@ -28,10 +28,11 @@ class JwtAuthenticationFilter(
     }
 
     private fun resolveToken(request: HttpServletRequest): String? {
-        val bearerToken = request.getHeader("Authorization")
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7)
-        }
-        return null
+        val cookies = request.cookies ?: return null
+
+        val tokenCookie = cookies.firstOrNull { it.name == jwtTokenProvider.ACCESS }
+        val tokenValue = tokenCookie?.value ?: return null
+
+        return if (tokenValue.startsWith("Bearer ")) tokenValue.substring(7) else tokenValue
     }
 } 

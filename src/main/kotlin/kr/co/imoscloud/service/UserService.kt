@@ -7,6 +7,8 @@ import kr.co.imoscloud.fetcher.UserFetcher.UserInput
 import kr.co.imoscloud.repository.UserRepository
 import kr.co.imoscloud.security.JwtTokenProvider
 import kr.co.imoscloud.security.UserPrincipal
+import org.springframework.http.ResponseCookie
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -26,12 +28,17 @@ class UserService(
             ?.let { user ->
                 try {
                     validateUser(req.password, user)
-//                    jwtProvider.createToken()
-//                    servletResponse
-                } catch (e: NullPointerException) {
-                    // 로그인 실패
+                    val userDetails = UserPrincipal.create(user)
+                    val userPrincipal = UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
+                    val token = jwtProvider.createToken(userPrincipal)
+                    val cookie = ResponseCookie.from(jwtProvider.ACCESS, token)
+                        .path("/")
+                        .maxAge(jwtProvider.tokenValidityInMilliseconds)
+                        .httpOnly(true)
+                        .build()
+                    servletResponse.addHeader("Set-Cookie", cookie.toString())
                 } catch (e: IllegalArgumentException) {
-
+                    // 비밀번호 불일치 관련 로직 Redis 를 이용한 추가 계발 필요
                 }
             }
             ?:throw IllegalArgumentException("유저가 존재하지 않습니다. ")

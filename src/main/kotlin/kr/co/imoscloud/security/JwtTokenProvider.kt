@@ -17,9 +17,11 @@ class JwtTokenProvider(
     private lateinit var secretKey: String
 
     @Value("\${jwt.token-validity-in-milliseconds}")
-    private var tokenValidityInMilliseconds: Long = 0
+    var tokenValidityInMilliseconds: Long = 0
 
     private lateinit var key: SecretKey
+    val ACCESS = "access-token"
+    val REFRESH = "refresh_token"
 
     fun init() {
         key = Keys.hmacShaKeyFor(secretKey.toByteArray())

@@ -30,10 +30,18 @@ input UserInput {
     textArea: String
 }
 
+type UserOutput {
+    userId: String!
+    userNm: String!
+    email: String!
+    roleId: String!
+    message: String
+}
+
 extend type Mutation {
     signUp(input: UserInput!): User!
 }
 
 extend type Query {
-    signIn(input: UserInput!): String
+    signIn(input: UserInput!): UserOutput!
 }

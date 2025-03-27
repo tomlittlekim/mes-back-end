@@ -16,7 +16,7 @@ class UserFetcher(
 ) {
 
     @DgsQuery
-    fun signIn(@InputArgument("input") input: UserInput, req: HttpServletRequest, res: HttpServletResponse): String {
+    fun signIn(@InputArgument("input") input: UserInput, req: HttpServletRequest, res: HttpServletResponse): UserOutput {
         return userService.signIn(input, req, res)
     }
 
@@ -37,5 +37,13 @@ class UserFetcher(
         var phoneNum: String?=null,
         var departmentId: String?=null,
         var textarea: String?=null,
+    )
+
+    data class UserOutput(
+        var userId: String?=null,
+        var userNm: String?=null,
+        var email: String?=null,
+        var roleId: String?=null,
+        var message: String,
     )
 }

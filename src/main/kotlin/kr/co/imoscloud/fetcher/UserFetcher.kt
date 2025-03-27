@@ -44,6 +44,7 @@ class UserFetcher(
         var userNm: String?=null,
         var email: String?=null,
         var roleId: String?=null,
+        var status: Int,
         var message: String,
     )
 }

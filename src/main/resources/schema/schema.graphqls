@@ -31,11 +31,12 @@ input UserInput {
 }
 
 type UserOutput {
-    userId: String!
-    userNm: String!
-    email: String!
-    roleId: String!
-    message: String
+    userId: String
+    userNm: String
+    email: String
+    roleId: String
+    status: String!
+    message: String!
 }
 
 extend type Mutation {

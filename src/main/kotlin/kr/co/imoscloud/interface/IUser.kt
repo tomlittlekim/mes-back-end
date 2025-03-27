@@ -26,8 +26,12 @@ interface IUser {
                 userNm = user.userName,
                 email = user.userEmail,
                 roleId = user.roleId,
+                status = 200,
                 message = "${user.userId} 로그인 성공"
             )}
-            ?:run { UserFetcher.UserOutput(message = "로그인 실패") }
+            ?:run { UserFetcher.UserOutput(
+                status = 404,
+                message = "로그인 실패"
+            )}
     }
 }

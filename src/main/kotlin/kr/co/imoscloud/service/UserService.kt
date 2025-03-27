@@ -1,10 +1,13 @@
 package kr.co.imoscloud.service
 
-import kr.co.imoscloud.dto.UserRequest
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.entity.User
 import kr.co.imoscloud.fetcher.UserFetcher.UserInput
 import kr.co.imoscloud.repository.UserRepository
+import kr.co.imoscloud.security.JwtTokenProvider
 import kr.co.imoscloud.security.UserPrincipal
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -12,8 +15,27 @@ import java.util.*
 
 @Service
 class UserService(
-    private val userRepo: UserRepository
+    private val userRepo: UserRepository,
+    private val jwtProvider: JwtTokenProvider
 ) {
+
+    fun signIn(req: UserInput, servletRequest: HttpServletRequest, servletResponse: HttpServletResponse): Unit {
+        val domainNm = servletRequest.serverName
+        val targetId = req.userId ?: throw IllegalStateException("UserId를 입력해주세요")
+        userRepo.findBySiteAndUserIdAndIsActiveIsTrue(domainNm, targetId)
+            ?.let { user ->
+                try {
+                    validateUser(req.password, user)
+//                    jwtProvider.createToken()
+//                    servletResponse
+                } catch (e: NullPointerException) {
+                    // 로그인 실패
+                } catch (e: IllegalArgumentException) {
+
+                }
+            }
+            ?:throw IllegalArgumentException("유저가 존재하지 않습니다. ")
+    }
 
     fun signUp(req: UserInput, loginUser: UserPrincipal): User {
         if (!checkRole(loginUser)) throw IllegalArgumentException("관리자 이상의 등급을 가진 유저가 아닙니다. ")
@@ -57,5 +79,13 @@ class UserService(
             userPwd = uuid.substring(7, 14) +"!@",
             roleId = req.roleId
         )
+    }
+
+    private fun validateUser(matchedPWD: String?, target: User) {
+        val passwordEncoder = BCryptPasswordEncoder()
+        if (matchedPWD == null) throw NullPointerException("비밀번호를 입력해주세요. ")
+
+        if (!passwordEncoder.matches(target.userPwd, matchedPWD))
+            throw IllegalArgumentException("비밀번호가 일치하지 않습니다. ")
     }
 }

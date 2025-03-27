@@ -25,8 +25,8 @@ class CommonCol (
     @Column(name = "REMARK", length = 250)
     var remark: String? = null,
 
-    @Column(name = "IS_ACTIVE")
-    var isActive: Boolean? = true
+    @Column(name = "FLAG_ACTIVE")
+    var flagActive: Boolean? = true
 
 ) {
     fun createCommonCol(userPrincipal: UserPrincipal) {

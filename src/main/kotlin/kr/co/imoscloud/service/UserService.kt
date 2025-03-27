@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.entity.User
 import kr.co.imoscloud.fetcher.UserFetcher.UserInput
+import kr.co.imoscloud.`interface`.IUser
 import kr.co.imoscloud.repository.UserRepository
 import kr.co.imoscloud.security.JwtTokenProvider
 import kr.co.imoscloud.security.UserPrincipal
@@ -19,12 +20,12 @@ import java.util.*
 class UserService(
     private val userRepo: UserRepository,
     private val jwtProvider: JwtTokenProvider
-) {
+): IUser {
 
     fun signIn(req: UserInput, servletRequest: HttpServletRequest, servletResponse: HttpServletResponse): String {
-        val domainNm = servletRequest.serverName
+        val site = getSiteByDomain(servletRequest)
         val targetId = req.userId ?: throw IllegalStateException("UserId를 입력해주세요")
-        return userRepo.findBySiteAndUserIdAndIsActiveIsTrue(domainNm, targetId)
+        return userRepo.findBySiteAndUserIdAndIsActiveIsTrue(site, targetId)
             ?.let { user ->
                 try {
                     validateUser(req.password, user)
@@ -52,7 +53,7 @@ class UserService(
         val modifyReq = modifyReqByRole(loginUser, req)
         val newUser = try {
             val target = userRepo.findBySiteAndUserIdForSignUp(modifyReq.site!!, modifyReq.userId)!!
-            if (target.isActive == false) target.apply { isActive = true; createCommonCol(loginUser) }
+            if (target.flagActive == false) target.apply { flagActive = true; createCommonCol(loginUser) }
             else throw IllegalArgumentException("이미 존재하는 유저입니다. ")
         } catch (e: NullPointerException) {
             generateUser(req)
@@ -81,11 +82,14 @@ class UserService(
         val today = LocalDate.now()
         val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
 
+        val passwordEncoder = BCryptPasswordEncoder()
+        val pwd = uuid.substring(7, 14) +"!@"
+
         return User(
             site = req.site!!,
             compCd = req.compCd!!,
             userId = req.userId ?: (uuid.substring(0, 7) + formatter.format(today)),
-            userPwd = uuid.substring(7, 14) +"!@",
+            userPwd = passwordEncoder.encode(pwd),
             roleId = req.roleId
         )
     }

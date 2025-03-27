@@ -24,7 +24,7 @@ class UserService(
     fun signIn(req: UserInput, servletRequest: HttpServletRequest, servletResponse: HttpServletResponse): String {
         val domainNm = servletRequest.serverName
         val targetId = req.userId ?: throw IllegalStateException("UserId를 입력해주세요")
-        return userRepo.findBySiteAndUserIdAndIsActiveIsTrue(domainNm, targetId)
+        return userRepo.findBySiteAndUserIdAndFlagActiveIsTrue(domainNm, targetId)
             ?.let { user ->
                 try {
                     validateUser(req.password, user)
@@ -52,7 +52,7 @@ class UserService(
         val modifyReq = modifyReqByRole(loginUser, req)
         val newUser = try {
             val target = userRepo.findBySiteAndUserIdForSignUp(modifyReq.site!!, modifyReq.userId)!!
-            if (target.isActive == false) target.apply { isActive = true; createCommonCol(loginUser) }
+            if (target.flagActive == false) target.apply { flagActive = true; createCommonCol(loginUser) }
             else throw IllegalArgumentException("이미 존재하는 유저입니다. ")
         } catch (e: NullPointerException) {
             generateUser(req)

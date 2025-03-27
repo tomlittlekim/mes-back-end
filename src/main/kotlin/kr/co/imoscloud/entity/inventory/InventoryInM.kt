@@ -33,7 +33,7 @@ class InventoryInM(
     var remarks: String? = null,
 
     @Column(name = "FLAG_ACTIVE")
-    var isActive: Boolean? = null,
+    var flagActive: Boolean? = null,
 
     @Column(name = "CREATE_USER", length = 100)
     var createUser: String? = null,
@@ -66,5 +66,5 @@ data class InventoryInMInput(
     var totalPrice: Int,
     var hasInvoice: Boolean,
     var remarks: String? = null,
-    var isActive: Boolean? = null
+    var flagActive: Boolean? = null
 )

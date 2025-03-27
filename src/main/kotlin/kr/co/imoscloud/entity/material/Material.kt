@@ -1,4 +1,4 @@
-package kr.co.imoscloud.entity.Material
+package kr.co.imoscloud.entity.material
 
 import jakarta.persistence.*
 import java.time.LocalDate

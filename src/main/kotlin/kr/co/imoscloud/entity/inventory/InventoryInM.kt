@@ -1,4 +1,4 @@
-package kr.co.imoscloud.entity.Inventory
+package kr.co.imoscloud.entity.inventory
 
 import jakarta.persistence.*
 import java.time.LocalDate

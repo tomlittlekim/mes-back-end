@@ -1,6 +1,6 @@
 package kr.co.imoscloud.service
 
-import kr.co.imoscloud.entity.Inventory.InventoryInMFilter
+import kr.co.imoscloud.entity.inventory.InventoryInMFilter
 import kr.co.imoscloud.repository.InventoryRep
 import org.springframework.stereotype.Service
 

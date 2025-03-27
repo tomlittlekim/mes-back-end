@@ -1,6 +1,6 @@
 package kr.co.imoscloud.repository
 
-import kr.co.imoscloud.entity.Inventory.InventoryInM
+import kr.co.imoscloud.entity.inventory.InventoryInM
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
@@ -18,8 +18,9 @@ interface InventoryRep : JpaRepository<InventoryInM, Long>{
 //        and (:flagActive is null or f.flagActive = :flagActive)
 //    """
 //    )
-@Query("""
-        select new kr.co.imoscloud.entity.Inventory.InventoryInM(
+@Query(
+    """
+        select new kr.co.imoscloud.entity.inventory.InventoryInM(
             iim.id,
             iim.site,
             iim.compCd,

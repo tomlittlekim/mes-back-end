@@ -1,6 +1,6 @@
 package kr.co.imoscloud.fetcher.inventory
 
-import kr.co.imoscloud.entity.Inventory.InventoryInMFilter
+import kr.co.imoscloud.entity.inventory.InventoryInMFilter
 import kr.co.imoscloud.service.InventoryInMResponseModel
 import kr.co.imoscloud.service.InventoryService
 import com.netflix.graphql.dgs.DgsComponent

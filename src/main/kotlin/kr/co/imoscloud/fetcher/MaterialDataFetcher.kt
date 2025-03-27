@@ -7,8 +7,8 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
-import kr.co.imoscloud.entity.Material.Material
-import kr.co.imoscloud.entity.Material.MaterialFilter
+import kr.co.imoscloud.entity.material.Material
+import kr.co.imoscloud.entity.material.MaterialFilter
 
 @DgsComponent
 class MaterialDataFetcher(

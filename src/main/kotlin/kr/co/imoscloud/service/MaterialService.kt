@@ -1,7 +1,7 @@
 package kr.co.imoscloud.service
 
-import kr.co.imoscloud.entity.Material.Material
-import kr.co.imoscloud.entity.Material.MaterialFilter
+import kr.co.imoscloud.entity.material.Material
+import kr.co.imoscloud.entity.material.MaterialFilter
 import org.springframework.stereotype.Service
 
 @Service

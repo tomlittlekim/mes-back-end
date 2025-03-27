@@ -1,6 +1,6 @@
 package kr.co.imoscloud.service
 
-import kr.co.imoscloud.entity.Material.Material
+import kr.co.imoscloud.entity.material.Material
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDate

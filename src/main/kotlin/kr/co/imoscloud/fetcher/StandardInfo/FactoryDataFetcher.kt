@@ -1,7 +1,7 @@
-package kr.co.imoscloud.fetcher.StandardInfo
+package kr.co.imoscloud.fetcher.standardInfo
 
-import kr.co.imoscloud.service.FactoryResponseModel
-import kr.co.imoscloud.service.FactoryService
+import kr.co.imoscloud.service.standardInfo.FactoryResponseModel
+import kr.co.imoscloud.service.standardInfo.FactoryService
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery

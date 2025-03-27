@@ -1,7 +1,11 @@
+# schema.graphqls
+type Query
+type Mutation
+
 input FactoryFilter {
-    factoryId: String,
-    factoryName: String,
-    factoryCode: String,
+    factoryId: String!,
+    factoryName: String!,
+    factoryCode: String!,
     flagActive: String,
 }
 
@@ -38,11 +42,11 @@ type Factory {
     updateDate:String
 }
 
-type Query {
+extend type Query {
     factories(filter:FactoryFilter): [Factory]
 }
 
-type Mutation {
+extend type Mutation {
     saveFactory(createdRows: [FactoryInput], updatedRows: [FactoryUpdate] ): Boolean
     deleteFactory(factoryId: String!): Boolean!
 }

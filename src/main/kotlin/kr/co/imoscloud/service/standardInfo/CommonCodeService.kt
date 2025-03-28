@@ -36,8 +36,8 @@ class CommonCodeService(
     @Transactional
     fun saveCodeClass(createdRows: List<CodeClassInput?>, updatedRows:List<CodeClassUpdate?>){
         //TODO 저장 ,수정시 공통 으로 작성자 ,작성일 ,수정자 ,수정일 변경 저장이 필요함
-        createCodeClass(createdRows)
-        updateCodeClass(updatedRows)
+        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let{ createCodeClass(it) }
+        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let{ updateCodeClass(it) }
     }
 
     fun createCodeClass(createdRows: List<CodeClassInput?>){

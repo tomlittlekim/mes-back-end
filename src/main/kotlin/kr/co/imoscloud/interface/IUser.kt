@@ -1,6 +1,7 @@
 package kr.co.imoscloud.`interface`
 
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequestWrapper
 import kr.co.imoscloud.entity.User
 import kr.co.imoscloud.fetcher.UserFetcher
 
@@ -11,10 +12,11 @@ interface IUser {
     }
 
     fun getSiteByDomain(req: HttpServletRequest): String {
-        val domain = req.serverName
+        val rawRequest = (req as HttpServletRequestWrapper).request as HttpServletRequest
+        val domain = rawRequest.serverName
         return when (domain) {
-            "http://imos-cloud.co.kr", "http://localhost:3000" -> IMOS
-            "http://pems-cloud.co.kr" -> PEMS
+            "imos-cloud.co.kr", "localhost" -> IMOS
+            "pems-cloud.co.kr" -> PEMS
             else -> throw IllegalArgumentException("지원하는 도멘인이 아닙니다. ")
         }
     }

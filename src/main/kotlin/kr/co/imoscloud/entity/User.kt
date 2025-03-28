@@ -43,7 +43,7 @@ class User(
     @Column(name = "TEXT_AREA", length = 1000)
     val textArea: String? = null,
 
-    @Column(name = "IS_LOCK")
-    val isLock: Boolean = false
+    @Column(name = "FLAG_LOCK")
+    val flagLock: Boolean = false
 
 ) : CommonCol()

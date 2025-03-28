@@ -17,11 +17,11 @@ type User {
 }
 
 input UserInput {
-    site: String!
-    compCd: String!
+    site: String
+    compCd: String
     userName: String
-    userId: String!
-    userPwd: String!
+    userId: String
+    userPwd: String
     imagePath: String
     roleId: String
     userEmail: String

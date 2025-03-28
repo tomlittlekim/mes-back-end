@@ -2,6 +2,7 @@ package kr.co.imoscloud.service
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import kr.co.imoscloud.controller.LoginController.LoginRequest
 import kr.co.imoscloud.entity.User
 import kr.co.imoscloud.fetcher.UserFetcher.*
 import kr.co.imoscloud.`interface`.IUser
@@ -22,13 +23,12 @@ class UserService(
     private val jwtProvider: JwtTokenProvider
 ): IUser {
 
-    fun signIn(req: UserInput, servletRequest: HttpServletRequest, servletResponse: HttpServletResponse): UserOutput {
-        val site = getSiteByDomain(servletRequest)
-        val targetId = req.userId ?: throw IllegalStateException("UserId를 입력해주세요")
-        return userRepo.findBySiteAndUserIdAndFlagActiveIsTrue(site, targetId)
+    fun signIn(loginReq: LoginRequest, request: HttpServletRequest, response: HttpServletResponse): UserOutput {
+        val site = getSiteByDomain(request)
+        return userRepo.findBySiteAndUserIdAndFlagActiveIsTrue(site, loginReq.userId)
             ?.let { user ->
                 try {
-                    validateUser(req.password, user)
+                    validateUser(loginReq.userPwd, user)
                     val userDetails = UserPrincipal.create(user)
                     val userPrincipal = UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
                     val token = jwtProvider.createToken(userPrincipal)
@@ -37,7 +37,8 @@ class UserService(
                         .maxAge(jwtProvider.tokenValidityInMilliseconds)
                         .httpOnly(true)
                         .build()
-                    servletResponse.addHeader("Set-Cookie", cookie.toString())
+                    
+                    response.addHeader("Set-Cookie", cookie.toString())
                     userToUserOutput(user)
                 } catch (e: IllegalArgumentException) {
                     // 비밀번호 불일치 관련 로직 Redis 를 이용한 추가 계발 필요

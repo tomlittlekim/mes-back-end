@@ -2,7 +2,6 @@ package kr.co.imoscloud.config
 
 import kr.co.imoscloud.security.ExceptionHandlerFilter
 import kr.co.imoscloud.security.JwtAuthenticationFilter
-import kr.co.imoscloud.security.JwtSecurityFilter
 import kr.co.imoscloud.security.JwtTokenProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

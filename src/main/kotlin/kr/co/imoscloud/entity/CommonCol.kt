@@ -1,9 +1,9 @@
 package kr.co.imoscloud.entity
 
-import kr.co.imoscloud.security.UserPrincipal
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners
 import jakarta.persistence.MappedSuperclass
+import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 
@@ -11,35 +11,32 @@ import java.time.LocalDateTime
 @EntityListeners(AuditingEntityListener::class)
 class CommonCol (
     @Column(name = "UPDATE_DATE")
-    var upDate: LocalDateTime = LocalDateTime.now(),
+    var updateDate: LocalDateTime = LocalDateTime.now(),
 
-    @Column(name = "UPDATE_USER_ID", length = 40)
-    var upUsrId: String? = null,
+    @Column(name = "UPDATE_USER", length = 40)
+    var updateUser: String? = null,
 
     @Column(name = "CREATE_DATE")
-    var inDate: LocalDateTime = LocalDateTime.now(),
+    var createDate: LocalDateTime = LocalDateTime.now(),
 
-    @Column(name = "CREATE_USER_ID", length = 40)
-    var inUsrId: String? = null,
-
-    @Column(name = "REMARK", length = 250)
-    var remark: String? = null,
+    @Column(name = "CREATE_USER", length = 40)
+    var createUser: String? = null,
 
     @Column(name = "FLAG_ACTIVE")
     var flagActive: Boolean? = true
 
 ) {
     fun createCommonCol(userPrincipal: UserPrincipal) {
-        this.inDate = LocalDateTime.now()
-        this.inUsrId = userPrincipal.getUserId()
-        this.upDate = LocalDateTime.now()
-        this.upUsrId = userPrincipal.getUserId()
+        this.createDate = LocalDateTime.now()
+        this.createUser = userPrincipal.getUserId()
+        this.updateDate = LocalDateTime.now()
+        this.updateUser = userPrincipal.getUserId()
     }
 
     fun updateCommonCol(userPrincipal: UserPrincipal) {
-        this.inDate = this.inDate
-        this.inUsrId = this.inUsrId
-        this.upDate = LocalDateTime.now()
-        this.upUsrId = userPrincipal.getUserId()
+        this.createDate = this.createDate
+        this.createUser = this.createUser
+        this.updateDate = LocalDateTime.now()
+        this.updateUser = userPrincipal.getUserId()
     }
 }

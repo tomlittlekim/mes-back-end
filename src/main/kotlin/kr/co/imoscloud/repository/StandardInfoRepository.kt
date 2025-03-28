@@ -2,6 +2,7 @@ package kr.co.imoscloud.repository
 
 import kr.co.imoscloud.entity.standardInfo.Factory
 import jakarta.transaction.Transactional
+import kr.co.imoscloud.entity.standardInfo.Code
 import kr.co.imoscloud.entity.standardInfo.CodeClass
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -79,4 +80,72 @@ interface CodeClassRep : JpaRepository<CodeClass,Long>{
         codeClassId:String,
         codeClassName:String
     ):List<CodeClass?>
+
+    @Query(
+        value = """
+            select cc
+            from CodeClass cc
+            where cc.site = :site
+            and   cc.compCd = :compCd
+            and   cc.codeClassId IN (:codeClassIds)
+        """
+    )
+    fun getCodeClassListByIds(
+        site:String,
+        compCd:String,
+        codeClassIds:List<String?>
+    ):List<CodeClass?>
+}
+
+interface CodeRep: JpaRepository<Code,Long>{
+
+    @Query(
+        value = """
+            select c
+            from Code c
+            where c.site = :site
+            and   c.compCd = :compCd
+            and   c.codeClassId = :codeClassId
+        """
+    )
+    fun getCodeList(
+        site:String,
+        compCd:String,
+        codeClassId:String
+    ):List<Code?>
+
+    @Query(
+        value = """
+            select c
+            from Code c
+            where c.site = :site
+            and   c.compCd = :compCd
+            and   c.codeClassId = :codeClassId
+            and   c.codeId IN (:codeIds)
+        """
+    )
+    fun getCodeListByIds(
+        site:String,
+        compCd:String,
+        codeClassId:String,
+        codeIds:List<String?>
+    ):List<Code?>
+
+
+    @Transactional
+    @Modifying
+    @Query("""
+        delete 
+        from Code c 
+        where c.site = :site
+        and   c.compCd = :compCd
+        and   c.codeId = :codeId
+        """
+    )
+    fun deleteByCodeId(
+        site:String,
+        compCd:String,
+        codeId: String
+    ): Int
+
 }

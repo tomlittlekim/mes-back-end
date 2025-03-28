@@ -1,11 +1,11 @@
 package kr.co.imoscloud.fetcher.standardInfo
 
-import kr.co.imoscloud.service.standardInfo.FactoryResponseModel
-import kr.co.imoscloud.service.standardInfo.FactoryService
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.service.standardInfo.FactoryResponseModel
+import kr.co.imoscloud.service.standardInfo.FactoryService
 
 @DgsComponent
 class FactoryDataFetcher(

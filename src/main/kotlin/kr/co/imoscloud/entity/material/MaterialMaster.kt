@@ -1,15 +1,15 @@
-package kr.co.imoscloud.entity.Material
+package kr.co.imoscloud.entity.material
 
 import jakarta.persistence.*
 import java.time.LocalDate
 
 @Entity
 @Table(name = "MATERIAL_MASTER")
-class Material {
+class MaterialMaster {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SEQ", nullable = false)
-    var id: Int? = null
+    var seq: Int? = null
 
     @Column(name = "SITE", nullable = false, length = 50)
     var site: String? = null
@@ -21,19 +21,19 @@ class Material {
     var systemMaterialId: String? = null
 
     @Column(name = "MATERIAL_TYPE", length = 50)
-    var type: String? = null
+    var materialType: String? = null
 
     @Column(name = "MATERIAL_CATEGORY", length = 50)
-    var category: String? = null
+    var materialCategory: String? = null
 
     @Column(name = "USER_MATERIAL_ID", length = 20)
     var userMaterialId: String? = null
 
     @Column(name = "MATERIAL_NAME", length = 100)
-    var name: String? = null
+    var materialName: String? = null
 
     @Column(name = "MATERIAL_STANDARD", length = 100)
-    var spec: String? = null
+    var materialStandard: String? = null
 
     @Column(name = "UNIT", length = 20)
     var unit: String? = null
@@ -45,16 +45,16 @@ class Material {
     var maxQuantity: Int? = null
 
     @Column(name = "MANUFACTURER_NAME", length = 100)
-    var manufacturer: String? = null
+    var manufacturerName: String? = null
 
     @Column(name = "SUPPLIER_ID", length = 100)
     var supplierId: String? = null
 
     @Column(name = "SUPPLIER_NAME", length = 100)
-    var supplier: String? = null
+    var supplierName: String? = null
 
     @Column(name = "MATERIAL_STORAGE", length = 100)
-    var warehouse: String? = null
+    var materialStorage: String? = null
 
     @Column(name = "FLAG_ACTIVE")
     var flagActive: Boolean? = true
@@ -71,12 +71,3 @@ class Material {
     @Column(name = "UPDATE_DATE")
     var updateDate: LocalDate? = null
 }
-
-data class MaterialFilter(
-    var materialType: String = "",
-    var materialId: String = "",
-    var materialName: String = "",
-    var useYn: String = "",
-    var fromDate: LocalDate? = null,
-    var toDate: LocalDate? = null
-)

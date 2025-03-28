@@ -131,4 +131,21 @@ interface CodeRep: JpaRepository<Code,Long>{
         codeIds:List<String?>
     ):List<Code?>
 
+
+    @Transactional
+    @Modifying
+    @Query("""
+        delete 
+        from Code c 
+        where c.site = :site
+        and   c.compCd = :compCd
+        and   c.codeId = :codeId
+        """
+    )
+    fun deleteByCodeId(
+        site:String,
+        compCd:String,
+        codeId: String
+    ): Int
+
 }

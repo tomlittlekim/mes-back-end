@@ -59,4 +59,5 @@ extend type Query {
 extend type Mutation{
     saveCodeClass(createdRows: [CodeClassInput], updatedRows: [CodeClassUpdate] ): Boolean
     saveCode(createdRows: [CodeInput], updatedRows: [CodeUpdate]): Boolean
+    deleteCode(codeId: String!): Boolean!
 }

@@ -41,6 +41,11 @@ class CommonCodeFetcher(
         return true
     }
 
+    @DgsMutation
+    fun deleteCode(@InputArgument("codeId") codeId: String): Boolean {
+        return commonCodeService.deleteCode(codeId)
+    }
+
 
 }
 

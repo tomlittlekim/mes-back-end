@@ -163,6 +163,14 @@ class CommonCodeService(
         codeRep.saveAll(codeList)
     }
 
+    fun deleteCode(codeId:String): Boolean {
+        return codeRep.deleteByCodeId(
+            site = "imos",
+            compCd = "eightPin",
+            codeId
+        ) > 0
+    }
+
 }
 
 data class CodeClassResponse(

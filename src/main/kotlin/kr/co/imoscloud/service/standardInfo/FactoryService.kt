@@ -104,9 +104,6 @@ class FactoryService(
         factoryRep.saveAll(factoryList)
     }
 
-
-
-
     fun deleteFactory(factoryId:String): Boolean {
         return factoryRep.deleteByFactoryId(
             site = "imos",

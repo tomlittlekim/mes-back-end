@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
+import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.crypto.SecretKey
 
@@ -22,21 +23,21 @@ class JwtTokenProvider(
     @Value("\${jwt.token-validity-in-milliseconds}")
     var tokenValidityInMilliseconds: Long = 0
 
-    private lateinit var key: SecretKey
+    private val key: SecretKey by lazy {
+        Keys.hmacShaKeyFor(secretKey.toByteArray(StandardCharsets.UTF_8))
+    }
+
     val ACCESS = "access-token"
     val REFRESH = "refresh_token"
-
-    fun init() {
-        key = Keys.hmacShaKeyFor(secretKey.toByteArray())
-    }
 
     fun createToken(authentication: Authentication): String {
         val authorities = authentication.authorities.joinToString(",") { it.authority }
         val now = Date()
         val validity = Date(now.time + tokenValidityInMilliseconds)
+        val userId = (authentication.principal as UserPrincipal).getUserId()
 
         return Jwts.builder()
-            .setSubject(authentication.name)
+            .setSubject(userId)
             .claim("auth", authorities)
             .setIssuedAt(now)
             .setExpiration(validity)

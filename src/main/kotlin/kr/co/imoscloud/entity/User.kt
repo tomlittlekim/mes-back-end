@@ -3,7 +3,7 @@ package kr.co.imoscloud.entity
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "users")
+@Table(name = "USER")
 class User(
 
     @Id

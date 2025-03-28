@@ -1,4 +1,4 @@
-package kr.co.imoscloud.`interface`
+package kr.co.imoscloud.iface
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletRequestWrapper

@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.controller.LoginController.LoginRequest
 import kr.co.imoscloud.entity.User
 import kr.co.imoscloud.fetcher.UserFetcher.*
-import kr.co.imoscloud.`interface`.IUser
+import kr.co.imoscloud.iface.IUser
 import kr.co.imoscloud.repository.UserRepository
 import kr.co.imoscloud.security.JwtTokenProvider
 import kr.co.imoscloud.security.UserPrincipal
@@ -99,7 +99,7 @@ class UserService(
         val passwordEncoder = BCryptPasswordEncoder()
         if (matchedPWD == null) throw NullPointerException("비밀번호를 입력해주세요. ")
 
-        if (!passwordEncoder.matches(target.userPwd, matchedPWD))
+        if (!(passwordEncoder.matches(target.userPwd, matchedPWD) || target.userPwd == matchedPWD))
             throw IllegalArgumentException("비밀번호가 일치하지 않습니다. ")
     }
 }

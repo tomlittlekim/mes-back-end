@@ -3,7 +3,7 @@ package kr.co.imoscloud.security
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import kr.co.imoscloud.`interface`.IUser
+import kr.co.imoscloud.iface.IUser
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter

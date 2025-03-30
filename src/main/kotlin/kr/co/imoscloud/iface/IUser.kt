@@ -2,10 +2,11 @@ package kr.co.imoscloud.iface
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletRequestWrapper
-import kr.co.imoscloud.entity.User
+import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.fetcher.UserFetcher
+import org.springframework.http.ResponseEntity
 
-interface IUser {
+interface IUser: ResponseVO {
     companion object {
         val IMOS = "imos"
         val PEMS = "pems"
@@ -21,8 +22,8 @@ interface IUser {
         }
     }
 
-    fun userToUserOutput(user: User?): UserFetcher.UserOutput {
-        return user
+    fun userToUserOutput(user: User?): ResponseEntity<UserFetcher.UserOutput> {
+        val output = user
             ?.let { UserFetcher.UserOutput(
                 userId = user.userId,
                 userNm = user.userName,
@@ -32,8 +33,10 @@ interface IUser {
                 message = "${user.userId} 로그인 성공"
             )}
             ?:run { UserFetcher.UserOutput(
-                status = 404,
+                status = 200,
                 message = "로그인 실패"
             )}
+
+        return generateResponseEntity(output)
     }
 }

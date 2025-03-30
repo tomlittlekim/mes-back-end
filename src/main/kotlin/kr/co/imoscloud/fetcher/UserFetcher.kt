@@ -3,6 +3,7 @@ package kr.co.imoscloud.fetcher
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.iface.ResponseVO
 import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.service.UserService
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -32,11 +33,11 @@ class UserFetcher(
     )
 
     data class UserOutput(
+        override val status: Int,
+        override val message: String,
         var userId: String?=null,
         var userNm: String?=null,
         var email: String?=null,
         var roleId: String?=null,
-        var status: Int,
-        var message: String,
-    )
+    ): ResponseVO.ResponseBase
 }

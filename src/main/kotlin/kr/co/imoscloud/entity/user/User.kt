@@ -1,6 +1,7 @@
-package kr.co.imoscloud.entity
+package kr.co.imoscloud.entity.user
 
 import jakarta.persistence.*
+import kr.co.imoscloud.entity.CommonCol
 
 @Entity
 @Table(name = "USER")

@@ -3,13 +3,14 @@ package kr.co.imoscloud.service
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.controller.LoginController.LoginRequest
-import kr.co.imoscloud.entity.User
+import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.fetcher.UserFetcher.*
 import kr.co.imoscloud.iface.IUser
-import kr.co.imoscloud.repository.UserRepository
+import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.security.JwtTokenProvider
 import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.http.ResponseCookie
+import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
@@ -20,12 +21,16 @@ import java.util.*
 @Service
 class UserService(
     private val userRepo: UserRepository,
-    private val jwtProvider: JwtTokenProvider
+    private val jwtProvider: JwtTokenProvider,
 ): IUser {
 
-    fun signIn(loginReq: LoginRequest, request: HttpServletRequest, response: HttpServletResponse): UserOutput {
+    fun signIn(
+        loginReq: LoginRequest,
+        request: HttpServletRequest,
+        response: HttpServletResponse
+    ): ResponseEntity<UserOutput> {
         val site = getSiteByDomain(request)
-        return userRepo.findBySiteAndUserIdAndFlagActiveIsTrue(site, loginReq.userId)
+        val userRes = userRepo.findBySiteAndUserIdAndFlagActiveIsTrue(site, loginReq.userId)
             ?.let { user ->
                 try {
                     validateUser(loginReq.userPwd, user)
@@ -46,6 +51,8 @@ class UserService(
                 }
             }
             ?:throw IllegalArgumentException("유저가 존재하지 않습니다. ")
+
+        return userRes
     }
 
     fun signUp(req: UserInput, loginUser: UserPrincipal): User {

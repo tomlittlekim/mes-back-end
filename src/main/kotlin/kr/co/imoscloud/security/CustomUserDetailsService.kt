@@ -1,6 +1,6 @@
 package kr.co.imoscloud.security
 
-import kr.co.imoscloud.repository.UserRepository
+import kr.co.imoscloud.repository.user.UserRepository
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service

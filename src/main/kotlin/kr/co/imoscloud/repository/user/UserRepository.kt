@@ -1,6 +1,6 @@
-package kr.co.imoscloud.repository
+package kr.co.imoscloud.repository.user
 
-import kr.co.imoscloud.entity.User
+import kr.co.imoscloud.entity.user.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
@@ -14,4 +14,6 @@ interface UserRepository : JpaRepository<User, Long> {
             and u.site = :site
     """)
     fun findBySiteAndUserIdForSignUp(site: String, userId: String?): User?
+
+    fun findAllByIdIn(idList: List<Long>): List<User>
 } 

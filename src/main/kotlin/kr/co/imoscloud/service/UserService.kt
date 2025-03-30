@@ -2,9 +2,10 @@ package kr.co.imoscloud.service
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import kr.co.imoscloud.controller.LoginController.LoginRequest
+import kr.co.imoscloud.dto.LoginRequest
+import kr.co.imoscloud.dto.UserInput
+import kr.co.imoscloud.dto.UserOutput
 import kr.co.imoscloud.entity.user.User
-import kr.co.imoscloud.fetcher.UserFetcher.*
 import kr.co.imoscloud.iface.IUser
 import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.security.JwtTokenProvider

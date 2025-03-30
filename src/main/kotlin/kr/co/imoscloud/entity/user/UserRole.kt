@@ -19,7 +19,7 @@ class UserRole(
     val compCd: String,
 
     @Column(name = "PRIORITY_LEVEL", length = 20)
-    val priorityLevel: String? = null,
+    val priorityLevel: Int? = null,
 
     @Column(name = "ROLE_NAME", length = 100, nullable = false)
     val roleName: String,

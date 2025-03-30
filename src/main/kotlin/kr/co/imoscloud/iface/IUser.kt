@@ -2,8 +2,8 @@ package kr.co.imoscloud.iface
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletRequestWrapper
+import kr.co.imoscloud.dto.UserOutput
 import kr.co.imoscloud.entity.user.User
-import kr.co.imoscloud.fetcher.UserFetcher
 import org.springframework.http.ResponseEntity
 
 interface IUser: ResponseVO {
@@ -22,9 +22,10 @@ interface IUser: ResponseVO {
         }
     }
 
-    fun userToUserOutput(user: User?): ResponseEntity<UserFetcher.UserOutput> {
+    fun userToUserOutput(user: User?): ResponseEntity<UserOutput> {
         val output = user
-            ?.let { UserFetcher.UserOutput(
+            ?.let { UserOutput(
+                id = user.id,
                 userId = user.userId,
                 userNm = user.userName,
                 email = user.userEmail,
@@ -32,7 +33,8 @@ interface IUser: ResponseVO {
                 status = 200,
                 message = "${user.userId} 로그인 성공"
             )}
-            ?:run { UserFetcher.UserOutput(
+            ?:run { UserOutput(
+                id = -1,
                 status = 200,
                 message = "로그인 실패"
             )}

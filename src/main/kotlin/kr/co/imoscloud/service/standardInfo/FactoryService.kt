@@ -49,8 +49,8 @@ class FactoryService(
     @Transactional
     fun saveFactory(createdRows: List<FactoryInput?>, updatedRows:List<FactoryUpdate?>){
         //TODO 저장 ,수정시 공통 으로 작성자 ,작성일 ,수정자 ,수정일 변경 저장이 필요함
-        createFactory(createdRows)
-        updateFactory(updatedRows)
+        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {createFactory(it)}
+        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {updateFactory(it)}
     }
 
     fun createFactory(createdRows: List<FactoryInput?>){
@@ -58,7 +58,8 @@ class FactoryService(
 
         val factoryList = createdRows.map {
             Factory(
-                factoryId = "FAC" + LocalDateTime.now().format(formatter),
+                factoryId = "FAC" + LocalDateTime.now().format(formatter) +
+                        System.nanoTime().toString().takeLast(3),
                 site = "imos",
                 compCd = "eightPin",
                 factoryName = it?.factoryName,
@@ -75,14 +76,14 @@ class FactoryService(
     }
 
     fun updateFactory(updatedRows: List<FactoryUpdate?>){
-        val factoryListId = updatedRows.map {
+        val factoryListIds = updatedRows.map {
             it?.factoryId
         }
 
         val factoryList = factoryRep.getFactoryListByIds(
             site = "imos",
             compCd = "eightPin",
-            factoryIds = factoryListId
+            factoryIds = factoryListIds
         )
 
         val updateList = factoryList.associateBy { it?.factoryId }

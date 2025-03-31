@@ -1,6 +1,6 @@
 package kr.co.imoscloud.dto
 
-import kr.co.imoscloud.iface.DtoBase
+import kr.co.imoscloud.iface.*
 import kr.co.imoscloud.iface.ResponseVO.ResponseBase
 
 data class UserInput(
@@ -11,7 +11,7 @@ data class UserInput(
     var password: String?=null,
     var userNm: String?=null,
     var email: String?=null,
-    var roleId: String?=null,
+    var roleId: Long?=null,
     var phoneNum: String?=null,
     var departmentId: String?=null,
     var textarea: String?=null,
@@ -20,16 +20,27 @@ data class UserInput(
 data class UserOutput(
     override val status: Int,
     override val message: String,
-    override val id: Long,
-    var userId: String?=null,
+    override val userId: Long,
+    var loginId: String?=null,
     var userNm: String?=null,
     var email: String?=null,
-    var roleId: String?=null,
-): ResponseBase, DtoBase
+    override var roleId: Long,
+    var roleNm: String?=null,
+): ResponseBase, DtoUserIdBase, DtoRoleIdBase
 
 data class LoginRequest(val userId: String, val userPwd: String)
+
+data class RoleInput(
+    override val roleId: Long,
+): DtoRoleIdBase
 
 data class RoleSummery(
     val roleName: String,
     val priorityLevel: Int?,
 )
+
+data class TestAllInOneDto(
+    override val userId: Long,
+    override val roleId: Long,
+    override val compCd: String
+): DtoAllInOneBase

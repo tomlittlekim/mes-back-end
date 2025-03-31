@@ -1,5 +1,6 @@
 package kr.co.imoscloud.security
 
+import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.entity.user.User
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -12,6 +13,7 @@ class UserPrincipal(
     private val username: String?,
     private val userId: String,
     private val password: String,
+    private val roleId: Long,
     private val authorities: Collection<GrantedAuthority>
 ) : UserDetails {
 
@@ -33,18 +35,20 @@ class UserPrincipal(
     fun getCompCd(): String = compCd
     fun getUserId(): String = userId
     fun getId(): Long = id
+    fun getRoleId(): Long = roleId
 
     companion object {
-        fun create(user: User): UserPrincipal {
-            val authorities = listOf(SimpleGrantedAuthority(user.roleId))
+        fun create(user: User, role: RoleSummery): UserPrincipal {
+            val authorities = listOf(SimpleGrantedAuthority(role.roleName))
 
             return UserPrincipal(
                 id = user.id,
                 site = user.site,
                 compCd = user.compCd,
                 username = user.userName,
-                userId = user.userId,
+                userId = user.loginId,
                 password = user.userPwd,
+                roleId = user.roleId,
                 authorities = authorities
             )
         }

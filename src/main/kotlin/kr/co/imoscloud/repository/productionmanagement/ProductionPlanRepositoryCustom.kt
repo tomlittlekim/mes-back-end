@@ -1,6 +1,6 @@
 package kr.co.imoscloud.repository.productionmanagement
 
-import kr.co.imoscloud.service.productionmanagement.ProductionPlanResponseModel
+import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
 import java.time.LocalDate
 
 interface ProductionPlanRepositoryCustom {
@@ -11,6 +11,7 @@ interface ProductionPlanRepositoryCustom {
         orderId: String?,
         productId: String?,
         planStartDate: LocalDate?,
-        planEndDate: LocalDate?
-    ): List<ProductionPlanResponseModel?>
+        planEndDate: LocalDate?,
+        flagActive: Boolean?
+    ): List<ProductionPlan>
 }

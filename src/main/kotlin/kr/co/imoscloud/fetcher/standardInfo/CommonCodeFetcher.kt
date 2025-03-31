@@ -46,6 +46,11 @@ class CommonCodeFetcher(
         return commonCodeService.deleteCode(codeId)
     }
 
+    @DgsQuery
+    fun getGridCodes(@InputArgument("codeClassId") codeClassId: String): List<CodeResponse> {
+        return commonCodeService.getGridCodes(codeClassId)
+    }
+
 
 }
 

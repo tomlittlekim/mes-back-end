@@ -91,17 +91,7 @@ class CommonCodeService(
             codeClassId = codeClassId
         )
 
-        val result = codeList.map{
-            CodeResponse(
-                codeClassId = it?.codeClassId,
-                codeId = it?.codeId,
-                codeName = it?.codeName,
-                codeDesc = it?.codeDesc,
-                sortOrder = it?.sortOrder,
-                flagActive = if (it?.flagActive == true) "Y" else "N",
-                createUser = "syh"
-            )
-        }
+        val result = entityToResponse(codeList)
 
         return result
     }
@@ -169,6 +159,31 @@ class CommonCodeService(
             compCd = "eightPin",
             codeId
         ) > 0
+    }
+
+    fun getGridCodes(codeClassId: String):List<CodeResponse>{
+        val codeList = codeRep.getGridCodes(
+            site = "imos",
+            compCd = "eightPin",
+            codeClassId = codeClassId
+        )
+
+        val result = entityToResponse(codeList)
+
+        return result
+    }
+
+    private fun entityToResponse(codeList:List<Code?>): List<CodeResponse> {
+        return codeList.map{
+            CodeResponse(
+                codeClassId = it?.codeClassId,
+                codeId = it?.codeId,
+                codeName = it?.codeName,
+                codeDesc = it?.codeDesc,
+                sortOrder = it?.sortOrder,
+                flagActive = if (it?.flagActive == true) "Y" else "N",
+            )
+        }
     }
 
 }

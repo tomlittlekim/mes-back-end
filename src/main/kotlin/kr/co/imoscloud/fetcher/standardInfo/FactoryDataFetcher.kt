@@ -30,6 +30,11 @@ class FactoryDataFetcher(
         return factoryService.deleteFactory(factoryId)
     }
 
+    @DgsQuery
+    fun getGridFactory(): List<FactoryResponseModel> {
+        return factoryService.getGridFactory()
+    }
+
 }
 
 data class FactoryFilter(

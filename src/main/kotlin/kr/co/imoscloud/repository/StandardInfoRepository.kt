@@ -46,6 +46,20 @@ interface FactoryRep: JpaRepository<Factory,Long>{
         factoryIds:List<String?>
     ):List<Factory?>
 
+    @Query(
+        value = """
+            select f
+            from Factory f
+            where f.site = :site
+            and   f.compCd = :compCd
+            and   f.flagActive = true
+        """
+    )
+    fun getGridFactory(
+        site:String,
+        compCd:String
+    ):List<Factory?>
+
 
     @Transactional
     @Modifying
@@ -148,6 +162,22 @@ interface CodeRep: JpaRepository<Code,Long>{
         compCd:String,
         codeId: String
     ): Int
+
+    @Query(
+        value = """
+            select c
+            from Code c
+            where c.site = :site
+            and   c.compCd = :compCd
+            and   c.codeClassId = :codeClassId
+            and   c.flagActive = true
+        """
+    )
+    fun getGridCodes(
+        site:String,
+        compCd:String,
+        codeClassId:String
+    ):List<Code?>
 
 }
 

@@ -1,6 +1,7 @@
 package kr.co.imoscloud.service.standardInfo
 
 import jakarta.transaction.Transactional
+import kr.co.imoscloud.entity.standardInfo.Code
 import kr.co.imoscloud.entity.standardInfo.Factory
 import kr.co.imoscloud.fetcher.standardInfo.FactoryFilter
 import kr.co.imoscloud.fetcher.standardInfo.FactoryInput
@@ -27,21 +28,7 @@ class FactoryService(
             flagActive = filter.flagActive?.let { it == "Y" }
         )
 
-        val result  = factoryList.map {
-            FactoryResponseModel(
-                it?.factoryId,
-                it?.factoryName,
-                it?.factoryCode,
-                it?.address,
-                if (it?.flagActive == true) "Y" else "N",
-                it?.telNo,
-                it?.officerName,
-                it?.createUser,
-                it?.createDate.toString(),
-                it?.updateUser,
-                it?.updateDate.toString()
-            )
-        }
+        val result  = entityToResponse(factoryList)
 
         return result
     }
@@ -111,6 +98,33 @@ class FactoryService(
             compCd = "eightPin",
             factoryId = factoryId
         ) > 0
+    }
+
+    fun getGridFactory(): List<FactoryResponseModel> {
+        val factoryList = factoryRep.getGridFactory(
+            site = "imos",
+            compCd = "eightPin"
+        )
+
+        return entityToResponse(factoryList)
+    }
+
+    private fun entityToResponse(factoryList:List<Factory?>): List<FactoryResponseModel> {
+        return factoryList.map {
+            FactoryResponseModel(
+                it?.factoryId,
+                it?.factoryName,
+                it?.factoryCode,
+                it?.address,
+                if (it?.flagActive == true) "Y" else "N",
+                it?.telNo,
+                it?.officerName,
+                it?.createUser,
+                it?.createDate.toString(),
+                it?.updateUser,
+                it?.updateDate.toString()
+            )
+        }
     }
 
 }

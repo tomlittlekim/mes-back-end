@@ -44,6 +44,7 @@ type Factory {
 
 extend type Query {
     factories(filter:FactoryFilter): [Factory]
+    getGridFactory:[Factory]
 }
 
 extend type Mutation {

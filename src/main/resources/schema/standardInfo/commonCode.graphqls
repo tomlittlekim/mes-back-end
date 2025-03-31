@@ -54,6 +54,7 @@ type Code {
 extend type Query {
     getCodeClass(filter:CodeClassFilter): [CodeClass]
     getCodes(codeClassId:String!):[Code]
+    getGridCodes(codeClassId:String!):[Code]
 }
 
 extend type Mutation{

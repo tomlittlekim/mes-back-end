@@ -1,16 +1,16 @@
 package kr.co.imoscloud.repository.productionmanagement
 
-import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.QProductionPlan
-import kr.co.imoscloud.service.productionmanagement.ProductionPlanResponseModel
+import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
+import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
 class ProductionPlanRepositoryImpl(
     private val queryFactory: JPAQueryFactory
-) : ProductionPlanRepositoryCustom {
+) : ProductionPlanRepositoryCustom, QuerydslRepositorySupport(ProductionPlan::class.java) {
 
     override fun getProductionPlanList(
         site: String,
@@ -19,25 +19,13 @@ class ProductionPlanRepositoryImpl(
         orderId: String?,
         productId: String?,
         planStartDate: LocalDate?,
-        planEndDate: LocalDate?
-    ): List<ProductionPlanResponseModel?> {
+        planEndDate: LocalDate?,
+        flagActive: Boolean?
+    ): List<ProductionPlan> {
         val productionPlan = QProductionPlan.productionPlan
 
         val query = queryFactory
-            .select(
-                Projections.constructor(
-                    ProductionPlanResponseModel::class.java,
-                    productionPlan.site,
-                    productionPlan.compCd,
-                    productionPlan.prodPlanId,
-                    productionPlan.orderId,
-                    productionPlan.productId,
-                    productionPlan.planQty,
-                    productionPlan.planStartDate,
-                    productionPlan.planEndDate
-                )
-            )
-            .from(productionPlan)
+            .selectFrom(productionPlan)
             .where(
                 productionPlan.site.eq(site),
                 productionPlan.compCd.eq(compCd)
@@ -74,6 +62,11 @@ class ProductionPlanRepositoryImpl(
         planEndDate?.let {
             val endOfDay = LocalDateTime.of(it, LocalTime.MAX)
             query.where(productionPlan.planEndDate.loe(endOfDay))
+        }
+
+        // flagActive 필터링
+        flagActive?.let {
+            query.where(productionPlan.flagActive.eq(it))
         }
 
         return query.fetch()

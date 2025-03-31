@@ -3,6 +3,7 @@ package kr.co.imoscloud.core
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.entity.user.UserRole
+import kr.co.imoscloud.repository.company.CompanyRepository
 import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.repository.user.UserRoleRepository
 import org.springframework.stereotype.Component
@@ -10,8 +11,9 @@ import org.springframework.stereotype.Component
 @Component
 class Core(
     userRepo: UserRepository,
-    roleRepo: UserRoleRepository
-): AbstractInitialSetting(userRepo, roleRepo) {
+    roleRepo: UserRoleRepository,
+    companyRepo: CompanyRepository,
+): AbstractInitialSetting(userRepo, roleRepo, companyRepo) {
     override fun getAllUsersDuringInspection(indies: List<Long>): MutableMap<Long, String?> {
         val userList: List<User> = if (indies.size == 1) {
             userRepo.findById(indies.first()).map(::listOf)!!.orElseGet { emptyList<User>() }

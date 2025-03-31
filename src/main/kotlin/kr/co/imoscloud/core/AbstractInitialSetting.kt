@@ -4,6 +4,7 @@ import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.entity.user.UserRole
 import kr.co.imoscloud.iface.DtoBase
+import kr.co.imoscloud.repository.company.CompanyRepository
 import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.repository.user.UserRoleRepository
 import org.springframework.scheduling.annotation.Scheduled
@@ -11,13 +12,17 @@ import java.util.concurrent.ConcurrentHashMap
 
 abstract class AbstractInitialSetting(
     val userRepo: UserRepository,
-    val roleRepo: UserRoleRepository
+    val roleRepo: UserRoleRepository,
+    val companyRepo: CompanyRepository,
 ) {
     companion object {
         private var userMap: MutableMap<Long, String?> = ConcurrentHashMap()
         private var roleMap: MutableMap<Long, RoleSummery?> = ConcurrentHashMap()
+        private var companyMap: MutableMap<Long, String?> = ConcurrentHashMap()
+
         private var upsertUserQue: MutableMap<Long, String?> = ConcurrentHashMap()
         private var upsertRoleQue: MutableMap<Long, RoleSummery?> = ConcurrentHashMap()
+        private var upsertCompanyQue: MutableMap<Long, String?> = ConcurrentHashMap()
 
         private var isInspect: Boolean = false
             set(value) {

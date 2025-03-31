@@ -62,21 +62,21 @@ abstract class AbstractInitialSetting(
 
     fun <T: DtoUserIdBase> getAllUserMap(req: List<T>): MutableMap<Long, String?> {
         return if (getIsInspect()) {
-            val indies = extractIdFromRequest(req)
+            val indies = extractUserIdFromRequest(req)
             getAllUsersDuringInspection(indies)
         } else userMap
     }
 
     fun <T: DtoRoleIdBase>  getAllRoleMap(req: List<T>): MutableMap<Long, RoleSummery?> {
         return if (getIsInspect()) {
-            val indies = extractIdFromRequest(req)
+            val indies = extractRoleIdFromRequest(req)
             getAllRolesDuringInspection(indies)
         } else roleMap
     }
 
     fun <T: DtoCompCdBase>  getAllCompanyMap(req: List<T>): MutableMap<String, CompanySummery?> {
         return if (getIsInspect()) {
-            val indies = extractIdFromRequest(req)
+            val indies = extractCompCdFromRequest(req)
             getAllCompanyDuringInspection(indies)
         } else companyMap
     }
@@ -119,22 +119,22 @@ abstract class AbstractInitialSetting(
         groupMap
     }
 
-    private fun <T: DtoUserIdBase> extractIdFromRequest(req: List<T>): List<Long> {
+    private fun <T: DtoUserIdBase> extractUserIdFromRequest(req: List<T>): List<Long> {
         if (req.isEmpty()) throw IllegalArgumentException("Request is empty")
         return req.map { it.userId }
     }
 
-    private fun <T: DtoRoleIdBase> extractIdFromRequest(req: List<T>): List<Long> {
+    private fun <T: DtoRoleIdBase> extractRoleIdFromRequest(req: List<T>): List<Long> {
         if (req.isEmpty()) throw IllegalArgumentException("Request is empty")
         return req.map { it.roleId }
     }
 
-    private fun <T: DtoCompCdBase> extractIdFromRequest(req: List<T>): List<String> {
+    private fun <T: DtoCompCdBase> extractCompCdFromRequest(req: List<T>): List<String> {
         if (req.isEmpty()) throw IllegalArgumentException("Request is empty")
         return req.map { it.compCd }
     }
 
-    private fun <T> extractIdFromRequest(req: List<T>): Map<String, List<Any>> {
+    private fun <T> extractAllFromRequest(req: List<T>): Map<String, List<Any>> {
         val userIdList = mutableListOf<Long>()
         val roleIdList = mutableListOf<Long>()
         val companyIdList = mutableListOf<String>()

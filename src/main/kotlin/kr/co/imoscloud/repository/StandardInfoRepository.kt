@@ -171,6 +171,7 @@ interface CodeRep: JpaRepository<Code,Long>{
             and   c.compCd = :compCd
             and   c.codeClassId = :codeClassId
             and   c.flagActive = true
+            order by c.sortOrder
         """
     )
     fun getGridCodes(

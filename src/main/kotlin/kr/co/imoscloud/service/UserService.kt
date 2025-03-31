@@ -2,9 +2,8 @@ package kr.co.imoscloud.service
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import kr.co.imoscloud.dto.LoginRequest
-import kr.co.imoscloud.dto.UserInput
-import kr.co.imoscloud.dto.UserOutput
+import kr.co.imoscloud.core.Core
+import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.iface.IUser
 import kr.co.imoscloud.repository.user.UserRepository
@@ -23,6 +22,7 @@ import java.util.*
 class UserService(
     private val userRepo: UserRepository,
     private val jwtProvider: JwtTokenProvider,
+    private val core: Core
 ): IUser {
 
     fun signIn(
@@ -31,24 +31,26 @@ class UserService(
         response: HttpServletResponse
     ): ResponseEntity<UserOutput> {
         val site = getSiteByDomain(request)
-        val userRes = userRepo.findBySiteAndUserIdAndFlagActiveIsTrue(site, loginReq.userId)
+        val userRes = userRepo.findBySiteAndLoginIdAndFlagActiveIsTrue(site, loginReq.userId)
             ?.let { user ->
                 try {
                     validateUser(loginReq.userPwd, user)
-                    val userDetails = UserPrincipal.create(user)
+                    val roleSummery = core.getUserRoleFromInMemory(user)
+                    val userDetails = UserPrincipal.create(user, roleSummery)
                     val userPrincipal = UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
                     val token = jwtProvider.createToken(userPrincipal)
+
                     val cookie = ResponseCookie.from(jwtProvider.ACCESS, token)
                         .path("/")
                         .maxAge(jwtProvider.tokenValidityInMilliseconds)
                         .httpOnly(true)
                         .build()
-                    
                     response.addHeader("Set-Cookie", cookie.toString())
-                    userToUserOutput(user)
+
+                    userToUserOutput(user, roleSummery)
                 } catch (e: IllegalArgumentException) {
                     // 비밀번호 불일치 관련 로직 Redis 를 이용한 추가 계발 필요
-                    userToUserOutput(null)
+                    userToUserOutput()
                 }
             }
             ?:throw IllegalArgumentException("유저가 존재하지 않습니다. ")
@@ -61,7 +63,7 @@ class UserService(
 
         val modifyReq = modifyReqByRole(loginUser, req)
         val newUser = try {
-            val target = userRepo.findBySiteAndUserIdForSignUp(modifyReq.site!!, modifyReq.userId)!!
+            val target = userRepo.findBySiteAndLoginIdForSignUp(modifyReq.site!!, modifyReq.userId)!!
             if (target.flagActive == false) target.apply { flagActive = true; createCommonCol(loginUser) }
             else throw IllegalArgumentException("이미 존재하는 유저입니다. ")
         } catch (e: NullPointerException) {
@@ -97,9 +99,9 @@ class UserService(
         return User(
             site = req.site!!,
             compCd = req.compCd!!,
-            userId = req.userId ?: (uuid.substring(0, 7) + formatter.format(today)),
+            loginId = req.userId ?: (uuid.substring(0, 7) + formatter.format(today)),
             userPwd = passwordEncoder.encode(pwd),
-            roleId = req.roleId
+            roleId = req.roleId!!
         )
     }
 

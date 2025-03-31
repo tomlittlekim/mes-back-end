@@ -5,15 +5,17 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
 interface UserRepository : JpaRepository<User, Long> {
-    fun findBySiteAndUserIdAndFlagActiveIsTrue(site: String, userId: String): User?
+    fun findBySiteAndLoginIdAndFlagActiveIsTrue(site: String, userId: String): User?
 
-    @Query("""
+    @Query(
+        """
         select u
         from User u 
-        where (:userId is not null and u.userId = :userId)
+        where (:loginId is not null and u.loginId = :loginId)
             and u.site = :site
-    """)
-    fun findBySiteAndUserIdForSignUp(site: String, userId: String?): User?
+    """
+    )
+    fun findBySiteAndLoginIdForSignUp(site: String, loginId: String?): User?
 
     fun findAllByIdIn(idList: List<Long>): List<User>
 } 

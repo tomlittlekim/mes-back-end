@@ -2,6 +2,7 @@ package kr.co.imoscloud.iface
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletRequestWrapper
+import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserOutput
 import kr.co.imoscloud.entity.user.User
 import org.springframework.http.ResponseEntity
@@ -22,19 +23,21 @@ interface IUser: ResponseVO {
         }
     }
 
-    fun userToUserOutput(user: User?): ResponseEntity<UserOutput> {
+    fun userToUserOutput(user: User?=null, role: RoleSummery?=null): ResponseEntity<UserOutput> {
         val output = user
             ?.let { UserOutput(
-                id = user.id,
-                userId = user.userId,
+                userId = user.id,
+                loginId = user.loginId,
                 userNm = user.userName,
                 email = user.userEmail,
                 roleId = user.roleId,
+                roleNm = role?.roleName,
                 status = 200,
-                message = "${user.userId} 로그인 성공"
+                message = "${user.loginId} 로그인 성공"
             )}
             ?:run { UserOutput(
-                id = -1,
+                userId = -1,
+                roleId = -1,
                 status = 200,
                 message = "로그인 실패"
             )}

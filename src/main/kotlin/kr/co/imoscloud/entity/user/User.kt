@@ -20,8 +20,8 @@ class User(
     @Column(name = "USER_NAME", length = 20)
     val userName: String? = null,
 
-    @Column(name = "USER_ID", length = 100, unique = true)
-    val userId: String,
+    @Column(name = "LOGIN_ID", length = 100, unique = true)
+    val loginId: String,
 
     @Column(name = "USER_PWD", length = 100)
     val userPwd: String,
@@ -30,7 +30,7 @@ class User(
     val imagePath: String? = null,
 
     @Column(name = "ROLE_ID", length = 20)
-    val roleId: String? = null,
+    val roleId: Long,
 
     @Column(name = "USER_EMAIL", length = 20)
     val userEmail: String? = null,

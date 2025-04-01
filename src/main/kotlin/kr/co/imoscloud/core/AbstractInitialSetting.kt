@@ -124,6 +124,12 @@ abstract class AbstractInitialSetting(
         if (isInspect) upsertCompanyQue[company.compCd] = summery
         else companyMap[company.compCd] = summery
     }
+    fun upsertMenuRoleFromInMemory(mr: MenuRole) {
+        val index = "${mr.roleId}-${mr.menuId}"
+        val encoded = encodeMenuRolePermissions(mr)
+        if (isInspect) upsertMenuRoleQue[index] = encoded
+        else menuRoleMap[index] = encoded
+    }
 
     @Scheduled(cron = "0 0 */2 * * *")
     private fun inspection() {

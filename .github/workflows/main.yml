@@ -36,23 +36,23 @@ jobs:
       - java_build
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: executing remote ssh commands using ssh key
-      uses: appleboy/ssh-action@v1
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        port: ${{ secrets.PORT }}
-        script: |
+      - name: SSH into server and execute commands
+      - run: |
+          echo "${{ secrets.KEY }}" > my_ec2_key.pem
+          chmod 600 my_ec2_key.pem
+          ssh -o StrictHostKeyChecking=no -i my_ec2_key.pem ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
+    
           docker stop springboot || true
           docker rm springboot || true
           docker pull 8pin/imos:springboot
+          
           docker run -d \
             --name springboot \
             --network imosNetwork \
             -p 8080:8080 \
             8pin/imos:springboot
           docker system prune -a -f
+          EOF

@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  react_build:
+  java_build:
     runs-on: ubuntu-latest
     
     steps:
@@ -33,7 +33,7 @@ jobs:
   deploy:
     runs-on: [self-hosted, terbotForAWS]
     needs:
-      - react_build
+      - java_build
 
     steps:
     - name: Checkout code

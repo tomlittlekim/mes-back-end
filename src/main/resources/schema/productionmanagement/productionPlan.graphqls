@@ -1,0 +1,54 @@
+extend type Query {
+    productionPlans(filter: ProductionPlanFilter): [ProductionPlan]!
+}
+
+extend type Mutation {
+    saveProductionPlan(createdRows: [ProductionPlanInput], updatedRows: [ProductionPlanUpdate]): Boolean
+    deleteProductionPlan(prodPlanId: String!): Boolean
+}
+
+input ProductionPlanFilter {
+    prodPlanId: String
+    orderId: String
+    productId: String
+    planStartDate: String
+    planEndDate: String
+    flagActive: Boolean
+}
+
+type ProductionPlan {
+    id: Int
+    site: String
+    compCd: String
+    prodPlanId: String
+    orderId: String
+    productId: String
+    planQty: Float
+    planStartDate: String
+    planEndDate: String
+    createDate: String
+    createUser: String
+    updateDate: String
+    updateUser: String
+    flagActive: Boolean
+    workOrders: [WorkOrder]
+}
+
+input ProductionPlanInput {
+    orderId: String
+    productId: String
+    planQty: Float
+    planStartDate: String
+    planEndDate: String
+    flagActive: Boolean
+}
+
+input ProductionPlanUpdate {
+    prodPlanId: String!
+    orderId: String
+    productId: String
+    planQty: Float
+    planStartDate: String
+    planEndDate: String
+    flagActive: Boolean
+}

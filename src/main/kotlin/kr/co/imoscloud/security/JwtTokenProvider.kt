@@ -1,11 +1,15 @@
 package kr.co.imoscloud.security
 
-import io.jsonwebtoken.*
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.MalformedJwtException
+import io.jsonwebtoken.UnsupportedJwtException
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
+import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.crypto.SecretKey
 
@@ -17,21 +21,23 @@ class JwtTokenProvider(
     private lateinit var secretKey: String
 
     @Value("\${jwt.token-validity-in-milliseconds}")
-    private var tokenValidityInMilliseconds: Long = 0
+    var tokenValidityInMilliseconds: Long = 0
 
-    private lateinit var key: SecretKey
-
-    fun init() {
-        key = Keys.hmacShaKeyFor(secretKey.toByteArray())
+    private val key: SecretKey by lazy {
+        Keys.hmacShaKeyFor(secretKey.toByteArray(StandardCharsets.UTF_8))
     }
+
+    val ACCESS = "access-token"
+    val REFRESH = "refresh_token"
 
     fun createToken(authentication: Authentication): String {
         val authorities = authentication.authorities.joinToString(",") { it.authority }
         val now = Date()
         val validity = Date(now.time + tokenValidityInMilliseconds)
+        val userId = (authentication.principal as UserPrincipal).getUserId()
 
         return Jwts.builder()
-            .setSubject(authentication.name)
+            .setSubject(userId)
             .claim("auth", authorities)
             .setIssuedAt(now)
             .setExpiration(validity)

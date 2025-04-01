@@ -1,0 +1,58 @@
+input MaterialFilter {
+    materialType: String
+    systemMaterialId: String
+    userMaterialId: String
+    materialName: String
+    flagActive: String
+    fromDate: String
+    toDate: String
+}
+
+type Material {
+    seq: Int
+    materialType: String
+    systemMaterialId: String
+    userMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    manufacturerName: String
+    supplierName: String
+    materialStorage: String
+    flagActive: String
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+
+extend type Query {
+    materials(filter: MaterialFilter): [Material]
+}
+
+extend type Mutation {
+    saveMaterials(materials: [MaterialInput!]!): [Material]
+    deleteMaterials(ids: [String!]!): Boolean
+}
+
+input MaterialInput {
+    seq: Int
+    materialType: String!
+    systemMaterialId: String
+    userMaterialId: String
+    materialName: String!
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    manufacturerName: String
+    supplierName: String
+    materialStorage: String
+    flagActive: String
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+} 

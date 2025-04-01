@@ -1,0 +1,55 @@
+input VendorFilter {
+    vendorId: String!,
+    vendorName: String!,
+    ceoName: String!,
+    businessType: String!,
+    flagActive: String,
+}
+
+input VendorInput {
+    vendorName: String
+    vendorType: String
+    businessRegNo: String
+    ceoName: String
+    businessType: String
+    address: String
+    telNo: String
+    flagActive: String
+}
+
+input VendorUpdate {
+    vendorId: String
+    vendorName: String
+    vendorType: String
+    businessRegNo: String
+    ceoName: String
+    businessType: String
+    address: String
+    telNo: String
+    flagActive: String
+}
+
+type Vendor {
+    vendorId: String
+    vendorName: String
+    vendorType: String
+    businessRegNo: String
+    ceoName: String
+    businessType: String
+    address: String
+    telNo: String
+    flagActive:String
+    createUser:String
+    createDate:String
+    updateUser:String
+    updateDate:String
+}
+
+extend type Query {
+    getVendors(filter:VendorFilter): [Vendor]
+}
+
+extend type Mutation {
+    saveVendor(createdRows: [VendorInput], updatedRows: [VendorUpdate] ): Boolean
+    deleteVendor(vendorId:String!):Boolean
+}

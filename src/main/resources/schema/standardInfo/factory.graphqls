@@ -1,0 +1,53 @@
+# schema.graphqls
+type Query
+type Mutation
+
+input FactoryFilter {
+    factoryId: String!,
+    factoryName: String!,
+    factoryCode: String!,
+    flagActive: String,
+}
+
+input FactoryInput {
+    factoryName: String
+    factoryCode: String
+    address: String
+    telNo: String
+    officerName: String
+    flagActive: String
+}
+
+input FactoryUpdate {
+    factoryId: String
+    factoryName: String
+    factoryCode: String
+    address: String
+    telNo: String
+    officerName: String
+    flagActive: String
+}
+
+type Factory {
+    factoryId: String
+    factoryName: String
+    factoryCode: String
+    address: String
+    telNo: String
+    officerName: String
+    flagActive:String
+    createUser:String
+    createDate:String
+    updateUser:String
+    updateDate:String
+}
+
+extend type Query {
+    factories(filter:FactoryFilter): [Factory]
+    getGridFactory:[Factory]
+}
+
+extend type Mutation {
+    saveFactory(createdRows: [FactoryInput], updatedRows: [FactoryUpdate] ): Boolean
+    deleteFactory(factoryId: String!): Boolean!
+}

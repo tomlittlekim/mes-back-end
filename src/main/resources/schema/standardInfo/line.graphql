@@ -1,0 +1,47 @@
+
+input LineFilter {
+    factoryId: String!,
+    factoryName: String!,
+    factoryCode: String!,
+    lineId: String!,
+    lineName: String!,
+    flagActive: String,
+}
+
+input LineInput {
+    factoryId: String
+    lineName: String
+    lineDesc: String
+    flagActive: String
+}
+
+input LineUpdate {
+    lineId:String
+    factoryId: String
+    lineName: String
+    lineDesc: String
+    flagActive: String
+}
+
+type Line{
+    factoryId: String
+    factoryName: String
+    factoryCode: String
+    lineId: String
+    lineName: String
+    lineDesc: String
+    flagActive: String
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+
+extend type Query {
+    getLines(filter:LineFilter): [Line]
+}
+
+extend type Mutation {
+    saveLine(createdRows: [LineInput], updatedRows: [LineUpdate] ): Boolean
+    deleteLine(lineId:String!):Boolean
+}

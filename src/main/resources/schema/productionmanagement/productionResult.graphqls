@@ -1,0 +1,63 @@
+extend type Query {
+    productionResults(filter: ProductionResultFilter): [ProductionResult]!
+    productionResultsByWorkOrderId(workOrderId: String!): [ProductionResult]!
+    workOrdersWithProductionResults(filter: WorkOrderFilter): [WorkOrder]!
+}
+
+extend type Mutation {
+    saveProductionResult(createdRows: [ProductionResultInput], updatedRows: [ProductionResultUpdate]): Boolean
+    deleteProductionResult(prodResultId: String!): Boolean
+}
+
+input ProductionResultFilter {
+    workOrderId: String
+    prodResultId: String
+    equipmentId: String
+    flagActive: Boolean
+}
+
+type ProductionResult {
+    id: Int
+    site: String
+    compCd: String
+    workOrderId: String
+    prodResultId: String
+    goodQty: Float
+    defectQty: Float
+    progressRate: String
+    defectRate: String
+    equipmentId: String
+    resultInfo: String
+    defectCause: String
+    createDate: String
+    createUser: String
+    updateDate: String
+    updateUser: String
+    flagActive: Boolean
+    workOrder: WorkOrder
+}
+
+input ProductionResultInput {
+    workOrderId: String
+    goodQty: Float
+    defectQty: Float
+    equipmentId: String
+    resultInfo: String
+    defectCause: String
+    flagActive: Boolean
+}
+
+input ProductionResultUpdate {
+    prodResultId: String!
+    workOrderId: String
+    goodQty: Float
+    defectQty: Float
+    equipmentId: String
+    resultInfo: String
+    defectCause: String
+    flagActive: Boolean
+}
+
+extend type WorkOrder {
+    productionResults: [ProductionResult]
+}

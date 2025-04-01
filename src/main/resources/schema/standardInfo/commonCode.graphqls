@@ -1,0 +1,64 @@
+input CodeClassFilter {
+    codeClassId: String,
+    codeClassName: String
+}
+
+input CodeClassInput {
+    codeClassName: String,
+    codeClassDesc: String
+}
+
+input CodeClassUpdate {
+    codeClassId: String,
+    codeClassName: String,
+    codeClassDesc: String
+}
+
+input CodeInput {
+    codeClassId:String,
+    codeName:String,
+    codeDesc:String,
+    sortOrder:Int,
+    flagActive:String
+}
+
+input CodeUpdate{
+    codeClassId:String,
+    codeId:String,
+    codeName:String,
+    codeDesc:String,
+    sortOrder:Int,
+    flagActive:String,
+}
+
+type CodeClass {
+    codeClassId: String,
+    codeClassName: String
+    codeClassDesc: String
+}
+
+type Code {
+    codeClassId: String,
+    codeId: String,
+    codeName: String,
+    codeDesc: String,
+    sortOrder: Int,
+    flagActive: String,
+    createUser: String,
+    createDate: String,
+    updateUser: String,
+    updateDate: String
+}
+
+
+extend type Query {
+    getCodeClass(filter:CodeClassFilter): [CodeClass]
+    getCodes(codeClassId:String!):[Code]
+    getGridCodes(codeClassId:String!):[Code]
+}
+
+extend type Mutation{
+    saveCodeClass(createdRows: [CodeClassInput], updatedRows: [CodeClassUpdate] ): Boolean
+    saveCode(createdRows: [CodeInput], updatedRows: [CodeUpdate]): Boolean
+    deleteCode(codeId: String!): Boolean!
+}

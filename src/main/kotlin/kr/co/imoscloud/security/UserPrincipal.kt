@@ -1,14 +1,19 @@
 package kr.co.imoscloud.security
 
+import kr.co.imoscloud.dto.RoleSummery
+import kr.co.imoscloud.entity.user.User
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 class UserPrincipal(
     private val id: Long,
-    private val username: String,
+    private val site: String,
+    private val compCd: String,
+    private val username: String?,
     private val userId: String,
     private val password: String,
+    private val roleId: Long,
     private val authorities: Collection<GrantedAuthority>
 ) : UserDetails {
 
@@ -16,7 +21,7 @@ class UserPrincipal(
 
     override fun getPassword(): String = password
 
-    override fun getUsername(): String = username
+    override fun getUsername(): String? = username
 
     override fun isAccountNonExpired(): Boolean = true
 
@@ -26,17 +31,24 @@ class UserPrincipal(
 
     override fun isEnabled(): Boolean = true
 
+    fun getSite(): String = site
+    fun getCompCd(): String = compCd
     fun getUserId(): String = userId
+    fun getId(): Long = id
+    fun getRoleId(): Long = roleId
 
     companion object {
-        fun create(user: kr.co.imoscloud.entity.User): UserPrincipal {
-            val authorities = listOf(SimpleGrantedAuthority(user.roleId))
+        fun create(user: User, role: RoleSummery): UserPrincipal {
+            val authorities = listOf(SimpleGrantedAuthority(role.roleName))
 
             return UserPrincipal(
                 id = user.id,
+                site = user.site,
+                compCd = user.compCd,
                 username = user.userName,
-                userId = user.userId,
+                userId = user.loginId,
                 password = user.userPwd,
+                roleId = user.roleId,
                 authorities = authorities
             )
         }

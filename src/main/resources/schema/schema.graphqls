@@ -1,0 +1,48 @@
+type User {
+    id: ID!
+    site: String!
+    compCd: String!
+    userName: String
+    userId: String!
+    userPwd: String!
+    imagePath: String
+    roleId: String
+    userEmail: String
+    phoneNum: String
+    departmentId: String
+    textArea: String
+    isLock: Boolean!
+    createdAt: String!
+    updatedAt: String!
+}
+
+input UserInput {
+    site: String
+    compCd: String
+    userName: String
+    userId: String
+    userPwd: String
+    imagePath: String
+    roleId: String
+    userEmail: String
+    phoneNum: String
+    departmentId: String
+    textArea: String
+}
+
+type UserOutput {
+    userId: String
+    userNm: String
+    email: String
+    roleId: String
+    status: String!
+    message: String!
+}
+
+extend type Mutation {
+    signUp(input: UserInput!): User!
+}
+
+extend type Query {
+    signIn(input: UserInput!): UserOutput!
+}

@@ -2,7 +2,6 @@ package kr.co.imoscloud.service.standardInfo
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.standardInfo.Line
-import kr.co.imoscloud.entity.standardInfo.Vendor
 import kr.co.imoscloud.fetcher.standardInfo.LineFilter
 import kr.co.imoscloud.fetcher.standardInfo.LineInput
 import kr.co.imoscloud.fetcher.standardInfo.LineUpdate

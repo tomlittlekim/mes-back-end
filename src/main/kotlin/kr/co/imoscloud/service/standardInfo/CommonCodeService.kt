@@ -3,7 +3,6 @@ package kr.co.imoscloud.service.standardInfo
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.standardInfo.Code
 import kr.co.imoscloud.entity.standardInfo.CodeClass
-import kr.co.imoscloud.entity.standardInfo.Factory
 import kr.co.imoscloud.fetcher.standardInfo.*
 import kr.co.imoscloud.repository.CodeClassRep
 import kr.co.imoscloud.repository.CodeRep

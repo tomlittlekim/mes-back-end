@@ -5,8 +5,7 @@ import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter
 import kr.co.imoscloud.model.productionmanagement.ProductionResultInput
 import kr.co.imoscloud.model.productionmanagement.ProductionResultUpdate
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
-import kr.co.imoscloud.security.UserPrincipal
-import org.springframework.security.core.context.SecurityContextHolder
+import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import org.springframework.stereotype.Service
 
 @Service
@@ -136,14 +135,4 @@ class ProductionResultService(
         }
     }
 
-    private fun getCurrentUserPrincipal(): UserPrincipal {
-        val authentication = SecurityContextHolder.getContext().authentication
-
-        if (authentication != null && authentication.isAuthenticated && authentication.principal is UserPrincipal) {
-            return authentication.principal as UserPrincipal
-        }
-
-        // 인증 정보가 없거나 UserPrincipal이 아닌 경우 예외 처리
-        throw SecurityException("현재 인증된 사용자 정보를 찾을 수 없습니다.")
-    }
 }

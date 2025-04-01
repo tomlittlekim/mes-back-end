@@ -1,7 +1,6 @@
 package kr.co.imoscloud.service.standardInfo
 
 import jakarta.transaction.Transactional
-import kr.co.imoscloud.entity.standardInfo.Code
 import kr.co.imoscloud.entity.standardInfo.Factory
 import kr.co.imoscloud.fetcher.standardInfo.FactoryFilter
 import kr.co.imoscloud.fetcher.standardInfo.FactoryInput

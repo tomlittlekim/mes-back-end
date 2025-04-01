@@ -2,7 +2,6 @@ package kr.co.imoscloud.entity.productionmanagement
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "WORK_ORDER")

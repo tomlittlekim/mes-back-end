@@ -2,7 +2,6 @@ package kr.co.imoscloud.entity.company
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity

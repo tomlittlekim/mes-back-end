@@ -119,3 +119,117 @@ data class ProductionResultUpdate(
     val defectCause: String? = null,
     val flagActive: Boolean? = null
 )
+
+/**
+ * 생산실적 조회 필터
+ */
+data class ProductionResultInquiryFilter(
+    val workOrderId: String? = null,
+    val prodResultId: String? = null,
+    val productId: String? = null,
+    val equipmentId: String? = null,
+    val fromDate: LocalDate? = null,
+    val toDate: LocalDate? = null,
+    val status: String? = null,
+    val flagActive: Boolean? = true
+)
+
+/**
+ * 생산실적 요약 DTO
+ */
+data class ProductionResultSummaryDto(
+    val id: Int? = null,
+    val prodResultId: String? = null,
+    val workOrderId: String? = null,
+    val productId: String? = null,
+    val productName: String? = null,
+    val equipmentId: String? = null,
+    val equipmentName: String? = null,
+    val productionDate: String? = null,
+    val planQuantity: Double? = null,
+    val actualQuantity: Double? = null,
+    val defectQuantity: Double? = null,
+    val progressRate: String? = null,
+    val defectRate: String? = null,
+    val worker: String? = null,
+    val status: String? = null,
+    val createDate: String? = null,
+    val updateDate: String? = null
+)
+
+/**
+ * 생산실적 상세 DTO
+ */
+data class ProductionResultInquiryDto(
+    val id: Int? = null,
+    val prodResultId: String? = null,
+    val workOrderId: String? = null,
+    val productId: String? = null,
+    val productName: String? = null,
+    val factoryId: String? = null,
+    val factoryName: String? = null,
+    val lineId: String? = null,
+    val lineName: String? = null,
+    val equipmentId: String? = null,
+    val equipmentName: String? = null,
+    val productionDate: String? = null,
+    val planQuantity: Double? = null,
+    val goodQuantity: Double? = null,
+    val defectQuantity: Double? = null,
+    val inputAmount: Double? = null,
+    val outputAmount: Double? = null,
+    val yieldRate: String? = null,
+    val productionTime: String? = null,
+    val startTime: String? = null,
+    val endTime: String? = null,
+    val worker: String? = null,
+    val supervisor: String? = null,
+    val progressRate: String? = null,
+    val defectRate: String? = null,
+    val status: String? = null,
+    val defectCause: String? = null,
+    val resultInfo: String? = null,
+    val createDate: String? = null,
+    val updateDate: String? = null,
+    val createUser: String? = null,
+    val updateUser: String? = null
+)
+
+/**
+ * 통계 데이터 클래스들
+ */
+data class ProductionStatisticsDto(
+    val fromDate: String,
+    val toDate: String,
+    val totalPlanQty: Double,
+    val totalGoodQty: Double,
+    val totalDefectQty: Double,
+    val achievementRate: String,
+    val defectRate: String,
+    val dailyStats: List<ProductionDailyStat>,
+    val productStats: List<ProductionProductStat>
+)
+
+data class ProductionDailyStat(
+    val date: String,
+    var planQty: Double,
+    var goodQty: Double,
+    var defectQty: Double
+)
+
+data class ProductionProductStat(
+    val productId: String,
+    val productName: String,
+    var planQty: Double,
+    var goodQty: Double,
+    var defectQty: Double
+)
+
+data class ProductionEquipmentStat(
+    val equipmentId: String,
+    val equipmentName: String,
+    var goodQty: Double,
+    var defectQty: Double,
+    var totalQty: Double,
+    var defectRate: String
+)

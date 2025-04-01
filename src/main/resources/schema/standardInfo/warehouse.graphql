@@ -1,0 +1,44 @@
+input WarehouseFilter{
+    factoryId:String!,
+    factoryName:String!
+    warehouseId:String!
+    warehouseName:String!
+    flagActive:String
+}
+
+input WarehouseInput{
+    factoryId:String!
+    warehouseName:String
+    warehouseType:String
+    flagActive:String
+}
+
+input WarehouseUpdate{
+    warehouseId:String
+    factoryId:String!
+    warehouseName:String
+    warehouseType:String
+    flagActive:String
+}
+
+type Warehouse{
+    factoryId: String
+    factoryName: String
+    warehouseId: String
+    warehouseName: String
+    warehouseType: String
+    flagActive:String
+    createUser:String
+    createDate:String
+    updateUser:String
+    updateDate:String
+}
+
+extend type Query {
+    getWarehouse(filter:WarehouseFilter): [Warehouse]
+}
+
+extend type Mutation {
+    saveWarehouse(createdRows: [WarehouseInput], updatedRows: [WarehouseUpdate] ): Boolean
+    deleteWarehouse(warehouseId: String!):Boolean
+}

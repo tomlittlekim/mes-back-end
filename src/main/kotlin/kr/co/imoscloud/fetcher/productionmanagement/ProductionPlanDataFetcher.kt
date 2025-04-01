@@ -1,20 +1,15 @@
 // ProductionPlanDataFetcher.kt
 package kr.co.imoscloud.fetcher.productionmanagement
 
-import com.netflix.graphql.dgs.DgsComponent
-import com.netflix.graphql.dgs.DgsData
-import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
-import com.netflix.graphql.dgs.DgsQuery
-import com.netflix.graphql.dgs.InputArgument
+import com.netflix.graphql.dgs.*
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
-import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
-import org.springframework.security.core.context.SecurityContextHolder
+import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 
 @DgsComponent
 class ProductionPlanDataFetcher(
@@ -59,13 +54,4 @@ class ProductionPlanDataFetcher(
         )
     }
 
-    private fun getCurrentUserPrincipal(): UserPrincipal {
-        val authentication = SecurityContextHolder.getContext().authentication
-
-        if (authentication != null && authentication.isAuthenticated && authentication.principal is UserPrincipal) {
-            return authentication.principal as UserPrincipal
-        }
-
-        throw SecurityException("현재 인증된 사용자 정보를 찾을 수 없습니다.")
-    }
 }

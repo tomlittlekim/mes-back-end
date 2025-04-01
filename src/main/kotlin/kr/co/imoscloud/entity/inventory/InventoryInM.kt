@@ -4,67 +4,52 @@ import jakarta.persistence.*
 import java.time.LocalDate
 
 @Entity
-@Table(name = "INVENTORY_IN_M") // 테이블 이름 변경
-class InventoryInM(
+@Table(name = "INVENTORY_IN_M")
+class InventoryInM {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SEQ", nullable = false)
-    var id: Int? = null,
+    var id: Int? = null
 
     @Column(name = "SITE", length = 20)
-    var site: String? = null,
+    var site: String? = null
 
     @Column(name = "COMP_CD", length = 20)
-    var compCd: String? = null,
+    var compCd: String? = null
 
     @Column(name = "FACTORY_ID", length = 100)
-    var factoryId: String? = null,
+    var factoryId: String? = null
 
     @Column(name = "WAREHOUSE_ID", length = 50)
-    var warehouseId: String? = null,
+    var warehouseId: String? = null
 
     @Column(name = "TOTAL_PRICE")
-    var totalPrice: Int? = null,
+    var totalPrice: Int? = null
 
-    @Column(name = "HAS_INVOICE")
-    var hasInvoice: Boolean? = null,
+    @Column(name = "HAS_INVOICE", length = 1000)
+    var hasInvoice: String? = null
 
     @Column(name = "REMARKS", length = 5000)
-    var remarks: String? = null,
+    var remarks: String? = null
 
     @Column(name = "FLAG_ACTIVE")
-    var flagActive: Boolean? = null,
+    var flagActive: Boolean? = null
 
     @Column(name = "CREATE_USER", length = 100)
-    var createUser: String? = null,
+    var createUser: String? = null
 
     @Column(name = "CREATE_DATE")
-    var createDate: LocalDate? = null,
+    var createDate: LocalDate? = null
 
     @Column(name = "UPDATE_USER", length = 100)
-    var updateUser: String? = null,
+    var updateUser: String? = null
 
     @Column(name = "UPDATE_DATE")
-    var updateDate: LocalDate? = null,
+    var updateDate: LocalDate? = null
 
     @Column(name = "IN_MANAGEMENT_ID", length = 50)
     var inManagementId: String? = null
-)
 
-data class InventoryInMFilter(
-    var site: String? = null,
-    var compCd: String? = null,
-    var factoryId: String? = null,
-    var warehouseId: String? = null,
-)
-
-data class InventoryInMInput(
-    var site: String,
-    var compCd: String,
-    var factoryId: String,
-    var warehouseId: String,
-    var totalPrice: Int,
-    var hasInvoice: Boolean,
-    var remarks: String? = null,
-    var flagActive: Boolean? = null
-)
+    @Column(name = "IN_TYPE", length = 20)
+    var inType: String? = null
+}

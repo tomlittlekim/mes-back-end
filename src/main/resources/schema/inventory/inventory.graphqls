@@ -1,0 +1,120 @@
+# InventoryInM 타입 정의
+type InventoryInM {
+    seq: Int
+    site: String
+    compCd: String
+    factoryId: String
+    warehouseId: String
+    totalPrice: Int
+    hasInvoice: Boolean
+    remarks: String
+    flagActive: Boolean
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+    inManagementId: String
+}
+
+# InventoryIn 타입 정의
+type InventoryIn {
+    inManagementId: String
+    inInventoryId: String
+    supplierName: String
+    manufacturerName: String
+    userMaterialId: String
+    materialName: String
+    materialCategory: String
+    materialStandard: String
+    qty: Int
+    unitPrice: Int
+    unitVat: Int
+    totalPrice: Int
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+
+# InventoryInM 입력 타입 정의
+input InventoryInMInput {
+    site: String
+    compCd: String
+    inType: String
+    factoryId: String
+    warehouseId: String
+    totalPrice: String
+    hasInvoice: String
+}
+
+input InventoryInMFilter {
+    site: String
+    compCd: String
+    factoryId: String
+    warehouseId: String
+}
+
+input InventoryInFilter {
+    site: String
+    compCd: String
+    inManagementId: String
+}
+
+input DetailedInventoryInput {
+    inManagementId: String!
+    supplierName: String
+    manufactureName: String
+    userMaterialId: String
+    inType: String
+    systemMaterialId: String
+    materialName: String
+    materialCategory: String
+    materialStandard: String
+    qty: String
+    unitPrice: String
+    unitVat: String
+    totalPrice: String
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+
+input DetailedInventoryUpdate {
+    inManagementId: String!
+    inInventoryId: String
+    supplierName: String
+    manufactureName: String
+    userMaterialId: String
+    materialName: String
+    materialCategory: String
+    materialStandard: String
+    qty: String
+    unitPrice: String
+    unitVat: String
+    totalPrice: String
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+input inventoryDeleteInput {
+    site: String
+    compCd: String
+    inManagementId: String
+}
+
+# 쿼리 정의
+extend type Query {
+    getInventoryList(filter: InventoryInMFilter): [InventoryInM]
+    getDetailedInventoryList(filter: InventoryInFilter): [InventoryIn]
+    testString: String
+}
+
+# 뮤테이션 정의
+extend type Mutation {
+#    saveDetailedInventory(createdRows: [DetailedInventoryInput], updatedRows:[DetailedInventoryUpdate] ): Boolean
+    saveDetailedInventory(createdRows: [DetailedInventoryInput]): Boolean
+    saveInventory(createdRows: [InventoryInMInput]) :Boolean
+    deleteInventory(inManagementId: inventoryDeleteInput): Boolean
+}

@@ -1,11 +1,14 @@
 package kr.co.imoscloud.repository
 
+import kr.co.imoscloud.entity.standardInfo.Factory
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.standardInfo.*
 import kr.co.imoscloud.service.standardInfo.LineResponseModel
+import kr.co.imoscloud.service.standardInfo.WarehouseResponse
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import kr.co.imoscloud.entity.standardInfo.Line
 
 interface FactoryRep: JpaRepository<Factory,Long>{
     @Query(
@@ -307,10 +310,83 @@ interface LineRep : JpaRepository<Line,Long>{
         and   l.lineId = :lineId
         """
     )
-    fun deleteByVendorId(
+    fun deleteByLineId(
         site:String,
         compCd:String,
         lineId: String
     ): Int
+
+}
+
+interface WarehouseRep : JpaRepository<Warehouse, Long>{
+    @Query(
+        value = """
+            select new kr.co.imoscloud.service.standardInfo.WarehouseResponse(
+                w.factoryId,
+                f.factoryName,
+                w.warehouseId,
+                w.warehouseName,
+                w.warehouseType,
+                case when w.flagActive = true then 'Y' else 'N' end,
+                w.createUser,
+                w.createDate,
+                w.updateUser,
+                w.updateDate
+            )
+            from  Warehouse w
+            join  Factory  f
+            on  w.site = f.site
+            and w.compCd = f.compCd
+            and w.factoryId = f.factoryId
+            where w.site = :site
+            and   w.compCd = :compCd
+            and   (w.factoryId like concat ('%',:factoryId,'%'))
+            and   (f.factoryName like concat ('%',:factoryName,'%'))
+            and   (w.warehouseId like concat ('%',:warehouseId,'%'))
+            and   (w.warehouseName like concat ('%',:warehouseName,'%'))
+            and   (:flagActive is null or  w.flagActive = :flagActive)
+        """
+    )
+    fun getWarehouses(
+        site:String,
+        compCd:String,
+        factoryId:String,
+        factoryName:String,
+        warehouseId:String,
+        warehouseName:String,
+        flagActive:Boolean?
+    ):List<WarehouseResponse?>
+
+    @Query(
+        value = """
+            select w
+            from Warehouse w
+            where w.site = :site
+            and   w.compCd = :compCd
+            and   w.warehouseId IN (:warehouseIds)
+        """
+    )
+    fun getWarehouseListByIds(
+        site:String,
+        compCd:String,
+        warehouseIds:List<String?>
+    ):List<Warehouse?>
+
+    @Transactional
+    @Modifying
+    @Query("""
+        delete 
+        from Warehouse w 
+        where w.site = :site
+        and   w.compCd = :compCd
+        and   w.warehouseId = :warehouseId
+        """
+    )
+    fun deleteByWarehouseId(
+        site:String,
+        compCd:String,
+        warehouseId: String
+    ): Int
+
 
 }

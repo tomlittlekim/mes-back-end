@@ -83,7 +83,7 @@ class LineService(
     }
 
     fun deleteLine(lineId:String):Boolean {
-        return lineRep.deleteByVendorId(
+        return lineRep.deleteByLineId(
             site = "imos",
             compCd = "eightPin",
             lineId = lineId

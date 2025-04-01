@@ -30,6 +30,10 @@ input UserInput {
     textArea: String
 }
 
+input ExistLoginRequest {
+    loginId: String!
+}
+
 type UserOutput {
     userId: String
     userNm: String
@@ -45,4 +49,5 @@ extend type Mutation {
 
 extend type Query {
     signIn(input: UserInput!): UserOutput!
+    existLoginId(input: ExistLoginRequest!): Boolean!
 }

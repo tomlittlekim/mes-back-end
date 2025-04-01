@@ -1,0 +1,58 @@
+name: Build and Push Docker Image and deploy
+
+on:
+  push:
+    branches:
+      - feature
+
+concurrency:
+  group: prod-branch-deploy
+  cancel-in-progress: true
+
+jobs:
+  react_build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: docker build -t 8pin/imos:springboot -f Dockerfile .
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_ID }}
+        password: ${{ secrets.DOCKER_PWD }}
+
+    - name: Push Docker image
+      run: |
+        docker push 8pin/imos:springboot
+
+  deploy:
+    runs-on: [self-hosted, terbotForAWS]
+    needs:
+      - react_build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: executing remote ssh commands using ssh key
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          docker stop springboot || true
+          docker rm springboot || true
+          docker pull 8pin/imos:springboot
+          docker run -d \
+            --name springboot \
+            --network imosNetwork \
+            -p 8080:8080 \
+            8pin/imos:springboot
+          docker system prune -a -f

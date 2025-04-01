@@ -31,7 +31,7 @@ abstract class AbstractInitialSetting(
         private var upsertCompanyQue: MutableMap<String, CompanySummery?> = ConcurrentHashMap()
         private var upsertMenuRoleQue: MutableMap<String, Int?> = ConcurrentHashMap()
 
-        private var isInspect: Boolean = true
+        private var isInspect: Boolean = false
             set(value) {
                 field = value
                 if (!value) upsertForSelectMap()
@@ -69,6 +69,10 @@ abstract class AbstractInitialSetting(
             getAllUsersDuringInspection(indies)
         } else userMap
     }
+//    fun getAllUserMap(indies: List<Long>): MutableMap<Long, String?> {
+//        return if (getIsInspect()) getAllUsersDuringInspection(indies)
+//        else userMap
+//    }
 
     fun <T: DtoRoleIdBase>  getAllRoleMap(req: List<T>): MutableMap<Long, RoleSummery?> {
         return if (getIsInspect()) {
@@ -76,6 +80,10 @@ abstract class AbstractInitialSetting(
             getAllRolesDuringInspection(indies)
         } else roleMap
     }
+//    fun getAllRoleMap(indies: List<Long>): MutableMap<Long, RoleSummery?> {
+//        return if (getIsInspect()) getAllRolesDuringInspection(indies)
+//        else roleMap
+//    }
 
     fun <T: DtoCompCdBase>  getAllCompanyMap(req: List<T>): MutableMap<String, CompanySummery?> {
         return if (getIsInspect()) {
@@ -83,6 +91,11 @@ abstract class AbstractInitialSetting(
             getAllCompanyDuringInspection(indies)
         } else companyMap
     }
+//    fun getAllCompanyMap(indies: List<String>): MutableMap<String, CompanySummery?> {
+//        return if (getIsInspect()) getAllCompanyDuringInspection(indies)
+//        else companyMap
+//    }
+
 
     fun getMenuRole(roleId: Long, menuId: String): MenuRole? {
         return if (getIsInspect()) getMenuRoleDuringInspection(roleId, menuId)
@@ -131,6 +144,24 @@ abstract class AbstractInitialSetting(
         else menuRoleMap[index] = encoded
     }
 
+    fun <T> extractAllFromRequest(req: List<T>): Map<String, List<Any>> {
+        val userIdList = mutableListOf<Long>()
+        val roleIdList = mutableListOf<Long>()
+        val companyIdList = mutableListOf<String>()
+
+        req.forEach { item ->
+            if (item is DtoUserIdBase) userIdList.add(item.userId)
+            if (item is DtoRoleIdBase) roleIdList.add(item.roleId)
+            if (item is DtoCompCdBase) companyIdList.add(item.compCd)
+        }
+
+        return mapOf(
+            "userIdList" to userIdList,
+            "roleIdList" to roleIdList,
+            "companyIdList" to companyIdList
+        )
+    }
+
     @Scheduled(cron = "0 0 */2 * * *")
     private fun inspection() {
         isInspect = true
@@ -171,24 +202,6 @@ abstract class AbstractInitialSetting(
     private fun <T: DtoCompCdBase> extractCompCdFromRequest(req: List<T>): List<String> {
         if (req.isEmpty()) throw IllegalArgumentException("Request is empty")
         return req.map { it.compCd }
-    }
-
-    private fun <T> extractAllFromRequest(req: List<T>): Map<String, List<Any>> {
-        val userIdList = mutableListOf<Long>()
-        val roleIdList = mutableListOf<Long>()
-        val companyIdList = mutableListOf<String>()
-
-        req.forEach { item ->
-            if (item is DtoUserIdBase) userIdList.add(item.userId)
-            if (item is DtoRoleIdBase) roleIdList.add(item.roleId)
-            if (item is DtoCompCdBase) companyIdList.add(item.compCd)
-        }
-
-        return mapOf(
-            "userIdList" to userIdList,
-            "roleIdList" to roleIdList,
-            "companyIdList" to companyIdList
-        )
     }
 
     private fun encodeMenuRolePermissions(mr: MenuRole): Int {

@@ -35,7 +35,21 @@ class UserService(
             ?.let { user ->
                 try {
                     validateUser(loginReq.userPwd, user)
+
+                    val testIndies = (1..5).map { RoleInput(it.toLong()) }
+                    val roleMap = core.getAllRoleMap(testIndies)
+
+//                    val testOutPutReq = (1..5).map { UserOutput(
+//                        status = 200,
+//                        message = "test",
+//                        userId = it.toLong(),
+//                        roleId = it.toLong()
+//                    ) }
+//                    val resultMap = core.extractReferenceDataMaps(testOutPutReq)
+
+
                     val roleSummery = core.getUserRoleFromInMemory(user)
+
                     val userDetails = UserPrincipal.create(user, roleSummery)
                     val userPrincipal = UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
                     val token = jwtProvider.createToken(userPrincipal)

@@ -1,9 +1,6 @@
 package kr.co.imoscloud.core
 
-import kr.co.imoscloud.dto.CompanySummery
-import kr.co.imoscloud.dto.RoleInput
-import kr.co.imoscloud.dto.RoleSummery
-import kr.co.imoscloud.dto.TestAllInOneDto
+import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.company.Company
 import kr.co.imoscloud.entity.user.MenuRole
 import kr.co.imoscloud.entity.user.User
@@ -12,6 +9,7 @@ import kr.co.imoscloud.repository.company.CompanyRepository
 import kr.co.imoscloud.repository.user.MenuRoleRepository
 import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.repository.user.UserRoleRepository
+import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.stereotype.Component
 
 @Component
@@ -61,4 +59,21 @@ class Core(
         val roleMap: Map<Long, RoleSummery?> = getAllRoleMap(listOf(test))
         return roleMap[req.roleId] ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
     }
+
+//    fun getSecurityContext(): UserPrincipal{
+//
+//    }
+
+//    fun <T> extractReferenceDataMaps(req: List<T>): SummaryMaps {
+//        val indiesMap: Map<String, List<Any>> = extractAllFromRequest(req)
+//        val userIdList = indiesMap["userIdList"]?.filterIsInstance<Long>()
+//        val roleIdList = indiesMap["roleIdList"]?.filterIsInstance<Long>()
+//        val companyIdList = indiesMap["companyIdList"]?.filterIsInstance<String>()
+//
+//        return SummaryMaps(
+//            userIdList?.let { getAllUserMap1(it) },
+//            roleIdList?.let { getAllRoleMap(it) },
+//            companyIdList?.let { getAllCompanyMap(it) }
+//        )
+//    }
 }

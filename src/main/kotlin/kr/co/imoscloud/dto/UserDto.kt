@@ -17,18 +17,30 @@ data class UserInput(
     var textarea: String?=null,
 )
 
-data class UserOutput(
+data class LoginOutput(
     override val status: Int,
     override val message: String,
-    override val userId: Long,
-    var loginId: String?=null,
+    val id: Long,
+    val loginId: String?=null,
     var userNm: String?=null,
     var email: String?=null,
     override var roleId: Long,
     var roleNm: String?=null,
-): ResponseBase, DtoUserIdBase, DtoRoleIdBase
+): ResponseBase, DtoRoleIdBase
 
 data class LoginRequest(val userId: String, val userPwd: String)
+
+data class UserSummery(
+    override val loginId: String,
+    override val roleId: Long,
+    val userPwd: String,
+    val userName: String?=null,
+    val email: String?=null
+): DtoLoginIdBase, DtoRoleIdBase
+
+data class ExistLoginIdRequest(
+    override val loginId: String
+): DtoLoginIdBase
 
 data class RoleInput(
     override val roleId: Long,
@@ -40,7 +52,7 @@ data class RoleSummery(
 )
 
 data class TestAllInOneDto(
-    override val userId: Long,
+    override val loginId: String,
     override val roleId: Long,
     override val compCd: String
 ): DtoAllInOneBase

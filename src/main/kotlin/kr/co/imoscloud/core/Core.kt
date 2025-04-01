@@ -9,7 +9,6 @@ import kr.co.imoscloud.repository.company.CompanyRepository
 import kr.co.imoscloud.repository.user.MenuRoleRepository
 import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.repository.user.UserRoleRepository
-import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.stereotype.Component
 
 @Component
@@ -19,12 +18,12 @@ class Core(
     companyRepo: CompanyRepository,
     menuRoleRepo: MenuRoleRepository
 ): AbstractInitialSetting(userRepo, roleRepo, companyRepo, menuRoleRepo) {
-    override fun getAllUsersDuringInspection(indies: List<Long>): MutableMap<Long, String?> {
+    override fun getAllUsersDuringInspection(indies: List<String>): MutableMap<String, UserSummery?> {
         val userList: List<User> = if (indies.size == 1) {
-            userRepo.findById(indies.first()).map(::listOf)!!.orElseGet { emptyList<User>() }
-        } else userRepo.findAllByIdIn(indies)
+            userRepo.findByLoginId(indies.first()).map(::listOf)!!.orElseGet { emptyList<User>() }
+        } else userRepo.findAllByLoginIdIn(indies)
 
-        return userList.associate { it.id to it.userName }.toMutableMap()
+        return userList.associate { it.loginId to userToSummery(it) }.toMutableMap()
     }
 
     override fun getAllRolesDuringInspection(indies: List<Long>): MutableMap<Long, RoleSummery?> {
@@ -55,25 +54,20 @@ class Core(
 
     fun getUserRoleFromInMemory(user: User): RoleSummery {
         val req = RoleInput(user.roleId)
-        val test = TestAllInOneDto(user.id, user.roleId, user.compCd)
-        val roleMap: Map<Long, RoleSummery?> = getAllRoleMap(listOf(test))
+        val roleMap: Map<Long, RoleSummery?> = getAllRoleMap(listOf(req))
         return roleMap[req.roleId] ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
     }
 
-//    fun getSecurityContext(): UserPrincipal{
-//
-//    }
+    fun <T> extractReferenceDataMaps(req: List<T>): SummaryMaps {
+        val indiesMap: Map<String, List<Any>> = extractAllFromRequest(req)
+        val userIdList = indiesMap["userIdList"]?.filterIsInstance<String>()
+        val roleIdList = indiesMap["roleIdList"]?.filterIsInstance<Long>()
+        val companyIdList = indiesMap["companyIdList"]?.filterIsInstance<String>()
 
-//    fun <T> extractReferenceDataMaps(req: List<T>): SummaryMaps {
-//        val indiesMap: Map<String, List<Any>> = extractAllFromRequest(req)
-//        val userIdList = indiesMap["userIdList"]?.filterIsInstance<Long>()
-//        val roleIdList = indiesMap["roleIdList"]?.filterIsInstance<Long>()
-//        val companyIdList = indiesMap["companyIdList"]?.filterIsInstance<String>()
-//
-//        return SummaryMaps(
-//            userIdList?.let { getAllUserMap1(it) },
-//            roleIdList?.let { getAllRoleMap(it) },
-//            companyIdList?.let { getAllCompanyMap(it) }
-//        )
-//    }
+        return SummaryMaps(
+            userIdList?.let { getAllUserMapByIndies(it) },
+            roleIdList?.let { getAllRoleMapByIndies(it) },
+            companyIdList?.let { getAllCompanyMapByIndies(it) }
+        )
+    }
 }

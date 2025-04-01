@@ -2,6 +2,7 @@ package kr.co.imoscloud.core
 
 import kr.co.imoscloud.dto.CompanySummery
 import kr.co.imoscloud.dto.RoleSummery
+import kr.co.imoscloud.dto.UserSummery
 import kr.co.imoscloud.entity.company.Company
 import kr.co.imoscloud.entity.user.MenuRole
 import kr.co.imoscloud.entity.user.User
@@ -21,12 +22,12 @@ abstract class AbstractInitialSetting(
     val menuRoleRepo: MenuRoleRepository
 ) {
     companion object {
-        private var userMap: MutableMap<Long, String?> = ConcurrentHashMap()
+        private var userMap: MutableMap<String, UserSummery?> = ConcurrentHashMap()
         private var roleMap: MutableMap<Long, RoleSummery?> = ConcurrentHashMap()
         private var companyMap: MutableMap<String, CompanySummery?> = ConcurrentHashMap()
         private var menuRoleMap: MutableMap<String, Int?> = ConcurrentHashMap()
 
-        private var upsertUserQue: MutableMap<Long, String?> = ConcurrentHashMap()
+        private var upsertUserQue: MutableMap<String, UserSummery?> = ConcurrentHashMap()
         private var upsertRoleQue: MutableMap<Long, RoleSummery?> = ConcurrentHashMap()
         private var upsertCompanyQue: MutableMap<String, CompanySummery?> = ConcurrentHashMap()
         private var upsertMenuRoleQue: MutableMap<String, Int?> = ConcurrentHashMap()
@@ -39,7 +40,7 @@ abstract class AbstractInitialSetting(
 
         private fun upsertForSelectMap() {
             synchronized(upsertUserQue) {
-                userMap = (userMap + upsertUserQue) as MutableMap<Long, String?>
+                userMap = (userMap + upsertUserQue) as MutableMap<String, UserSummery?>
                 upsertUserQue = ConcurrentHashMap()
             }
             synchronized(upsertRoleQue) {
@@ -63,16 +64,16 @@ abstract class AbstractInitialSetting(
         initialSettings()
     }
 
-    fun <T: DtoUserIdBase> getAllUserMap(req: List<T>): MutableMap<Long, String?> {
+    fun <T: DtoLoginIdBase> getAllUserMap(req: List<T>): MutableMap<String, UserSummery?> {
         return if (getIsInspect()) {
             val indies = extractUserIdFromRequest(req)
             getAllUsersDuringInspection(indies)
         } else userMap
     }
-//    fun getAllUserMap(indies: List<Long>): MutableMap<Long, String?> {
-//        return if (getIsInspect()) getAllUsersDuringInspection(indies)
-//        else userMap
-//    }
+    fun getAllUserMapByIndies(indies: List<String>): MutableMap<String, UserSummery?> {
+        return if (getIsInspect()) getAllUsersDuringInspection(indies)
+        else userMap
+    }
 
     fun <T: DtoRoleIdBase>  getAllRoleMap(req: List<T>): MutableMap<Long, RoleSummery?> {
         return if (getIsInspect()) {
@@ -80,10 +81,10 @@ abstract class AbstractInitialSetting(
             getAllRolesDuringInspection(indies)
         } else roleMap
     }
-//    fun getAllRoleMap(indies: List<Long>): MutableMap<Long, RoleSummery?> {
-//        return if (getIsInspect()) getAllRolesDuringInspection(indies)
-//        else roleMap
-//    }
+    fun getAllRoleMapByIndies(indies: List<Long>): MutableMap<Long, RoleSummery?> {
+        return if (getIsInspect()) getAllRolesDuringInspection(indies)
+        else roleMap
+    }
 
     fun <T: DtoCompCdBase>  getAllCompanyMap(req: List<T>): MutableMap<String, CompanySummery?> {
         return if (getIsInspect()) {
@@ -91,11 +92,10 @@ abstract class AbstractInitialSetting(
             getAllCompanyDuringInspection(indies)
         } else companyMap
     }
-//    fun getAllCompanyMap(indies: List<String>): MutableMap<String, CompanySummery?> {
-//        return if (getIsInspect()) getAllCompanyDuringInspection(indies)
-//        else companyMap
-//    }
-
+    fun getAllCompanyMapByIndies(indies: List<String>): MutableMap<String, CompanySummery?> {
+        return if (getIsInspect()) getAllCompanyDuringInspection(indies)
+        else companyMap
+    }
 
     fun getMenuRole(roleId: Long, menuId: String): MenuRole? {
         return if (getIsInspect()) getMenuRoleDuringInspection(roleId, menuId)
@@ -118,17 +118,18 @@ abstract class AbstractInitialSetting(
         }
     }
 
-    protected abstract fun getAllUsersDuringInspection(indies: List<Long>): MutableMap<Long, String?>
+    protected abstract fun getAllUsersDuringInspection(indies: List<String>): MutableMap<String, UserSummery?>
     protected abstract fun getAllRolesDuringInspection(indies: List<Long>): MutableMap<Long, RoleSummery?>
     protected abstract fun getAllCompanyDuringInspection(indies: List<String>): MutableMap<String, CompanySummery?>
     protected abstract fun getMenuRoleDuringInspection(roleId: Long, menuId: String): MenuRole?
 
     fun upsertUserFromInMemory(user: User) {
-        if (isInspect) upsertUserQue[user.id] = user.userName
-        else userMap[user.id] = user.userName
+        val summery = userToSummery(user)
+        if (isInspect) upsertUserQue[user.loginId] = summery
+        else userMap[user.loginId] = summery
     }
     fun upsertRoleFromInMemory(userRole: UserRole) {
-        val summery = RoleSummery(userRole.roleName, userRole.priorityLevel)
+        val summery = roleToSummery(userRole)
         if (isInspect) upsertRoleQue[userRole.id] = summery
         else roleMap[userRole.id] = summery
     }
@@ -145,12 +146,12 @@ abstract class AbstractInitialSetting(
     }
 
     fun <T> extractAllFromRequest(req: List<T>): Map<String, List<Any>> {
-        val userIdList = mutableListOf<Long>()
+        val userIdList = mutableListOf<String>()
         val roleIdList = mutableListOf<Long>()
         val companyIdList = mutableListOf<String>()
 
         req.forEach { item ->
-            if (item is DtoUserIdBase) userIdList.add(item.userId)
+            if (item is DtoLoginIdBase) userIdList.add(item.loginId)
             if (item is DtoRoleIdBase) roleIdList.add(item.roleId)
             if (item is DtoCompCdBase) companyIdList.add(item.compCd)
         }
@@ -169,12 +170,9 @@ abstract class AbstractInitialSetting(
     }
     
     private fun initialSettings() {
-        userMap = userRepo.findAll().associate { it.id to it.userName }.toMutableMap()
+        userMap = userRepo.findAll().associate { it.loginId to userToSummery(it) }.toMutableMap()
 
-        roleMap = roleRepo.findAll().associate {
-            val summery = RoleSummery(it.roleName, it.priorityLevel)
-            it.id to summery
-        }.toMutableMap()
+        roleMap = roleRepo.findAll().associate { it.id to roleToSummery(it) }.toMutableMap()
 
         companyMap = companyRepo.findAll().associate {
             val summery = CompanySummery(it.id, it.companyName)
@@ -189,9 +187,9 @@ abstract class AbstractInitialSetting(
         menuRoleMap = encodeMenuRoleMap
     }
 
-    private fun <T: DtoUserIdBase> extractUserIdFromRequest(req: List<T>): List<Long> {
+    private fun <T: DtoLoginIdBase> extractUserIdFromRequest(req: List<T>): List<String> {
         if (req.isEmpty()) throw IllegalArgumentException("Request is empty")
-        return req.map { it.userId }
+        return req.map { it.loginId }
     }
 
     private fun <T: DtoRoleIdBase> extractRoleIdFromRequest(req: List<T>): List<Long> {
@@ -211,4 +209,6 @@ abstract class AbstractInitialSetting(
     }
 
     private fun booleanToTinyintStr(bool: Boolean): String = if (bool) "1" else "0"
+    fun userToSummery(it: User): UserSummery = UserSummery(it.loginId, it.roleId, it.userPwd, it.userName, it.userEmail)
+    private fun roleToSummery(it: UserRole): RoleSummery = RoleSummery(it.roleName, it.priorityLevel)
 }

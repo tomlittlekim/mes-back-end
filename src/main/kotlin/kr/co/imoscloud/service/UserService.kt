@@ -9,6 +9,7 @@ import kr.co.imoscloud.iface.IUser
 import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.security.JwtTokenProvider
 import kr.co.imoscloud.security.UserPrincipal
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -29,25 +30,12 @@ class UserService(
         loginReq: LoginRequest,
         request: HttpServletRequest,
         response: HttpServletResponse
-    ): ResponseEntity<UserOutput> {
+    ): ResponseEntity<LoginOutput> {
         val site = getSiteByDomain(request)
         val userRes = userRepo.findBySiteAndLoginIdAndFlagActiveIsTrue(site, loginReq.userId)
             ?.let { user ->
                 try {
                     validateUser(loginReq.userPwd, user)
-
-                    val testIndies = (1..5).map { RoleInput(it.toLong()) }
-                    val roleMap = core.getAllRoleMap(testIndies)
-
-//                    val testOutPutReq = (1..5).map { UserOutput(
-//                        status = 200,
-//                        message = "test",
-//                        userId = it.toLong(),
-//                        roleId = it.toLong()
-//                    ) }
-//                    val resultMap = core.extractReferenceDataMaps(testOutPutReq)
-
-
                     val roleSummery = core.getUserRoleFromInMemory(user)
 
                     val userDetails = UserPrincipal.create(user, roleSummery)
@@ -72,7 +60,8 @@ class UserService(
         return userRes
     }
 
-    fun signUp(req: UserInput, loginUser: UserPrincipal): User {
+    fun signUp(req: UserInput): User {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
         if (!checkRole(loginUser)) throw IllegalArgumentException("관리자 이상의 등급을 가진 유저가 아닙니다. ")
 
         val modifyReq = modifyReqByRole(loginUser, req)
@@ -85,6 +74,11 @@ class UserService(
         }
 
         return userRepo.save(newUser)
+    }
+
+    fun existLoginId(req: ExistLoginIdRequest): Boolean {
+        val userMap = core.getAllUserMap(listOf(req))
+        return userMap[req.loginId] != null
     }
 
     private fun checkRole(loginUser: UserPrincipal): Boolean {

@@ -2,11 +2,11 @@ package kr.co.imoscloud.fetcher
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
+import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.dto.ExistLoginIdRequest
 import kr.co.imoscloud.dto.UserInput
-import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.service.UserService
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 
 @DgsComponent
 class UserFetcher(
@@ -14,7 +14,12 @@ class UserFetcher(
 ) {
 
     @DgsMutation
-    fun signUp(@InputArgument("input") input: UserInput, @AuthenticationPrincipal user: UserPrincipal) {
-        userService.signUp(input, user)
+    fun signUp(@InputArgument("input") input: UserInput) = userService.signUp(input)
+
+    @DgsQuery
+    fun existLoginId(@InputArgument("input") input: ExistLoginIdRequest): Boolean {
+        return userService.existLoginId(input)
     }
+
+
 }

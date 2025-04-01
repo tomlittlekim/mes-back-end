@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.standardInfo
 
+import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.standardInfo.Vendor
 import kr.co.imoscloud.fetcher.standardInfo.VendorFilter
 import kr.co.imoscloud.fetcher.standardInfo.VendorInput
@@ -44,6 +45,7 @@ class VendorService(
         }
     }
 
+    @Transactional
     fun saveVendor(createdRows:List<VendorInput?>, updatedRows:List<VendorUpdate?>){
         createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { createVendor(it) }
         updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { updateVendor(it) }
@@ -103,6 +105,14 @@ class VendorService(
         }
 
         vendorRep.saveAll(vendorList)
+    }
+
+    fun deleteVendor(vendorId:String): Boolean {
+        return vendorRep.deleteByVendorId(
+            site = "imos",
+            compCd = "eightPin",
+            vendorId = vendorId
+        ) > 0
     }
 
 }

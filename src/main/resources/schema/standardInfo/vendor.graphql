@@ -51,4 +51,5 @@ extend type Query {
 
 extend type Mutation {
     saveVendor(createdRows: [VendorInput], updatedRows: [VendorUpdate] ): Boolean
+    deleteVendor(vendorId:String!):Boolean
 }

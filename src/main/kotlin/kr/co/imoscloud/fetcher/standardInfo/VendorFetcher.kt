@@ -27,6 +27,11 @@ class VendorFetcher(
         return true
     }
 
+    @DgsMutation
+    fun deleteVendor(@InputArgument("vendorId") vendorId: String): Boolean {
+        return vendorService.deleteVendor(vendorId)
+    }
+
 }
 
 data class VendorFilter(

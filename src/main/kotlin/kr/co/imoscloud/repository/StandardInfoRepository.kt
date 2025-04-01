@@ -5,9 +5,11 @@ import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.standardInfo.Code
 import kr.co.imoscloud.entity.standardInfo.CodeClass
 import kr.co.imoscloud.entity.standardInfo.Vendor
+import kr.co.imoscloud.service.standardInfo.LineResponseModel
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import kr.co.imoscloud.entity.standardInfo.Line
 
 interface FactoryRep: JpaRepository<Factory,Long>{
     @Query(
@@ -221,5 +223,98 @@ interface VendorRep : JpaRepository<Vendor,Long>{
         compCd:String,
         vendorIds:List<String?>
     ):List<Vendor?>
+
+
+    @Transactional
+    @Modifying
+    @Query("""
+        delete 
+        from Vendor v 
+        where v.site = :site
+        and   v.compCd = :compCd
+        and   v.vendorId = :vendorId
+        """
+    )
+    fun deleteByVendorId(
+        site:String,
+        compCd:String,
+        vendorId: String
+    ): Int
+
+}
+
+interface LineRep : JpaRepository<Line,Long>{
+
+    @Query(
+        value = """
+            select new kr.co.imoscloud.service.standardInfo.LineResponseModel(
+                f.factoryId,
+                f.factoryName,
+                f.factoryCode,
+                l.lineId,
+                l.lineName,
+                l.lineDesc,
+                case when l.flagActive = true then 'Y' else 'N' end,
+                l.createUser,
+                l.createDate,
+                l.updateUser,
+                l.updateDate
+            )
+            from  Line l
+            join  Factory  f
+            on  l.site = f.site
+            and l.compCd = f.compCd
+            and l.factoryId = f.factoryId
+            where l.site = :site
+            and   l.compCd = :compCd
+            and   (l.factoryId like concat ('%',:factoryId,'%'))
+            and   (f.factoryName like concat ('%',:factoryName,'%'))
+            and   (f.factoryCode like concat ('%',:factoryCode,'%'))
+            and   (l.lineId like concat ('%',:lineId,'%'))
+            and   (l.lineName like concat ('%',:lineName,'%'))
+            and   (:flagActive is null or  l.flagActive = :flagActive)
+        """
+    )
+    fun getLines(
+        site:String,
+        compCd:String,
+        factoryId:String,
+        factoryName:String,
+        factoryCode:String,
+        lineId:String,
+        lineName:String,
+        flagActive:Boolean?
+    ):List<LineResponseModel?>
+
+    @Query(
+        value = """
+            select l
+            from Line l
+            where l.site = :site
+            and   l.compCd = :compCd
+            and   l.lineId IN (:lineIds)
+        """
+    )
+    fun getLineListByIds(
+        site:String,
+        compCd:String,
+        lineIds:List<String?>
+    ):List<Line?>
+
+    @Transactional
+    @Modifying
+    @Query("""
+        delete 
+        from Line l 
+        where l.site = :site
+        and   l.compCd = :compCd
+        and   l.lineId = :lineId
+        """
+    )
+    fun deleteByVendorId(
+        site:String,
+        compCd:String,
+        lineId: String
+    ): Int
 
 }

@@ -11,7 +11,7 @@ class MenuRole(
     val id: Long = 0L,
 
     @Column(name = "ROLE_ID", length = 40, nullable = false)
-    var roleId: String,
+    var roleId: Long,
 
     @Column(name = "MENU_ID", length = 40, nullable = false)
     var menuId: String,

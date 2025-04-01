@@ -3,10 +3,12 @@ package kr.co.imoscloud.core
 import kr.co.imoscloud.dto.CompanySummery
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.entity.company.Company
+import kr.co.imoscloud.entity.user.MenuRole
 import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.entity.user.UserRole
 import kr.co.imoscloud.iface.*
 import kr.co.imoscloud.repository.company.CompanyRepository
+import kr.co.imoscloud.repository.user.MenuRoleRepository
 import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.repository.user.UserRoleRepository
 import org.springframework.scheduling.annotation.Scheduled
@@ -16,17 +18,18 @@ abstract class AbstractInitialSetting(
     val userRepo: UserRepository,
     val roleRepo: UserRoleRepository,
     val companyRepo: CompanyRepository,
+    val menuRoleRepo: MenuRoleRepository
 ) {
     companion object {
         private var userMap: MutableMap<Long, String?> = ConcurrentHashMap()
         private var roleMap: MutableMap<Long, RoleSummery?> = ConcurrentHashMap()
         private var companyMap: MutableMap<String, CompanySummery?> = ConcurrentHashMap()
-        private var groupMap: MutableMap<Long, Int?> = ConcurrentHashMap()
+        private var menuRoleMap: MutableMap<String, Int?> = ConcurrentHashMap()
 
         private var upsertUserQue: MutableMap<Long, String?> = ConcurrentHashMap()
         private var upsertRoleQue: MutableMap<Long, RoleSummery?> = ConcurrentHashMap()
         private var upsertCompanyQue: MutableMap<String, CompanySummery?> = ConcurrentHashMap()
-        private var upsertGroupQue: MutableMap<Long, Int?> = ConcurrentHashMap()
+        private var upsertMenuRoleQue: MutableMap<String, Int?> = ConcurrentHashMap()
 
         private var isInspect: Boolean = true
             set(value) {
@@ -47,9 +50,9 @@ abstract class AbstractInitialSetting(
                 companyMap = (companyMap + upsertCompanyQue) as MutableMap<String, CompanySummery?>
                 upsertCompanyQue = ConcurrentHashMap()
             }
-            synchronized(upsertGroupQue) {
-                groupMap = (groupMap + upsertGroupQue) as MutableMap<Long, Int?>
-                upsertGroupQue = ConcurrentHashMap()
+            synchronized(upsertMenuRoleQue) {
+                menuRoleMap = (menuRoleMap + upsertMenuRoleQue) as MutableMap<String, Int?>
+                upsertMenuRoleQue = ConcurrentHashMap()
             }
         }
 
@@ -81,9 +84,31 @@ abstract class AbstractInitialSetting(
         } else companyMap
     }
 
+    fun getMenuRole(roleId: Long, menuId: String): MenuRole? {
+        return if (getIsInspect()) getMenuRoleDuringInspection(roleId, menuId)
+        else {
+            val encoded = menuRoleMap["$roleId-$menuId"] ?: return null
+            val bits = encoded.toString(2).padStart(8, '0').map { it == '1' }
+            return MenuRole(
+                id = -1L,
+                roleId = roleId,
+                menuId = menuId,
+                isOpen = bits[0],
+                isDelete = bits[1],
+                isInsert = bits[2],
+                isAdd = bits[3],
+                isPopup = bits[4],
+                isPrint = bits[5],
+                isSelect = bits[6],
+                isUpdate = bits[7]
+            )
+        }
+    }
+
     protected abstract fun getAllUsersDuringInspection(indies: List<Long>): MutableMap<Long, String?>
     protected abstract fun getAllRolesDuringInspection(indies: List<Long>): MutableMap<Long, RoleSummery?>
     protected abstract fun getAllCompanyDuringInspection(indies: List<String>): MutableMap<String, CompanySummery?>
+    protected abstract fun getMenuRoleDuringInspection(roleId: Long, menuId: String): MenuRole?
 
     fun upsertUserFromInMemory(user: User) {
         if (isInspect) upsertUserQue[user.id] = user.userName
@@ -108,15 +133,23 @@ abstract class AbstractInitialSetting(
     
     private fun initialSettings() {
         userMap = userRepo.findAll().associate { it.id to it.userName }.toMutableMap()
+
         roleMap = roleRepo.findAll().associate {
             val summery = RoleSummery(it.roleName, it.priorityLevel)
             it.id to summery
         }.toMutableMap()
+
         companyMap = companyRepo.findAll().associate {
             val summery = CompanySummery(it.id, it.companyName)
             it.compCd to summery
         }.toMutableMap()
-        groupMap
+
+        val encodeMenuRoleMap: MutableMap<String, Int?> = mutableMapOf()
+        menuRoleRepo.findAll().forEach { mr ->
+            val encodeNumber = encodeMenuRolePermissions(mr)
+            encodeMenuRoleMap["${mr.roleId}-${mr.menuId}"] = encodeNumber
+        }
+        menuRoleMap = encodeMenuRoleMap
     }
 
     private fun <T: DtoUserIdBase> extractUserIdFromRequest(req: List<T>): List<Long> {
@@ -151,4 +184,12 @@ abstract class AbstractInitialSetting(
             "companyIdList" to companyIdList
         )
     }
+
+    private fun encodeMenuRolePermissions(mr: MenuRole): Int {
+        val permissions = listOf(mr.isOpen, mr.isDelete, mr.isInsert, mr.isAdd, mr.isPopup, mr.isPrint, mr.isSelect, mr.isUpdate)
+        val binary = permissions.joinToString(separator = "") { booleanToTinyintStr(it) }
+        return binary.toInt(2)
+    }
+
+    private fun booleanToTinyintStr(bool: Boolean): String = if (bool) "1" else "0"
 }

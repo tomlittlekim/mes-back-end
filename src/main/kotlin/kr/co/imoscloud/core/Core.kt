@@ -5,9 +5,11 @@ import kr.co.imoscloud.dto.RoleInput
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.TestAllInOneDto
 import kr.co.imoscloud.entity.company.Company
+import kr.co.imoscloud.entity.user.MenuRole
 import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.entity.user.UserRole
 import kr.co.imoscloud.repository.company.CompanyRepository
+import kr.co.imoscloud.repository.user.MenuRoleRepository
 import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.repository.user.UserRoleRepository
 import org.springframework.stereotype.Component
@@ -17,7 +19,8 @@ class Core(
     userRepo: UserRepository,
     roleRepo: UserRoleRepository,
     companyRepo: CompanyRepository,
-): AbstractInitialSetting(userRepo, roleRepo, companyRepo) {
+    menuRoleRepo: MenuRoleRepository
+): AbstractInitialSetting(userRepo, roleRepo, companyRepo, menuRoleRepo) {
     override fun getAllUsersDuringInspection(indies: List<Long>): MutableMap<Long, String?> {
         val userList: List<User> = if (indies.size == 1) {
             userRepo.findById(indies.first()).map(::listOf)!!.orElseGet { emptyList<User>() }
@@ -46,6 +49,10 @@ class Core(
             val summery = CompanySummery(it.id, it.companyName)
             it.compCd to summery
         }.toMutableMap()
+    }
+
+    override fun getMenuRoleDuringInspection(roleId: Long, menuId: String): MenuRole? {
+        return menuRoleRepo.findByRoleIdAndMenuId(roleId, menuId)
     }
 
     fun getUserRoleFromInMemory(user: User): RoleSummery {

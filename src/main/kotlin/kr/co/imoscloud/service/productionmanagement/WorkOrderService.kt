@@ -1,9 +1,9 @@
 package kr.co.imoscloud.service.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
-import kr.co.imoscloud.fetcher.productionmanagement.WorkOrderFilter
-import kr.co.imoscloud.fetcher.productionmanagement.WorkOrderInput
-import kr.co.imoscloud.fetcher.productionmanagement.WorkOrderUpdate
+import kr.co.imoscloud.model.productionmanagement.WorkOrderFilter
+import kr.co.imoscloud.model.productionmanagement.WorkOrderInput
+import kr.co.imoscloud.model.productionmanagement.WorkOrderUpdate
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
@@ -116,4 +116,5 @@ class WorkOrderService(
         // 인증 정보가 없거나 UserPrincipal이 아닌 경우 예외 처리
         throw SecurityException("현재 인증된 사용자 정보를 찾을 수 없습니다.")
     }
+
 }

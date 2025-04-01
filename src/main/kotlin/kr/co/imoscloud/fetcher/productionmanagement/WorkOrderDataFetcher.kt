@@ -1,36 +1,43 @@
+// WorkOrderDataFetcher.kt
 package kr.co.imoscloud.fetcher.productionmanagement
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
+import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
+import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
+import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
+import kr.co.imoscloud.model.productionmanagement.WorkOrderFilter
+import kr.co.imoscloud.model.productionmanagement.WorkOrderInput
+import kr.co.imoscloud.model.productionmanagement.WorkOrderUpdate
+import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
+import kr.co.imoscloud.security.UserPrincipal
+import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
 import kr.co.imoscloud.service.productionmanagement.WorkOrderService
+import org.springframework.security.core.context.SecurityContextHolder
 
 @DgsComponent
 class WorkOrderDataFetcher(
-    val workOrderService: WorkOrderService
+    private val workOrderService: WorkOrderService,
+    private val productionPlanService: ProductionPlanService,
+    private val productionResultRepository: ProductionResultRepository
 ) {
-
+    // 특정 생산계획에 속한 작업지시 목록 조회
     @DgsQuery
     fun workOrdersByProdPlanId(@InputArgument("prodPlanId") prodPlanId: String): List<WorkOrder> {
         return workOrderService.getWorkOrdersByProdPlanId(prodPlanId)
     }
 
+    // 조건에 맞는 작업지시 목록 조회
     @DgsQuery
     fun workOrders(@InputArgument("filter") filter: WorkOrderFilter): List<WorkOrder> {
-        return workOrderService.getWorkOrders(
-            WorkOrderFilter(
-                workOrderId = filter.workOrderId,
-                prodPlanId = filter.prodPlanId,
-                productId = filter.productId,
-                shiftType = filter.shiftType,
-                state = filter.state,
-                flagActive = filter.flagActive
-            )
-        )
+        return workOrderService.getWorkOrders(filter)
     }
 
+    // 작업지시 저장 (생성/수정)
     @DgsData(parentType = "Mutation", field = "saveWorkOrder")
     fun saveWorkOrder(
         @InputArgument("createdRows") createdRows: List<WorkOrderInput>? = null,
@@ -39,38 +46,48 @@ class WorkOrderDataFetcher(
         return workOrderService.saveWorkOrder(createdRows, updatedRows)
     }
 
+    // 작업지시 삭제
     @DgsData(parentType = "Mutation", field = "deleteWorkOrder")
     fun deleteWorkOrder(
         @InputArgument("workOrderId") workOrderId: String
     ): Boolean {
         return workOrderService.deleteWorkOrder(workOrderId)
     }
+
+    // 작업지시에 연결된 생산계획 정보 조회 (GraphQL 리졸버)
+    @DgsData(parentType = "WorkOrder", field = "productionPlan")
+    fun productionPlan(dfe: DgsDataFetchingEnvironment): ProductionPlan? {
+        val workOrder = dfe.getSource<WorkOrder>()
+        val prodPlanId = workOrder?.prodPlanId ?: return null
+
+        val filter = ProductionPlanFilter(prodPlanId = prodPlanId)
+        val plans = productionPlanService.getProductionPlans(filter)
+
+        return plans.firstOrNull()
+    }
+
+    // 작업지시에 연결된 생산실적 목록 조회 (GraphQL 리졸버)
+    @DgsData(parentType = "WorkOrder", field = "productionResults")
+    fun productionResults(dfe: DgsDataFetchingEnvironment): List<ProductionResult> {
+        val workOrder = dfe.getSource<WorkOrder>()
+        val workOrderId = workOrder?.workOrderId ?: return emptyList()
+
+        val currentUser = getCurrentUserPrincipal()
+
+        return productionResultRepository.getProductionResultsByWorkOrderId(
+            site = currentUser.getSite(),
+            compCd = currentUser.getCompCd(),
+            workOrderId = workOrderId
+        )
+    }
+
+    private fun getCurrentUserPrincipal(): UserPrincipal {
+        val authentication = SecurityContextHolder.getContext().authentication
+
+        if (authentication != null && authentication.isAuthenticated && authentication.principal is UserPrincipal) {
+            return authentication.principal as UserPrincipal
+        }
+
+        throw SecurityException("현재 인증된 사용자 정보를 찾을 수 없습니다.")
+    }
 }
-
-data class WorkOrderFilter(
-    var workOrderId: String? = null,
-    var prodPlanId: String? = null,
-    var productId: String? = null,
-    var shiftType: String? = null,
-    var state: String? = null,
-    var flagActive: Boolean? = null
-)
-
-data class WorkOrderInput(
-    val prodPlanId: String? = null,
-    val productId: String? = null,
-    val orderQty: Double? = null,
-    val shiftType: String? = null,
-    val state: String? = null,
-    val flagActive: Boolean? = true
-)
-
-data class WorkOrderUpdate(
-    val workOrderId: String,
-    val prodPlanId: String? = null,
-    val productId: String? = null,
-    val orderQty: Double? = null,
-    val shiftType: String? = null,
-    val state: String? = null,
-    val flagActive: Boolean? = null
-)

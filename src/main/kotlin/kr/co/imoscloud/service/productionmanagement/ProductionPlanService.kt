@@ -1,14 +1,13 @@
 package kr.co.imoscloud.service.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
-import kr.co.imoscloud.fetcher.productionmanagement.ProductionPlanFilter
-import kr.co.imoscloud.fetcher.productionmanagement.ProductionPlanInput
-import kr.co.imoscloud.fetcher.productionmanagement.ProductionPlanUpdate
+import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
+import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
+import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
 import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
 import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 
 @Service
 class ProductionPlanService(

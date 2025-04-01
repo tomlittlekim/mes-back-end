@@ -1,34 +1,33 @@
+// ProductionPlanDataFetcher.kt
 package kr.co.imoscloud.fetcher.productionmanagement
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
+import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
+import kr.co.imoscloud.entity.productionmanagement.WorkOrder
+import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
+import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
+import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
+import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
+import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
+import org.springframework.security.core.context.SecurityContextHolder
 
 @DgsComponent
 class ProductionPlanDataFetcher(
-    val productionPlanService: ProductionPlanService
+    private val productionPlanService: ProductionPlanService,
+    private val workOrderRepository: WorkOrderRepository
 ) {
-
+    // 생산계획 목록 조회
     @DgsQuery
     fun productionPlans(@InputArgument("filter") filter: ProductionPlanFilter): List<ProductionPlan> {
-        return productionPlanService.getProductionPlans(
-            ProductionPlanFilter(
-                prodPlanId = filter.prodPlanId,
-                orderId = filter.orderId,
-                productId = filter.productId,
-                planStartDate = filter.planStartDate,
-                planEndDate = filter.planEndDate,
-                flagActive = filter.flagActive
-            )
-        )
+        return productionPlanService.getProductionPlans(filter)
     }
 
+    // 생산계획 저장 (생성/수정)
     @DgsData(parentType = "Mutation", field = "saveProductionPlan")
     fun saveProductionPlan(
         @InputArgument("createdRows") createdRows: List<ProductionPlanInput>? = null,
@@ -37,66 +36,36 @@ class ProductionPlanDataFetcher(
         return productionPlanService.saveProductionPlan(createdRows, updatedRows)
     }
 
+    // 생산계획 삭제
     @DgsData(parentType = "Mutation", field = "deleteProductionPlan")
     fun deleteProductionPlan(
         @InputArgument("prodPlanId") prodPlanId: String
     ): Boolean {
         return productionPlanService.deleteProductionPlan(prodPlanId)
     }
-}
 
-data class ProductionPlanFilter(
-    var prodPlanId: String? = null,
-    var orderId: String? = null,
-    var productId: String? = null,
-    var planStartDate: LocalDate? = null,
-    var planEndDate: LocalDate? = null,
-    var flagActive: Boolean? = null
-)
+    // 생산계획에 속한 작업지시 목록 조회 (GraphQL 리졸버)
+    @DgsData(parentType = "ProductionPlan", field = "workOrders")
+    fun workOrders(dfe: DgsDataFetchingEnvironment): List<WorkOrder> {
+        val productionPlan = dfe.getSource<ProductionPlan>()
+        val prodPlanId = productionPlan?.prodPlanId ?: return emptyList()
 
-data class ProductionPlanInput(
-    val orderId: String? = null,
-    val productId: String? = null,
-    val planQty: Double? = null,
-    val planStartDate: String? = null,
-    val planEndDate: String? = null,
-    val flagActive: Boolean? = true
-) {
-    fun toLocalDateTimes(): Pair<LocalDateTime?, LocalDateTime?> {
-        val startDate = planStartDate?.let {
-            val date = LocalDate.parse(it)
-            LocalDateTime.of(date, LocalTime.MIN)
-        }
+        val currentUser = getCurrentUserPrincipal()
 
-        val endDate = planEndDate?.let {
-            val date = LocalDate.parse(it)
-            LocalDateTime.of(date, LocalTime.MAX)
-        }
-
-        return Pair(startDate, endDate)
+        return workOrderRepository.getWorkOrdersByProdPlanId(
+            site = currentUser.getSite(),
+            compCd = currentUser.getCompCd(),
+            prodPlanId = prodPlanId
+        )
     }
-}
 
-data class ProductionPlanUpdate(
-    val prodPlanId: String,
-    val orderId: String? = null,
-    val productId: String? = null,
-    val planQty: Double? = null,
-    val planStartDate: String? = null,
-    val planEndDate: String? = null,
-    val flagActive: Boolean? = null
-) {
-    fun toLocalDateTimes(): Pair<LocalDateTime?, LocalDateTime?> {
-        val startDate = planStartDate?.let {
-            val date = LocalDate.parse(it)
-            LocalDateTime.of(date, LocalTime.MIN)
+    private fun getCurrentUserPrincipal(): UserPrincipal {
+        val authentication = SecurityContextHolder.getContext().authentication
+
+        if (authentication != null && authentication.isAuthenticated && authentication.principal is UserPrincipal) {
+            return authentication.principal as UserPrincipal
         }
 
-        val endDate = planEndDate?.let {
-            val date = LocalDate.parse(it)
-            LocalDateTime.of(date, LocalTime.MAX)
-        }
-
-        return Pair(startDate, endDate)
+        throw SecurityException("현재 인증된 사용자 정보를 찾을 수 없습니다.")
     }
 }

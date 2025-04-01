@@ -6,7 +6,7 @@ on:
       - feature
 
 concurrency:
-  group: prod-branch-deploy
+  group: backend-deploy
   cancel-in-progress: true
 
 jobs:

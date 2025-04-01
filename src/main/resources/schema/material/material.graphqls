@@ -1,0 +1,68 @@
+input MaterialFilter {
+    materialType: String
+    systemMaterialId: String
+    userMaterialId: String
+    materialName: String
+    flagActive: String
+    fromDate: String
+    toDate: String
+}
+
+input MaterialInput {
+    materialType: String!
+    userMaterialId: String
+    materialName: String!
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    manufacturerName: String
+    supplierId: String
+    materialStorage: String
+    flagActive: String
+}
+
+input MaterialUpdate {
+    systemMaterialId: String!
+    materialType: String
+    userMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    manufacturerName: String
+    supplierId: String
+    materialStorage: String
+    flagActive: String
+}
+
+type Material {
+    seq: Int
+    materialType: String
+    systemMaterialId: String
+    userMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    manufacturerName: String
+    supplierId: String
+    materialStorage: String
+    flagActive: String
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+
+extend type Query {
+    materials(filter: MaterialFilter): [Material]
+    ## TODO: 필요 시 드랍다운 정보 조회 쿼리 추가
+}
+
+extend type Mutation {
+    saveMaterials(createdRows: [MaterialInput], updatedRows: [MaterialUpdate]): Boolean
+    deleteMaterials(systemMaterialIds: [String!]!): Boolean
+}

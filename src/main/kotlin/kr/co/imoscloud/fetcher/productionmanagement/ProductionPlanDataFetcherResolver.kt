@@ -16,7 +16,8 @@ class ProductionPlanDataFetcherResolver(
     @DgsData(parentType = "ProductionPlan", field = "workOrders")
     fun workOrders(dfe: DgsDataFetchingEnvironment): List<WorkOrder> {
         val productionPlan = dfe.getSource<ProductionPlan>()
-        val prodPlanId = productionPlan.prodPlanId ?: return emptyList()
+        // 안전 호출 연산자 ?. 사용
+        val prodPlanId = productionPlan?.prodPlanId ?: return emptyList()
 
         val currentUser = getCurrentUserPrincipal()
 

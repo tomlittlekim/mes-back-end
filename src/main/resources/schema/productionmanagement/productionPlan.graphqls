@@ -31,6 +31,7 @@ type ProductionPlan {
     updateDate: String
     updateUser: String
     flagActive: Boolean
+    workOrders: [WorkOrder]
 }
 
 input ProductionPlanInput {

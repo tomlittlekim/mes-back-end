@@ -1,0 +1,57 @@
+extend type Query {
+    workOrders(filter: WorkOrderFilter): [WorkOrder]!
+    workOrdersByProdPlanId(prodPlanId: String!): [WorkOrder]!
+    productionPlansWithWorkOrders(filter: ProductionPlanFilter): [ProductionPlan]!
+}
+
+extend type Mutation {
+    saveWorkOrder(createdRows: [WorkOrderInput], updatedRows: [WorkOrderUpdate]): Boolean
+    deleteWorkOrder(workOrderId: String!): Boolean
+    createWorkOrderFromProductionPlan(prodPlanId: String!, shiftType: String, initialState: String): Boolean
+}
+
+input WorkOrderFilter {
+    workOrderId: String
+    prodPlanId: String
+    productId: String
+    shiftType: String
+    state: String
+    flagActive: Boolean
+}
+
+type WorkOrder {
+    id: Int
+    site: String
+    compCd: String
+    workOrderId: String
+    prodPlanId: String
+    productId: String
+    orderQty: Float
+    shiftType: String
+    state: String
+    createDate: String
+    createUser: String
+    updateDate: String
+    updateUser: String
+    flagActive: Boolean
+    productionPlan: ProductionPlan
+}
+
+input WorkOrderInput {
+    prodPlanId: String
+    productId: String
+    orderQty: Float
+    shiftType: String
+    state: String
+    flagActive: Boolean
+}
+
+input WorkOrderUpdate {
+    workOrderId: String!
+    prodPlanId: String
+    productId: String
+    orderQty: Float
+    shiftType: String
+    state: String
+    flagActive: Boolean
+}

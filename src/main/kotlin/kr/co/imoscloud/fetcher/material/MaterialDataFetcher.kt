@@ -6,6 +6,8 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.fetcher.standardInfo.FactoryInput
+import kr.co.imoscloud.fetcher.standardInfo.FactoryUpdate
 import kr.co.imoscloud.service.material.MaterialResponseModel
 import kr.co.imoscloud.service.material.MaterialService
 
@@ -18,21 +20,23 @@ class MaterialDataFetcher(
         return materialService.getMaterials(filter)
     }
 
-    //TODO: CUD 아직 안 되어있음!!
     @DgsMutation
-    fun saveMaterials(@InputArgument materials: List<MaterialMaster>): List<MaterialMaster> {
-        return materialService.saveMaterials(materials)
+    fun saveMaterials(
+        @InputArgument("createdRows") createdRows: List<MaterialInput?>,
+        @InputArgument("updatedRows") updatedRows:List<MaterialUpdate?>
+    ): Boolean {
+        materialService.saveMaterials(createdRows,updatedRows)
+        return true
     }
 
     @DgsMutation
-    fun deleteMaterials(@InputArgument ids: List<String>): Boolean {
-        return materialService.deleteMaterials(ids)
+    fun deleteMaterials(@InputArgument systemMaterialIds: List<String>): Boolean {
+        return materialService.deleteMaterials(systemMaterialIds)
     }
 }
 
 data class MaterialFilter(
     var materialType: String,
-    var systemMaterialId: String,
     var userMaterialId: String,
     var materialName: String,
     var flagActive: String? = null,
@@ -40,12 +44,31 @@ data class MaterialFilter(
     var toDate: String? = null
 )
 
-//data class MaterialInput(
-//    인풋 선언하기
-//)
-//
-//data class MaterialUpdate(
-//    업데이트 선언
-//)
-//
+data class MaterialInput(
+    var materialType: String,
+    var userMaterialId: String,
+    var materialName: String,
+    var materialStandard: String? = null,
+    var unit: String? = null,
+    var minQuantity: Int? = null,
+    var maxQuantity: Int? = null,
+    var manufacturerName: String? = null,
+    var supplierId: String? = null,
+    var materialStorage: String? = null,
+    var flagActive: String? = null
+)
 
+data class MaterialUpdate(
+    var systemMaterialId: String,
+    var materialType: String? = null,
+    var userMaterialId: String? = null,
+    var materialName: String? = null,
+    var materialStandard: String? = null,
+    var unit: String? = null,
+    var minQuantity: Int? = null,
+    var maxQuantity: Int? = null,
+    var manufacturerName: String? = null,
+    var supplierId: String? = null,
+    var materialStorage: String? = null,
+    var flagActive: String? = null
+)

@@ -24,7 +24,7 @@ class ProductionResultService(
     fun getProductionResults(filter: ProductionResultFilter): List<ProductionResult> {
         return productionResultRepository.getProductionResultList(
             site = "imos",
-            compCd = "epin",
+            compCd = "8pin",
             workOrderId = filter.workOrderId,
             prodResultId = filter.prodResultId,
             equipmentId = filter.equipmentId,

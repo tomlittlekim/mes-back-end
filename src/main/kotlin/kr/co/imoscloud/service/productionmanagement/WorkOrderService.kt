@@ -24,7 +24,7 @@ class WorkOrderService(
     fun getWorkOrders(filter: WorkOrderFilter): List<WorkOrder> {
         return workOrderRepository.getWorkOrderList(
             site = "imos",
-            compCd = "epin",
+            compCd = "8pin",
             workOrderId = filter.workOrderId,
             prodPlanId = filter.prodPlanId,
             productId = filter.productId,

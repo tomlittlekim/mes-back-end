@@ -34,6 +34,17 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // Spring Boot 제공 로깅 의존성 사용
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
+
+    // 명시적 의존성 제거 (Spring Boot가 관리하도록)
+    // implementation 'org.slf4j:slf4j-api:2.0.11'
+    // implementation 'ch.qos.logback:logback-classic:1.4.14'
+
+    // Janino 의존성 추가
+    implementation 'org.codehaus.janino:janino:3.1.11'
+
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'

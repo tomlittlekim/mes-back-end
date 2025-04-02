@@ -2,7 +2,6 @@ package kr.co.imoscloud.entity.material
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
-import java.time.LocalDate
 
 @Entity
 @Table(name = "MATERIAL_MASTER")

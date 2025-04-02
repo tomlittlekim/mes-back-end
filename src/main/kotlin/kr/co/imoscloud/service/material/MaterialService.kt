@@ -35,8 +35,8 @@ class MaterialService(
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
             flagActive = filter.flagActive?.let { it == "Y" },
-            fromDate = DateUtils.parseDate(filter.fromDate),
-            toDate = DateUtils.parseDate(filter.toDate)
+            fromDate = DateUtils.parseDateTime(filter.fromDate),
+            toDate = DateUtils.parseDateTime(filter.toDate)
         )
 
         return entityToResponse(materialList)
@@ -51,8 +51,8 @@ class MaterialService(
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
             flagActive = filter.flagActive?.let { it == "Y" },
-            fromDate = DateUtils.parseDate(filter.fromDate),
-            toDate = DateUtils.parseDate(filter.toDate)
+            fromDate = DateUtils.parseDateTime(filter.fromDate),
+            toDate = DateUtils.parseDateTime(filter.toDate)
         )
         return entityToResponse(materialList)
     }
@@ -66,8 +66,8 @@ class MaterialService(
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
             flagActive = filter.flagActive?.let { it == "Y" },
-            fromDate = DateUtils.parseDate(filter.fromDate),
-            toDate = DateUtils.parseDate(filter.toDate)
+            fromDate = DateUtils.parseDateTime(filter.fromDate),
+            toDate = DateUtils.parseDateTime(filter.toDate)
         )
         return entityToResponse(materialList)
     }
@@ -122,6 +122,7 @@ class MaterialService(
                 unit = it?.unit,
                 minQuantity = it?.minQuantity,
                 maxQuantity = it?.maxQuantity,
+                baseQuantity = it?.baseQuantity,
                 manufacturerName = it?.manufacturerName,
                 supplierId = it?.supplierId,
                 materialStorage = it?.materialStorage,

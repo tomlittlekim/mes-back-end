@@ -46,19 +46,19 @@ class MaterialDataFetcher(
 }
 
 data class MaterialFilter(
-    var materialType: String,
-    var userMaterialId: String,
-    var materialName: String,
+    var materialType: String? = null,
+    var userMaterialId: String? = null,
+    var materialName: String? = null,
     var flagActive: String? = null,
     var fromDate: String? = null,
     var toDate: String? = null
 )
 
 data class MaterialInput(
-    var materialType: String,
-    var materialCategory: String,
+    var materialType: String? = null,
+    var materialCategory: String? = null,
     var userMaterialId: String,
-    var materialName: String,
+    var materialName: String? = null,
     var materialStandard: String? = null,
     var unit: String? = null,
     var minQuantity: Int? = null,

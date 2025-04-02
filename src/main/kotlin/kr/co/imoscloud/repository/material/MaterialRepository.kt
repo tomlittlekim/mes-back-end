@@ -2,11 +2,10 @@ package kr.co.imoscloud.repository.Material
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.material.MaterialMaster
-import kr.co.imoscloud.entity.standardInfo.Factory
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
     @Query(
@@ -30,8 +29,8 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         userMaterialId: String?,
         materialName: String?,
         flagActive: Boolean?,
-        fromDate: LocalDate?,
-        toDate: LocalDate?
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?
     ): List<MaterialMaster?>
 
     @Query(
@@ -56,8 +55,8 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         userMaterialId: String?,
         materialName: String?,
         flagActive: Boolean?,
-        fromDate: LocalDate?,
-        toDate: LocalDate?
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?
     ): List<MaterialMaster?>
 
     @Query(

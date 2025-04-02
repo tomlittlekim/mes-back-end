@@ -18,9 +18,11 @@ class CommonCodeService(
     val codeRep:CodeRep
 ) {
     fun getCodeClass(filter: CodeClassFilter): List<CodeClassResponse> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         val codeClassList = codeClassRep.getCodeClassList(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.getCompCd(),
             codeClassId = filter.codeClassId,
             codeClassName = filter.codeClassName
         )
@@ -49,8 +51,8 @@ class CommonCodeService(
             CodeClass(
                 codeClassId = "CD" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),  // 3자리만 사용,
-                site = "imos",
-                compCd = "eightPin",
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.getCompCd(),
                 codeClassName = it?.codeClassName,
                 codeClassDesc = it?.codeClassDesc,
             ).apply{ createCommonCol(userPrincipal) }
@@ -65,8 +67,8 @@ class CommonCodeService(
         }
 
         val codeClassList = codeClassRep.getCodeClassListByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.getCompCd(),
             codeClassIds = codeClassIds
         )
 
@@ -87,9 +89,11 @@ class CommonCodeService(
     }
 
     fun getCodes(codeClassId: String):List<CodeResponse>{
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         val codeList = codeRep.getCodeList(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.getCompCd(),
             codeClassId = codeClassId
         )
 
@@ -113,8 +117,8 @@ class CommonCodeService(
                 codeClassId = it?.codeClassId,
                 codeId = "C" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),  // 3자리만 사용,
-                site = "imos",
-                compCd = "eightPin",
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.getCompCd(),
                 codeName = it?.codeName,
                 codeDesc = it?.codeDesc,
                 sortOrder = it?.sortOrder,
@@ -133,8 +137,8 @@ class CommonCodeService(
         }
 
         val codeList = codeRep.getCodeListByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.getCompCd(),
             codeClassId = updatedRows[0].codeClassId,
             codeIds = codeIds
         )
@@ -158,9 +162,11 @@ class CommonCodeService(
     }
 
     fun deleteCode(codeId:String): Boolean {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         return codeRep.deleteByCodeId(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.getCompCd(),
             codeId
         ) > 0
     }

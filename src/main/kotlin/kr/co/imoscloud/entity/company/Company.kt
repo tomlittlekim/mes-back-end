@@ -2,6 +2,8 @@ package kr.co.imoscloud.entity.company
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
+import kr.co.imoscloud.iface.DtoCompCdBase
+import kr.co.imoscloud.iface.DtoLoginIdBase
 import java.time.LocalDateTime
 
 @Entity
@@ -16,8 +18,8 @@ class Company(
     @Column(name = "SITE", length = 20, nullable = false)
     val site: String,
 
-    @Column(name = "COMP_CD", length = 20, nullable = false)
-    val compCd: String,
+    @Column(name = "COMP_CD", length = 20, nullable = false, unique = true)
+    override  val compCd: String,
 
     @Column(name = "BUSINESS_REGISTRATION_NUMBER", length = 40, unique = true)
     val businessRegistrationNumber: String,
@@ -50,9 +52,9 @@ class Company(
     val flagSubscription: Boolean = false,
 
     @Column(name = "ONER_ID", length = 40)
-    val onerId: String,
+    override val loginId: String,
 
     @Column(name = "PHONE_NUMBER", length = 11)
     val phoneNumber: String? = null
 
-) : CommonCol()
+) : CommonCol(), DtoLoginIdBase, DtoCompCdBase

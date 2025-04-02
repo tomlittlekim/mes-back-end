@@ -32,16 +32,17 @@ data class LoginOutput(
 
 data class LoginRequest(val userId: String, val userPwd: String)
 
-data class UserSummery(
-    override val loginId: String,
-    override val roleId: Long,
-    val userPwd: String,
-    val userName: String?=null,
-    val email: String?=null
-): DtoLoginIdBase, DtoRoleIdBase
-
 data class ExistLoginIdRequest(
     override val loginId: String
+): DtoLoginIdBase
+
+data class UserResponse(
+    override val loginId: String,
+    val username: String,
+    val departmentNm: String?,
+    val positionNm: String?,
+    val roleNm: String,
+    val flagActive: Boolean
 ): DtoLoginIdBase
 
 data class RoleInput(

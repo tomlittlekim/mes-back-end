@@ -23,7 +23,7 @@ class CommonCol (
     var createUser: String? = null,
 
     @Column(name = "FLAG_ACTIVE")
-    var flagActive: Boolean? = true
+    var flagActive: Boolean = true
 
 ) {
     fun createCommonCol(userPrincipal: UserPrincipal) {

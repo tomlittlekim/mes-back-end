@@ -6,7 +6,6 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.iface.IUser
-import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.security.JwtTokenProvider
 import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.util.SecurityUtils
@@ -21,9 +20,8 @@ import java.util.*
 
 @Service
 class UserService(
-    private val userRepo: UserRepository,
+    private val core: Core,
     private val jwtProvider: JwtTokenProvider,
-    private val core: Core
 ): IUser {
 
     fun signIn(
@@ -32,11 +30,11 @@ class UserService(
         response: HttpServletResponse
     ): ResponseEntity<LoginOutput> {
         val site = getSiteByDomain(request)
-        val userRes = userRepo.findBySiteAndLoginIdAndFlagActiveIsTrue(site, loginReq.userId)
+        val userRes = core.userRepo.findBySiteAndLoginIdAndFlagActiveIsTrue(site, loginReq.userId)
             ?.let { user ->
                 try {
                     validateUser(loginReq.userPwd, user)
-                    val roleSummery = core.getUserRoleFromInMemory(user)
+                    val roleSummery = core.getUserRoleFromInMemory(user.roleId)
 
                     val userDetails = UserPrincipal.create(user, roleSummery)
                     val userPrincipal = UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
@@ -66,20 +64,24 @@ class UserService(
 
         val modifyReq = modifyReqByRole(loginUser, req)
         val newUser = try {
-            val target = userRepo.findBySiteAndLoginIdForSignUp(modifyReq.site!!, modifyReq.userId)!!
+            val target = core.userRepo.findBySiteAndLoginIdForSignUp(modifyReq.site!!, modifyReq.userId)!!
             if (target.flagActive == false) target.apply { flagActive = true; createCommonCol(loginUser) }
             else throw IllegalArgumentException("이미 존재하는 유저입니다. ")
         } catch (e: NullPointerException) {
             generateUser(req)
         }
 
-        return userRepo.save(newUser)
+        return core.userRepo.save(newUser)
     }
 
     fun existLoginId(req: ExistLoginIdRequest): Boolean {
         val userMap = core.getAllUserMap(listOf(req))
         return userMap[req.loginId] != null
     }
+
+//    fun getUserGroupByCompany(): List<UserResponse> {
+//
+//    }
 
     private fun checkRole(loginUser: UserPrincipal): Boolean {
         return loginUser.authorities.first().authority == "admin"

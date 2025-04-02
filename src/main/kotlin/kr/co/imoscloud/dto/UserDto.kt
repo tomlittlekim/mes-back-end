@@ -37,12 +37,13 @@ data class ExistLoginIdRequest(
 ): DtoLoginIdBase
 
 data class UserResponse(
+    val id: Long,
     override val loginId: String,
-    val username: String,
-    var departmentNm: String?,
-    var positionNm: String?,
-    val roleNm: String,
-    val flagActive: Boolean
+    val userName: String,
+    var departmentName: String?,
+    var position: String?,
+    val authorityName: String,
+    val flagActive: String
 ): DtoLoginIdBase
 
 data class UserSummery(
@@ -60,6 +61,18 @@ data class UserSummery(
     val positionId: String?=null,
     val flagActive: Boolean,
 ): DtoAllInOneBase
+
+data class UserDetail(
+    val id: Long,
+    override val loginId: String,
+    val userName: String,
+    var departmentName: String?,
+    var position: String?,
+    val authorityName: String,
+    val email: String?,
+    val phoneNumber: String?,
+    val flagActive: String
+): DtoLoginIdBase
 
 data class RoleInput(
     override val roleId: Long,

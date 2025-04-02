@@ -48,7 +48,6 @@ extend type Query {
 }
 
 extend type Mutation {
-    saveFactory(createdR
-    ows: [FactoryInput], updatedRows: [FactoryUpdate] ): Boolean
+    saveFactory(createdRows: [FactoryInput], updatedRows: [FactoryUpdate] ): Boolean
     deleteFactory(factoryId: String!): Boolean!
 }

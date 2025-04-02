@@ -22,7 +22,7 @@ class CommonCodeService(
 
         val codeClassList = codeClassRep.getCodeClassList(
             site = userPrincipal.getSite(),
-            compCd = userPrincipal.getCompCd(),
+            compCd = userPrincipal.compCd,
             codeClassId = filter.codeClassId,
             codeClassName = filter.codeClassName
         )
@@ -52,7 +52,7 @@ class CommonCodeService(
                 codeClassId = "CD" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),  // 3자리만 사용,
                 site = userPrincipal.getSite(),
-                compCd = userPrincipal.getCompCd(),
+                compCd = userPrincipal.compCd,
                 codeClassName = it?.codeClassName,
                 codeClassDesc = it?.codeClassDesc,
             ).apply{ createCommonCol(userPrincipal) }
@@ -68,7 +68,7 @@ class CommonCodeService(
 
         val codeClassList = codeClassRep.getCodeClassListByIds(
             site = userPrincipal.getSite(),
-            compCd = userPrincipal.getCompCd(),
+            compCd = userPrincipal.compCd,
             codeClassIds = codeClassIds
         )
 
@@ -93,7 +93,7 @@ class CommonCodeService(
 
         val codeList = codeRep.getCodeList(
             site = userPrincipal.getSite(),
-            compCd = userPrincipal.getCompCd(),
+            compCd = userPrincipal.compCd,
             codeClassId = codeClassId
         )
 
@@ -118,7 +118,7 @@ class CommonCodeService(
                 codeId = "C" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),  // 3자리만 사용,
                 site = userPrincipal.getSite(),
-                compCd = userPrincipal.getCompCd(),
+                compCd = userPrincipal.compCd,
                 codeName = it?.codeName,
                 codeDesc = it?.codeDesc,
                 sortOrder = it?.sortOrder,
@@ -138,7 +138,7 @@ class CommonCodeService(
 
         val codeList = codeRep.getCodeListByIds(
             site = userPrincipal.getSite(),
-            compCd = userPrincipal.getCompCd(),
+            compCd = userPrincipal.compCd,
             codeClassId = updatedRows[0].codeClassId,
             codeIds = codeIds
         )
@@ -166,7 +166,7 @@ class CommonCodeService(
 
         return codeRep.deleteByCodeId(
             site = userPrincipal.getSite(),
-            compCd = userPrincipal.getCompCd(),
+            compCd = userPrincipal.compCd,
             codeId
         ) > 0
     }

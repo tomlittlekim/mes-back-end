@@ -34,10 +34,7 @@ class UserPrincipal(
     override fun isEnabled(): Boolean = true
 
     fun getSite(): String = site
-    fun getCompCd(): String = compCd
-    fun getLoginId(): String = loginId
     fun getId(): Long = id
-    fun getRoleId(): Long = roleId
 
     companion object {
         fun create(user: User, role: RoleSummery): UserPrincipal {

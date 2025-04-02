@@ -26,7 +26,7 @@ class MaterialService(
         val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
         val materialList = materialRep.getRawSubMaterialList(
             site = currentUser?.getSite() ?: DEFAULT_SITE,
-            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
+            compCd = currentUser?.compCd ?: DEFAULT_COMP_CD,
             materialType = filter.materialType,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
@@ -42,7 +42,7 @@ class MaterialService(
         val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
         val materialList = materialRep.getMaterialList(
             site = currentUser?.getSite() ?: DEFAULT_SITE,
-            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
+            compCd = currentUser?.compCd ?: DEFAULT_COMP_CD,
             materialType = CoreEnum.MaterialType.COMPLETE_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
@@ -57,7 +57,7 @@ class MaterialService(
         val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
         val materialList = materialRep.getMaterialList(
             site = currentUser?.getSite() ?: DEFAULT_SITE,
-            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
+            compCd = currentUser?.compCd ?: DEFAULT_COMP_CD,
             materialType = CoreEnum.MaterialType.HALF_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,

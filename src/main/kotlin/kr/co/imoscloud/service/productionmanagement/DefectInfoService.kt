@@ -28,7 +28,7 @@ class DefectInfoService(
         val currentUser = getCurrentUserPrincipal()
         return defectInfoRepository.getDefectInfoByProdResultId(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             prodResultId = prodResultId
         )
     }
@@ -50,7 +50,7 @@ class DefectInfoService(
         // 업데이트된 리포지토리 메소드 호출
         return defectInfoRepository.getDefectInfoList(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             workOrderId = filter.workOrderId,
             prodResultId = filter.prodResultId,
             defectId = filter.defectId,
@@ -78,7 +78,7 @@ class DefectInfoService(
             createdRows?.forEach { input ->
                 val newDefectInfo = DefectInfo().apply {
                     site = currentUser.getSite()
-                    compCd = currentUser.getCompCd()
+                    compCd = currentUser.compCd
                     workOrderId = input.workOrderId
                     prodResultId = input.prodResultId
                     defectId = "DF" + System.currentTimeMillis() // 임시 ID 생성 방식
@@ -160,7 +160,7 @@ class DefectInfoService(
             defectInputs.forEach { input ->
                 val newDefectInfo = DefectInfo().apply {
                     site = currentUser.getSite()
-                    compCd = currentUser.getCompCd()
+                    compCd = currentUser.compCd
                     this.workOrderId = workOrderId
                     this.prodResultId = prodResultId
                     defectId = "DF" + System.currentTimeMillis() + "-" + (input.productId ?: "") // 임시 ID 생성 방식
@@ -198,7 +198,7 @@ class DefectInfoService(
         // 불량 정보 조회 - 최적화된 메소드 사용
         val defectList = defectInfoRepository.getDefectInfoForStats(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             fromDate = fromDateTime,
             toDate = toDateTime
         )
@@ -309,7 +309,7 @@ class DefectInfoService(
         // 불량 정보 조회 - 최적화된 메소드 사용
         val defectList = defectInfoRepository.getDefectInfoForStats(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             fromDate = fromDateTime,
             toDate = toDateTime
         )

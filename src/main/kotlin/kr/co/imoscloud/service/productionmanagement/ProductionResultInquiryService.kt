@@ -31,7 +31,7 @@ class ProductionResultInquiryService(
 
         val results = productionResultInquiryRepository.getProductionResultList(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             workOrderId = filter.workOrderId,
             prodResultId = filter.prodResultId,
             productId = filter.productId,
@@ -85,7 +85,7 @@ class ProductionResultInquiryService(
         val currentUser = getCurrentUserPrincipal()
         val result = productionResultInquiryRepository.findDetailByProdResultId(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             prodResultId = prodResultId
         ) ?: return null
 
@@ -141,7 +141,7 @@ class ProductionResultInquiryService(
         val currentUser = getCurrentUserPrincipal()
         val results = productionResultInquiryRepository.getProductionResultListByDateRange(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             fromDate = LocalDateTime.of(fromDate, LocalTime.MIN),
             toDate = LocalDateTime.of(toDate, LocalTime.MAX)
         )
@@ -211,7 +211,7 @@ class ProductionResultInquiryService(
         val currentUser = getCurrentUserPrincipal()
         val results = productionResultInquiryRepository.getProductionResultListByDateRange(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             fromDate = LocalDateTime.of(fromDate, LocalTime.MIN),
             toDate = LocalDateTime.of(toDate, LocalTime.MAX)
         )

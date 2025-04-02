@@ -28,7 +28,7 @@ class ProductionPlanService(
 
         return productionPlanRepository.getProductionPlanList(
             site = currentUser?.getSite() ?: DEFAULT_SITE,
-            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
+            compCd = currentUser?.compCd ?: DEFAULT_COMP_CD,
             prodPlanId = filter.prodPlanId,
             orderId = filter.orderId,
             productId = filter.productId,
@@ -51,7 +51,7 @@ class ProductionPlanService(
             val currentUser = userPrincipal ?: try {
                 SecurityUtils.getCurrentUserPrincipal().also {
                     log.debug("현재 사용자: {}, 사이트: {}, 회사: {}",
-                        it.getUsername(), it.getSite(), it.getCompCd())
+                        it.getUsername(), it.getSite(), it.compCd)
                 }
             } catch (e: SecurityException) {
                 log.warn("인증된 사용자 정보를 찾을 수 없음, 기본 값 사용: {}", e.message)
@@ -65,7 +65,7 @@ class ProductionPlanService(
                 // 신규 계획 생성
                 val newPlan = ProductionPlan().apply {
                     site = currentUser?.getSite() ?: DEFAULT_SITE
-                    compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD
+                    compCd = currentUser?.compCd ?: DEFAULT_COMP_CD
                     prodPlanId = "PP" + System.currentTimeMillis()
                     orderId = input.orderId
                     productId = input.productId
@@ -76,7 +76,7 @@ class ProductionPlanService(
 
                     // 사용자 정보가 있으면 해당 정보로, 없으면 기본값으로 생성 정보 설정
                     if (currentUser != null) {
-                        createUser = currentUser.getLoginId()
+                        createUser = currentUser.loginId
                     } else {
                         createUser = DEFAULT_USER
                     }
@@ -106,7 +106,7 @@ class ProductionPlanService(
 
                         // 사용자 정보가 있으면 해당 정보로, 없으면 기본값으로 업데이트 정보 설정
                         if (currentUser != null) {
-                            updateUser = currentUser.getLoginId()
+                            updateUser = currentUser.loginId
                         } else {
                             updateUser = DEFAULT_USER
                         }

@@ -38,7 +38,7 @@ class JwtTokenProvider(
         val authorities = authentication.authorities.joinToString(",") { it.authority }
         val now = Date()
         val validity = Date(now.time + tokenValidityInMilliseconds)
-        val loginId = (authentication.principal as UserPrincipal).getLoginId()
+        val loginId = (authentication.principal as UserPrincipal).loginId
 
         return Jwts.builder()
             .setSubject(loginId)

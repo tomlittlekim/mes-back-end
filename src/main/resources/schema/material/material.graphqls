@@ -10,6 +10,7 @@ input MaterialFilter {
 
 input MaterialInput {
     materialType: String!
+    materialCategory: String
     userMaterialId: String
     materialName: String!
     materialStandard: String
@@ -26,6 +27,7 @@ input MaterialInput {
 input MaterialUpdate {
     systemMaterialId: String!
     materialType: String
+    materialCategory: String
     userMaterialId: String
     materialName: String
     materialStandard: String
@@ -42,6 +44,7 @@ input MaterialUpdate {
 type Material {
     seq: Int
     materialType: String
+    materialCategory: String
     systemMaterialId: String
     userMaterialId: String
     materialName: String

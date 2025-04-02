@@ -8,6 +8,7 @@ import kr.co.imoscloud.fetcher.material.MaterialInput
 import kr.co.imoscloud.fetcher.material.MaterialUpdate
 import kr.co.imoscloud.repository.Material.MaterialRepository
 import kr.co.imoscloud.util.DateUtils
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.LocalDate
@@ -15,8 +16,10 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class MaterialService(
-    private val materialRep: MaterialRepository
+    private val materialRep: MaterialRepository,
 ) {
+    private val loginUser = SecurityUtils.getCurrentUserPrincipal();
+
     fun getRawSubMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
         val materialList = materialRep.getRawSubMaterialList(
             site = "imos",
@@ -111,8 +114,10 @@ class MaterialService(
                 supplierId = it?.supplierId
                 materialStorage = it?.materialStorage
                 flagActive = it?.flagActive == "Y"
-                createUser = "phj"
+                createUser = loginUser.username
                 createDate = LocalDate.now()
+                updateUser = loginUser.username
+                updateDate = LocalDate.now()
             }
         }
 
@@ -148,7 +153,7 @@ class MaterialService(
                 it.supplierId = x?.supplierId
                 it.materialStorage = x?.materialStorage
                 it.flagActive = x?.flagActive == "Y"
-                it.updateUser = "phj"
+                it.updateUser = loginUser.username
                 it.updateDate = LocalDate.now()
             }
         }

@@ -3,7 +3,7 @@ name: Build and Push Docker Image and deploy
 on:
   push:
     branches:
-      - feature
+      - main
 
 concurrency:
   group: backend-deploy

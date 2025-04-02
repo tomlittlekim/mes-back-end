@@ -9,10 +9,10 @@ input MaterialFilter {
 }
 
 input MaterialInput {
-    materialType: String!
+    materialType: String
     materialCategory: String
     userMaterialId: String
-    materialName: String!
+    materialName: String
     materialStandard: String
     unit: String
     minQuantity: Int

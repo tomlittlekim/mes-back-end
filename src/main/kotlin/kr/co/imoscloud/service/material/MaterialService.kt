@@ -122,6 +122,7 @@ class MaterialService(
                 unit = it?.unit,
                 minQuantity = it?.minQuantity,
                 maxQuantity = it?.maxQuantity,
+                baseQuantity = it?.baseQuantity,
                 manufacturerName = it?.manufacturerName,
                 supplierId = it?.supplierId,
                 materialStorage = it?.materialStorage,

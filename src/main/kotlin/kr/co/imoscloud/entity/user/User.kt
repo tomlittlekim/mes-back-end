@@ -23,23 +23,26 @@ class User(
     @Column(name = "LOGIN_ID", length = 100, unique = true)
     val loginId: String,
 
-    @Column(name = "USER_PWD", length = 100)
+    @Column(name = "USER_PWD", length = 100, nullable = false)
     val userPwd: String,
 
-    @Column(name = "IMAGE_PATH", length = 50)
+    @Column(name = "IMAGE_PATH", length = 100)
     val imagePath: String? = null,
 
-    @Column(name = "ROLE_ID", length = 20)
+    @Column(name = "ROLE_ID")
     val roleId: Long,
 
-    @Column(name = "USER_EMAIL", length = 20)
+    @Column(name = "USER_EMAIL", length = 100)
     val userEmail: String? = null,
 
     @Column(name = "PHONE_NUM", length = 11)
     val phoneNum: String? = null,
 
-    @Column(name = "DEPARTMENT_ID", length = 20)
+    @Column(name = "DEPARTMENT_ID", length = 100)
     val departmentId: String? = null,
+
+    @Column(name = "POSITION_ID", length = 100)
+    val positionId: String? = null,
 
     @Column(name = "TEXT_AREA", length = 1000)
     val textArea: String? = null,

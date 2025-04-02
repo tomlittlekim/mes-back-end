@@ -9,7 +9,7 @@ import kr.co.imoscloud.repository.company.CompanyRepository
 import kr.co.imoscloud.repository.user.MenuRoleRepository
 import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.repository.user.UserRoleRepository
-import kr.co.imoscloud.util.SecurityUtils
+import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.stereotype.Component
 
 @Component
@@ -76,17 +76,13 @@ class Core(
         return roleMap[index] ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
     }
 
-    fun getUserGroupByCompCd(): List<UserSummery?> {
-        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+    fun getUserGroupByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
         return if (getIsInspect()) {
             userRepo.findAllBySiteAndCompCdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.getCompCd())
                 .map { userToUserSummery(it) }
         } else {
             val userMap = getAllUserMap(listOf(loginUser))
-            return userMap[loginUser.getLoginId()]
-                ?.takeIf { it.compCd == loginUser.getCompCd() }
-                ?.let { listOf(it) }
-                ?: emptyList()
+            return userMap.filterValues { it?.compCd == loginUser.getCompCd() }.values.toList()
         }
     }
 
@@ -103,14 +99,13 @@ class Core(
         )
     }
 
-    fun <T> userToUserResponse(any: T): UserResponse {
-        val u = when (any) {
-            is User -> userToUserSummery(any)
-            is UserSummery -> any
-            else -> throw IllegalArgumentException("메모리에 유저에 대한 정보 누락이거나 지원하지 않는 객체입니다. ")
-        }
+    fun isDeveloper(loginUser: UserPrincipal): Boolean {
+        val roleSummery = getUserRoleFromInMemory(loginUser)
+        return roleSummery.priorityLevel == 5
+    }
 
-        val role = getUserRoleFromInMemory(u.roleId)
-        return UserResponse(u.loginId,u.username?:"",u.departmentId,u.positionId,role.roleName,u.flagActive)
+    fun isAdminOrHigher(loginUser: UserPrincipal): Boolean {
+        val roleSummery = getUserRoleFromInMemory(loginUser)
+        return roleSummery.priorityLevel!! >= 3
     }
 }

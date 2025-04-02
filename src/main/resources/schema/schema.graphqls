@@ -57,5 +57,5 @@ extend type Mutation {
 extend type Query {
     signIn(input: UserInput!): UserOutput!
     existLoginId(input: ExistLoginRequest!): Boolean!
-    getUserGroup: [UserResponse!]
+    getUserGroup: [UserResponse]
 }

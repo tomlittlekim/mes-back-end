@@ -23,5 +23,5 @@ class UserFetcher(
     }
 
     @DgsQuery
-    fun getUserGroup(): List<UserResponse> = userService.getUserGroupByCompany()
+    fun getUserGroup(): List<UserResponse?> = userService.getUserGroupByCompany()
 }

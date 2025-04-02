@@ -6,6 +6,7 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.iface.IUser
+import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.security.JwtTokenProvider
 import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.util.SecurityUtils
@@ -22,6 +23,7 @@ import java.util.*
 class UserService(
     private val core: Core,
     private val jwtProvider: JwtTokenProvider,
+    private val codeRep: CodeRep
 ): IUser {
 
     fun signIn(
@@ -34,7 +36,7 @@ class UserService(
             ?.let { user ->
                 try {
                     validateUser(loginReq.userPwd, user)
-                    val roleSummery = core.getUserRoleFromInMemory(user.roleId)
+                    val roleSummery = core.getUserRoleFromInMemory(user)
 
                     val userDetails = UserPrincipal.create(user, roleSummery)
                     val userPrincipal = UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
@@ -60,12 +62,12 @@ class UserService(
 
     fun signUp(req: UserInput): User {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        if (!checkRole(loginUser)) throw IllegalArgumentException("관리자 이상의 등급을 가진 유저가 아닙니다. ")
+        if (!core.isAdminOrHigher(loginUser)) throw IllegalArgumentException("관리자 이상의 등급을 가진 유저가 아닙니다. ")
 
         val modifyReq = modifyReqByRole(loginUser, req)
         val newUser = try {
             val target = core.userRepo.findBySiteAndLoginIdForSignUp(modifyReq.site!!, modifyReq.userId)!!
-            if (target.flagActive == false) target.apply { flagActive = true; createCommonCol(loginUser) }
+            if (!target.flagActive) target.apply { flagActive = true; createCommonCol(loginUser) }
             else throw IllegalArgumentException("이미 존재하는 유저입니다. ")
         } catch (e: NullPointerException) {
             generateUser(req)
@@ -79,12 +81,17 @@ class UserService(
         return userMap[req.loginId] != null
     }
 
-    fun getUserGroupByCompany(): List<UserResponse> {
-        return core.getUserGroupByCompCd()
-    }
+    fun getUserGroupByCompany(): List<UserResponse?> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-    private fun checkRole(loginUser: UserPrincipal): Boolean {
-        return loginUser.authorities.first().authority == "admin"
+        val codeMap = codeRep.findAllByCodeClassIdIn(listOf("DEPARTMENT","POSITION"))
+            .associate { it?.codeId to it?.codeName }
+        return if (core.isDeveloper(loginUser)) {
+            core.getAllUserMap(listOf(loginUser))
+                .mapValues { userToUserResponse(it.value, codeMap) }
+                .values.toList()
+        } else core.getUserGroupByCompCd(loginUser)
+            .map { userToUserResponse(it, codeMap) }
     }
 
     private fun modifyReqByRole(loginUser: UserPrincipal, req: UserInput): UserInput {
@@ -94,7 +101,7 @@ class UserService(
 
         return req.apply {
             this.site = if (isDev) req.site else loginUser.getSite()
-            this.compCd = if (isDev) req.compCd else loginUser.getCompCd()
+            this.compCd = if (isDev) req.compCd else loginUser.compCd
         }
     }
 
@@ -121,5 +128,13 @@ class UserService(
 
         if (!(passwordEncoder.matches(target.userPwd, matchedPWD) || target.userPwd == matchedPWD))
             throw IllegalArgumentException("비밀번호가 일치하지 않습니다. ")
+    }
+
+    private fun userToUserResponse(us: UserSummery?, codeMap: Map<String?, String?>): UserResponse? {
+        us ?: return null
+        val role = core.getUserRoleFromInMemory(us.roleId)
+        val departmentNm = codeMap[us.departmentId]
+        val positionNm = codeMap[us.positionId]
+        return UserResponse(us.loginId,us.username?:"",departmentNm,positionNm,role.roleName,us.flagActive)
     }
 }

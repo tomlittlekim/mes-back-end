@@ -16,7 +16,7 @@ class WorkOrderService(
         val currentUser = getCurrentUserPrincipal()
         return workOrderRepository.getWorkOrdersByProdPlanId(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             prodPlanId = prodPlanId
         )
     }
@@ -45,7 +45,7 @@ class WorkOrderService(
             createdRows?.forEach { input ->
                 val newWorkOrder = WorkOrder().apply {
                     site = currentUser.getSite()
-                    compCd = currentUser.getCompCd()
+                    compCd = currentUser.compCd
                     workOrderId = "WO" + System.currentTimeMillis() // 임시 ID 생성 방식
                     prodPlanId = input.prodPlanId
                     productId = input.productId

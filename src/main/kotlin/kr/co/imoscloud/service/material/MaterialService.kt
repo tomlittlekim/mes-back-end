@@ -11,7 +11,6 @@ import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -28,47 +27,47 @@ class MaterialService(
     }
 
     fun getRawSubMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
-        val currentUser = getCurrentUser()
+        val userPrincipal = getCurrentUser()
         val materialList = materialRep.getRawSubMaterialList(
-            site = currentUser?.getSite() ?: DEFAULT_SITE,
-            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
             materialType = filter.materialType,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
             flagActive = filter.flagActive?.let { it == "Y" },
-            fromDate = DateUtils.parseDate(filter.fromDate),
-            toDate = DateUtils.parseDate(filter.toDate)
+            fromDate = DateUtils.parseDateTime(filter.fromDate),
+            toDate = DateUtils.parseDateTime(filter.toDate)
         )
 
         return entityToResponse(materialList)
     }
 
     fun getCompleteMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
-        val currentUser = getCurrentUser()
+        val userPrincipal = getCurrentUser()
         val materialList = materialRep.getMaterialList(
-            site = currentUser?.getSite() ?: DEFAULT_SITE,
-            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
             materialType = CoreEnum.MaterialType.COMPLETE_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
             flagActive = filter.flagActive?.let { it == "Y" },
-            fromDate = DateUtils.parseDate(filter.fromDate),
-            toDate = DateUtils.parseDate(filter.toDate)
+            fromDate = DateUtils.parseDateTime(filter.fromDate),
+            toDate = DateUtils.parseDateTime(filter.toDate)
         )
         return entityToResponse(materialList)
     }
 
     fun getHalfMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
-        val currentUser = getCurrentUser()
+        val userPrincipal = getCurrentUser()
         val materialList = materialRep.getMaterialList(
-            site = currentUser?.getSite() ?: DEFAULT_SITE,
-            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
             materialType = CoreEnum.MaterialType.HALF_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
             flagActive = filter.flagActive?.let { it == "Y" },
-            fromDate = DateUtils.parseDate(filter.fromDate),
-            toDate = DateUtils.parseDate(filter.toDate)
+            fromDate = DateUtils.parseDateTime(filter.fromDate),
+            toDate = DateUtils.parseDateTime(filter.toDate)
         )
         return entityToResponse(materialList)
     }
@@ -79,6 +78,7 @@ class MaterialService(
                 it?.systemMaterialId,
                 it?.userMaterialId,
                 it?.materialType,
+                it?.materialCategory,
                 it?.materialName,
                 it?.materialStandard,
                 it?.unit,
@@ -91,45 +91,43 @@ class MaterialService(
                 it?.materialStorage,
                 if (it?.flagActive == true) "Y" else "N",
                 it?.createUser,
-                it?.createDate?.toString(),
+                DateUtils.formatLocalDate(it?.createDate),
                 it?.updateUser,
-                it?.updateDate?.toString()
+                DateUtils.formatLocalDate(it?.updateDate)
             )
         }
     }
 
     @Transactional
     fun saveMaterials(createdRows: List<MaterialInput?>, updatedRows: List<MaterialUpdate?>) {
-        //TODO 저장 ,수정시 공통 으로 작성자 ,작성일 ,수정자 ,수정일 변경 저장이 필요함
         createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { createMaterials(it) }
         updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { updateMaterials(it) }
     }
 
     fun createMaterials(createdRows: List<MaterialInput?>) {
-        val currentUser = getCurrentUser()
+        val userPrincipal = getCurrentUser()
         val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
         val materialList = createdRows.map {
-            MaterialMaster().apply {
+            MaterialMaster(
                 systemMaterialId = "MAT" + LocalDateTime.now().format(formatter) +
-                        System.nanoTime().toString().takeLast(3)
-                site = currentUser?.getSite() ?: DEFAULT_SITE
-                compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD
-                materialType = it?.materialType
-                userMaterialId = it?.userMaterialId
-                materialName = it?.materialName
-                materialStandard = it?.materialStandard
-                unit = it?.unit
-                minQuantity = it?.minQuantity
-                maxQuantity = it?.maxQuantity
-                manufacturerName = it?.manufacturerName
-                supplierId = it?.supplierId
-                materialStorage = it?.materialStorage
-                flagActive = it?.flagActive == "Y"
-                createUser = currentUser?.getUserId()
-                createDate = LocalDate.now()
-                updateUser = currentUser?.getUserId()
-                updateDate = LocalDate.now()
+                        System.nanoTime().toString().takeLast(3),
+                site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+                compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+                materialType = it?.materialType,
+                materialCategory = it?.materialCategory,
+                userMaterialId = it?.userMaterialId,
+                materialName = it?.materialName,
+                materialStandard = it?.materialStandard,
+                unit = it?.unit,
+                minQuantity = it?.minQuantity,
+                maxQuantity = it?.maxQuantity,
+                manufacturerName = it?.manufacturerName,
+                supplierId = it?.supplierId,
+                materialStorage = it?.materialStorage,
+            ).apply {
+                flagActive = it?.flagActive.equals("Y" )
+                createCommonCol(userPrincipal!!)
             }
         }
 
@@ -137,14 +135,14 @@ class MaterialService(
     }
 
     fun updateMaterials(updatedRows: List<MaterialUpdate?>) {
-        val currentUser = getCurrentUser()
+        val userPrincipal = getCurrentUser()
         val systemMaterialIds = updatedRows.map {
             it?.systemMaterialId
         }
 
         val materialList = materialRep.getMaterialListByIds(
-            site = currentUser?.getSite() ?: DEFAULT_SITE,
-            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
             systemMaterialIds = systemMaterialIds
         )
 
@@ -156,6 +154,7 @@ class MaterialService(
 
             material?.let {
                 it.materialType = x?.materialType
+                it.materialCategory = x?.materialCategory
                 it.userMaterialId = x?.userMaterialId
                 it.materialName = x?.materialName
                 it.materialStandard = x?.materialStandard
@@ -166,9 +165,8 @@ class MaterialService(
                 it.manufacturerName = x?.manufacturerName
                 it.supplierId = x?.supplierId
                 it.materialStorage = x?.materialStorage
-                it.flagActive = x?.flagActive == "Y"
-                it.updateUser = currentUser?.getUserId()
-                it.updateDate = LocalDate.now()
+                it.flagActive = x?.flagActive.equals("Y")
+                it.updateCommonCol(userPrincipal!!)
             }
         }
 
@@ -176,10 +174,10 @@ class MaterialService(
     }
 
     fun deleteMaterials(systemMaterialIds: List<String>): Boolean {
-        val currentUser = getCurrentUser()
+        val userPrincipal = getCurrentUser()
         return materialRep.deleteMaterialsByIds(
-            site = currentUser?.getSite() ?: DEFAULT_SITE,
-            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
             systemMaterialIds = systemMaterialIds
         ) > 0
     }
@@ -189,6 +187,7 @@ data class MaterialResponseModel(
     val systemMaterialId: String? = null,
     val userMaterialId: String? = null,
     val materialType: String? = null,
+    val materialCategory: String? = null,
     val materialName: String? = null,
     val materialStandard: String? = null,
     val unit: String? = null,

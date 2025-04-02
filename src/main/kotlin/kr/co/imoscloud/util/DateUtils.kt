@@ -16,43 +16,6 @@ object DateUtils {
     private val yyyyMMdd = DateTimeFormatter.ofPattern(CoreEnum.DateTimeFormat.DATE_VIEW.value)
 
     /**
-     * 문자열을 LocalDate로 변환하는 함수
-     * @param dateStr "yyyy-MM-dd" 형식의 날짜 문자열
-     * @return 변환된 LocalDate 객체, 변환 실패 시 null
-     */
-    fun parseDate(dateStr: String?): LocalDate? {
-        if (dateStr.isNullOrEmpty()) {
-            return null
-        }
-
-        return try {
-            LocalDate.parse(dateStr, formatter)
-        } catch (e: DateTimeParseException) {
-            logger.error("날짜 변환 실패: {}", dateStr)
-            null
-        }
-    }
-
-    /**
-     * 문자열을 LocalDate로 변환하는 함수, 디폴트 날짜 설정 가능
-     * @param dateStr "yyyy-MM-dd" 형식의 날짜 문자열
-     * @param defaultDate 변환 실패 시 반환할 기본값
-     * @return 변환된 LocalDate 객체, 변환 실패 시 defaultDate
-     */
-    fun parseDateWithDefault(dateStr: String?, defaultDate: LocalDate?): LocalDate? {
-        if (dateStr.isNullOrEmpty()) {
-            return defaultDate
-        }
-
-        return try {
-            LocalDate.parse(dateStr, formatter)
-        } catch (e: DateTimeParseException) {
-            logger.error("날짜 변환 실패: {}", dateStr)
-            defaultDate
-        }
-    }
-
-    /**
      * ISO 8601 형식의 날짜 문자열을 LocalDate로 변환하는 함수
      * :: 현재 프론트에서 반환되는 날짜의 형식이 ISO 8601 형식임
      * @param dateStr "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" 형식의 날짜 문자열
@@ -87,5 +50,41 @@ object DateUtils {
      */
     fun formatLocalDate(dateTime: LocalDateTime?): String? {
         return dateTime?.format(yyyyMMdd)
+    }
+
+    /**
+     * 문자열을 LocalDate로 변환하는 함수
+     * @param dateStr "yyyy-MM-dd" 형식의 날짜 문자열
+     * @return 변환된 LocalDate 객체, 변환 실패 시 null
+     */
+    fun parseDate(dateStr: String?): LocalDate? {
+        if (dateStr.isNullOrEmpty()) {
+            return null
+        }
+
+        return try {
+            LocalDate.parse(dateStr, formatter)
+        } catch (e: DateTimeParseException) {
+            logger.error("날짜 변환 실패: {}", dateStr)
+            null
+        }
+    }
+
+    /**
+     * 문자열을 LocalDateTime으로 변환하는 함수
+     * @param dateStr "yyyy-MM-dd" 형식의 날짜 문자열
+     * @return 변환된 LocalDateTime 객체 (시간은 00:00:00으로 설정), 변환 실패 시 null
+     */
+    fun parseDateTime(dateStr: String?): LocalDateTime? {
+        if (dateStr.isNullOrEmpty()) {
+            return null
+        }
+
+        return try {
+            LocalDate.parse(dateStr, formatter).atStartOfDay()
+        } catch (e: DateTimeParseException) {
+            logger.error("날짜 변환 실패: {}", dateStr)
+            null
+        }
     }
 }

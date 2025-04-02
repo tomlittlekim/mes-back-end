@@ -22,7 +22,7 @@ class FactoryService(
 
         val factoryList = factoryRep.getFactoryList(
             site = userPrincipal.getSite(),
-            compCd = userPrincipal.getCompCd(),
+            compCd = userPrincipal.compCd,
             factoryId = filter.factoryId,
             factoryName = filter.factoryName,
             factoryCode = filter.factoryCode,
@@ -50,7 +50,7 @@ class FactoryService(
                 factoryId = "FAC" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),
                 site = userPrincipal.getSite(),
-                compCd = userPrincipal.getCompCd(),
+                compCd = userPrincipal.compCd,
                 factoryName = it?.factoryName,
                 factoryCode = it?.factoryCode,
                 address = it?.address,
@@ -72,7 +72,7 @@ class FactoryService(
 
         val factoryList = factoryRep.getFactoryListByIds(
             site = userPrincipal.getSite(),
-            compCd = userPrincipal.getCompCd(),
+            compCd = userPrincipal.compCd,
             factoryIds = factoryListIds
         )
 
@@ -101,7 +101,7 @@ class FactoryService(
 
         return factoryRep.deleteByFactoryId(
             site = userPrincipal.getSite(),
-            compCd = userPrincipal.getCompCd(),
+            compCd = userPrincipal.compCd,
             factoryId = factoryId
         ) > 0
     }
@@ -111,7 +111,7 @@ class FactoryService(
 
         val factoryList = factoryRep.getGridFactory(
             site = userPrincipal.getSite(),
-            compCd = userPrincipal.getCompCd()
+            compCd = userPrincipal.compCd
         )
 
         return entityToResponse(factoryList)

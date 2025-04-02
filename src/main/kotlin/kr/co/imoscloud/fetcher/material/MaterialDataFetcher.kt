@@ -56,6 +56,7 @@ data class MaterialFilter(
 
 data class MaterialInput(
     var materialType: String,
+    var materialCategory: String,
     var userMaterialId: String,
     var materialName: String,
     var materialStandard: String? = null,
@@ -70,8 +71,9 @@ data class MaterialInput(
 )
 
 data class MaterialUpdate(
-    var systemMaterialId: String,
+    val systemMaterialId: String,
     var materialType: String? = null,
+    var materialCategory: String? = null,
     var userMaterialId: String? = null,
     var materialName: String? = null,
     var materialStandard: String? = null,

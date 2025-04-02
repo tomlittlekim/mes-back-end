@@ -72,7 +72,7 @@ class WorkOrderDataFetcher(
 
         return productionResultRepository.getProductionResultsByWorkOrderId(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             workOrderId = workOrderId
         )
     }

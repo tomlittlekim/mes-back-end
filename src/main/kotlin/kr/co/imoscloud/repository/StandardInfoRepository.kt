@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import kr.co.imoscloud.entity.standardInfo.Line
+import kr.co.imoscloud.service.standardInfo.EquipmentResponseModel
 
 interface FactoryRep: JpaRepository<Factory,Long>{
     @Query(
@@ -316,6 +317,21 @@ interface LineRep : JpaRepository<Line,Long>{
         lineId: String
     ): Int
 
+
+    @Query(
+        value = """
+            select l
+            from Line l
+            where l.site = :site
+            and   l.compCd = :compCd
+            and   l.flagActive = true
+        """
+    )
+    fun getLineOptions(
+        site:String,
+        compCd:String
+    ):List<Line?>
+
 }
 
 interface WarehouseRep : JpaRepository<Warehouse, Long>{
@@ -387,6 +403,93 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
         compCd:String,
         warehouseId: String
     ): Int
+}
 
+interface EquipmentRep:JpaRepository<Equipment,Long>{
+    @Query(
+        value = """
+            select new kr.co.imoscloud.service.standardInfo.EquipmentResponseModel(
+                e.factoryId,
+                f.factoryName,
+                e.lineId,
+                l.lineName,
+                e.equipmentId,
+                e.equipmentSn,
+                e.equipmentType,
+                e.equipmentName,
+                e.equipmentStatus,
+                case when e.flagActive = true then 'Y' else 'N' end,
+                e.createUser,
+                e.createDate,
+                e.updateUser,
+                e.updateDate
+            )
+            from  Equipment e
+            join  Factory  f
+            on  e.site = f.site
+            and e.compCd = f.compCd
+            and e.factoryId = f.factoryId
+            join Line l
+            on e.site = l.site
+            and e.compCd = l.compCd
+            and e.factoryId = l.factoryId
+            and e.lineId = l.lineId
+            where e.site = :site
+            and   e.compCd = :compCd
+            and   (e.factoryId like concat ('%',:factoryId,'%'))
+            and   (f.factoryName like concat ('%',:factoryName,'%'))
+            and   (e.lineId like concat ('%',:lineId,'%'))
+            and   (l.lineName like concat ('%',:lineName,'%'))
+            and   (e.equipmentId like concat ('%',:equipmentId,'%'))
+            and   (e.equipmentName like concat ('%',:equipmentName,'%'))
+            and   (e.equipmentSn like concat ('%',:equipmentSn,'%'))
+            and   (e.equipmentType like concat ('%',:equipmentType,'%'))
+            and   (:flagActive is null or  e.flagActive = :flagActive)
+        """
+    )
+    fun getEquipments(
+        site:String,
+        compCd:String,
+        factoryId:String,
+        factoryName:String,
+        lineId:String,
+        lineName:String,
+        equipmentId:String,
+        equipmentName:String,
+        equipmentSn:String,
+        equipmentType:String,
+        flagActive:Boolean?
+    ):List<EquipmentResponseModel?>
+
+    @Query(
+        value = """
+            select e
+            from Equipment e
+            where e.site = :site
+            and   e.compCd = :compCd
+            and   e.equipmentId IN (:equipmentIds)
+        """
+    )
+    fun getEquipmentListByIds(
+        site:String,
+        compCd:String,
+        equipmentIds:List<String?>
+    ):List<Equipment?>
+
+    @Transactional
+    @Modifying
+    @Query("""
+        delete 
+        from Equipment e 
+        where e.site = :site
+        and   e.compCd = :compCd
+        and   e.equipmentId = :equipmentId
+        """
+    )
+    fun deleteByEquipmentId(
+        site:String,
+        compCd:String,
+        equipmentId: String
+    ): Int
 
 }

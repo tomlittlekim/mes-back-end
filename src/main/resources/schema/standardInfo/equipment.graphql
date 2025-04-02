@@ -1,0 +1,58 @@
+input EquipmentFilter{
+    factoryId: String,
+    factoryName: String,
+    lineId: String,
+    lineName: String,
+    equipmentId: String,
+    equipmentName: String,
+    equipmentSn: String,
+    equipmentType: String,
+    flagActive: String
+}
+
+input EquipmentInput{
+    factoryId: String,
+    lineId: String,
+    equipmentSn: String,
+    equipmentType: String,
+    equipmentName: String,
+    equipmentStatus: String,
+    flagActive: String
+}
+
+input EquipmentUpdate{
+    factoryId: String,
+    lineId: String,
+    equipmentId: String,
+    equipmentSn: String,
+    equipmentType: String,
+    equipmentName: String,
+    equipmentStatus: String,
+    flagActive: String
+}
+
+type Equipment{
+    factoryId: String
+    factoryName: String
+    lineId: String
+    lineName: String
+    equipmentId: String
+    equipmentSn: String
+    equipmentType: String
+    equipmentName: String
+    equipmentStatus: String
+    flagActive: String
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+
+extend type Query {
+    getEquipments(filter:EquipmentFilter):[Equipment]
+}
+
+extend type Mutation {
+    saveEquipment(createdRows: [EquipmentInput], updatedRows: [EquipmentUpdate] ): Boolean
+    deleteEquipment(equipmentId:String!):Boolean
+}

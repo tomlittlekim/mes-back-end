@@ -6,6 +6,8 @@ import kr.co.imoscloud.entity.standardInfo.CodeClass
 import kr.co.imoscloud.fetcher.standardInfo.*
 import kr.co.imoscloud.repository.CodeClassRep
 import kr.co.imoscloud.repository.CodeRep
+import kr.co.imoscloud.security.UserPrincipal
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -16,9 +18,11 @@ class CommonCodeService(
     val codeRep:CodeRep
 ) {
     fun getCodeClass(filter: CodeClassFilter): List<CodeClassResponse> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         val codeClassList = codeClassRep.getCodeClassList(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.getCompCd(),
             codeClassId = filter.codeClassId,
             codeClassName = filter.codeClassName
         )
@@ -34,37 +38,37 @@ class CommonCodeService(
 
     @Transactional
     fun saveCodeClass(createdRows: List<CodeClassInput?>, updatedRows:List<CodeClassUpdate?>){
-        //TODO 저장 ,수정시 공통 으로 작성자 ,작성일 ,수정자 ,수정일 변경 저장이 필요함
-        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let{ createCodeClass(it) }
-        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let{ updateCodeClass(it) }
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
+        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let{ createCodeClass(it,userPrincipal) }
+        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let{ updateCodeClass(it,userPrincipal) }
     }
 
-    fun createCodeClass(createdRows: List<CodeClassInput?>){
+    fun createCodeClass(createdRows: List<CodeClassInput?>, userPrincipal: UserPrincipal){
         val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
         val codeClassList = createdRows.map {
             CodeClass(
                 codeClassId = "CD" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),  // 3자리만 사용,
-                site = "imos",
-                compCd = "eightPin",
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.getCompCd(),
                 codeClassName = it?.codeClassName,
                 codeClassDesc = it?.codeClassDesc,
-                createUser = "syh"
-            )
+            ).apply{ createCommonCol(userPrincipal) }
         }
 
         codeClassRep.saveAll(codeClassList)
     }
 
-    fun updateCodeClass(updatedRows: List<CodeClassUpdate?>){
+    fun updateCodeClass(updatedRows: List<CodeClassUpdate?>, userPrincipal: UserPrincipal){
         val codeClassIds = updatedRows.map {
             it?.codeClassId
         }
 
         val codeClassList = codeClassRep.getCodeClassListByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.getCompCd(),
             codeClassIds = codeClassIds
         )
 
@@ -77,6 +81,7 @@ class CommonCodeService(
             codeClass?.let{
                 it.codeClassName = x?.codeClassName
                 it.codeClassDesc = x?.codeClassDesc
+                it.updateCommonCol(userPrincipal)
             }
         }
 
@@ -84,9 +89,11 @@ class CommonCodeService(
     }
 
     fun getCodes(codeClassId: String):List<CodeResponse>{
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         val codeList = codeRep.getCodeList(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.getCompCd(),
             codeClassId = codeClassId
         )
 
@@ -97,12 +104,12 @@ class CommonCodeService(
 
     @Transactional
     fun saveCode(createdRows: List<CodeInput?>, updatedRows:List<CodeUpdate?>){
-        //TODO 저장 ,수정시 공통 으로 작성자 ,작성일 ,수정자 ,수정일 변경 저장이 필요함
-        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { createCode(it) }
-        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { updateCode(it) }
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { createCode(it, userPrincipal) }
+        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { updateCode(it, userPrincipal) }
     }
 
-    fun createCode(createdRows: List<CodeInput?>){
+    fun createCode(createdRows: List<CodeInput?>, userPrincipal: UserPrincipal){
         val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
         val codeList = createdRows.map {
@@ -110,27 +117,28 @@ class CommonCodeService(
                 codeClassId = it?.codeClassId,
                 codeId = "C" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),  // 3자리만 사용,
-                site = "imos",
-                compCd = "eightPin",
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.getCompCd(),
                 codeName = it?.codeName,
                 codeDesc = it?.codeDesc,
                 sortOrder = it?.sortOrder,
-                flagActive = it?.flagActive.equals("Y"),
-                createUser = "syh"
-            )
+            ).apply {
+                flagActive = it?.flagActive.equals("Y" )
+                createCommonCol(userPrincipal)
+            }
         }
 
         codeRep.saveAll(codeList)
     }
 
-    fun updateCode(updatedRows: List<CodeUpdate>){
+    fun updateCode(updatedRows: List<CodeUpdate>, userPrincipal: UserPrincipal){
         val codeIds = updatedRows.map {
             it.codeId
         }
 
         val codeList = codeRep.getCodeListByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.getCompCd(),
             codeClassId = updatedRows[0].codeClassId,
             codeIds = codeIds
         )
@@ -146,6 +154,7 @@ class CommonCodeService(
                 it.codeDesc = x.codeDesc
                 it.sortOrder = x.sortOrder
                 it.flagActive = x.flagActive.equals("Y")
+                it.updateCommonCol(userPrincipal)
             }
         }
 
@@ -153,9 +162,11 @@ class CommonCodeService(
     }
 
     fun deleteCode(codeId:String): Boolean {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         return codeRep.deleteByCodeId(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.getCompCd(),
             codeId
         ) > 0
     }
@@ -181,6 +192,10 @@ class CommonCodeService(
                 codeDesc = it?.codeDesc,
                 sortOrder = it?.sortOrder,
                 flagActive = if (it?.flagActive == true) "Y" else "N",
+                createUser = it?.createUser,
+                createDate = it?.createDate.toString().replace("T", " "),
+                updateUser = it?.updateUser,
+                updateDate = it?.updateDate.toString().replace("T", " "),
             )
         }
     }

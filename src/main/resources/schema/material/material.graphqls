@@ -10,12 +10,14 @@ input MaterialFilter {
 
 input MaterialInput {
     materialType: String!
+    materialCategory: String
     userMaterialId: String
     materialName: String!
     materialStandard: String
     unit: String
     minQuantity: Int
     maxQuantity: Int
+    baseQuantity: Int
     manufacturerName: String
     supplierId: String
     materialStorage: String
@@ -25,12 +27,14 @@ input MaterialInput {
 input MaterialUpdate {
     systemMaterialId: String!
     materialType: String
+    materialCategory: String
     userMaterialId: String
     materialName: String
     materialStandard: String
     unit: String
     minQuantity: Int
     maxQuantity: Int
+    baseQuantity: Int
     manufacturerName: String
     supplierId: String
     materialStorage: String
@@ -40,6 +44,7 @@ input MaterialUpdate {
 type Material {
     seq: Int
     materialType: String
+    materialCategory: String
     systemMaterialId: String
     userMaterialId: String
     materialName: String
@@ -47,6 +52,7 @@ type Material {
     unit: String
     minQuantity: Int
     maxQuantity: Int
+    baseQuantity: Int
     manufacturerName: String
     supplierId: String
     materialStorage: String

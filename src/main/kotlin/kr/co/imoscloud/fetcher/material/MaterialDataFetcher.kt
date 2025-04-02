@@ -16,8 +16,18 @@ class MaterialDataFetcher(
     private val materialService: MaterialService
 ) {
     @DgsQuery
-    fun materials(@InputArgument filter: MaterialFilter): List<MaterialResponseModel?> {
-        return materialService.getMaterials(filter)
+    fun getRawSubMaterials(@InputArgument filter: MaterialFilter): List<MaterialResponseModel?> {
+        return materialService.getRawSubMaterials(filter)
+    }
+
+    @DgsQuery
+    fun getCompleteMaterials(@InputArgument filter: MaterialFilter): List<MaterialResponseModel?> {
+        return materialService.getCompleteMaterials(filter)
+    }
+
+    @DgsQuery
+    fun getHalfMaterials(@InputArgument filter: MaterialFilter): List<MaterialResponseModel?> {
+        return materialService.getHalfMaterials(filter)
     }
 
     @DgsMutation

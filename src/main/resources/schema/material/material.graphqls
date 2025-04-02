@@ -58,8 +58,9 @@ type Material {
 }
 
 extend type Query {
-    materials(filter: MaterialFilter): [Material]
-    ## TODO: 필요 시 드랍다운 정보 조회 쿼리 추가
+    getRawSubMaterials(filter: MaterialFilter): [Material]
+    getCompleteMaterials(filter: MaterialFilter): [Material]
+    getHalfMaterials(filter: MaterialFilter): [Material]
 }
 
 extend type Mutation {

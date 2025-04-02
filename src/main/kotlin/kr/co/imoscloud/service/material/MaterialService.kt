@@ -1,6 +1,7 @@
 package kr.co.imoscloud.service.material
 
 import jakarta.transaction.Transactional
+import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.fetcher.material.MaterialFilter
 import kr.co.imoscloud.fetcher.material.MaterialInput
@@ -16,8 +17,8 @@ import java.time.format.DateTimeFormatter
 class MaterialService(
     private val materialRep: MaterialRepository
 ) {
-    fun getMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
-        val materialList = materialRep.getMaterialList(
+    fun getRawSubMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
+        val materialList = materialRep.getRawSubMaterialList(
             site = "imos",
             compCd = "eightPin",
             materialType = filter.materialType,
@@ -28,6 +29,34 @@ class MaterialService(
             toDate = DateUtils.parseDate(filter.toDate)
         )
 
+        return entityToResponse(materialList)
+    }
+
+    fun getCompleteMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
+        val materialList = materialRep.getMaterialList(
+            site = "imos",
+            compCd = "eightPin",
+            materialType = CoreEnum.MaterialType.COMPLETE_PRODUCT.key,
+            userMaterialId = filter.userMaterialId,
+            materialName = filter.materialName,
+            flagActive = filter.flagActive?.let { it == "Y" },
+            fromDate = DateUtils.parseDate(filter.fromDate),
+            toDate = DateUtils.parseDate(filter.toDate)
+        )
+        return entityToResponse(materialList)
+    }
+
+    fun getHalfMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
+        val materialList = materialRep.getMaterialList(
+            site = "imos",
+            compCd = "eightPin",
+            materialType = CoreEnum.MaterialType.HALF_PRODUCT.key,
+            userMaterialId = filter.userMaterialId,
+            materialName = filter.materialName,
+            flagActive = filter.flagActive?.let { it == "Y" },
+            fromDate = DateUtils.parseDate(filter.fromDate),
+            toDate = DateUtils.parseDate(filter.toDate)
+        )
         return entityToResponse(materialList)
     }
 
@@ -56,13 +85,13 @@ class MaterialService(
     }
 
     @Transactional
-    fun saveMaterials(createdRows: List<MaterialInput?>, updatedRows:List<MaterialUpdate?>){
+    fun saveMaterials(createdRows: List<MaterialInput?>, updatedRows: List<MaterialUpdate?>) {
         //TODO 저장 ,수정시 공통 으로 작성자 ,작성일 ,수정자 ,수정일 변경 저장이 필요함
-        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {createMaterials(it)}
-        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {updateMaterials(it)}
+        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { createMaterials(it) }
+        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { updateMaterials(it) }
     }
 
-    fun createMaterials(createdRows: List<MaterialInput?>){
+    fun createMaterials(createdRows: List<MaterialInput?>) {
         val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
         val materialList = createdRows.map {
@@ -90,7 +119,7 @@ class MaterialService(
         materialRep.saveAll(materialList)
     }
 
-    fun updateMaterials(updatedRows: List<MaterialUpdate?>){
+    fun updateMaterials(updatedRows: List<MaterialUpdate?>) {
         val systemMaterialIds = updatedRows.map {
             it?.systemMaterialId
         }
@@ -103,11 +132,11 @@ class MaterialService(
 
         val updateList = materialList.associateBy { it?.systemMaterialId }
 
-        updatedRows.forEach{ x ->
+        updatedRows.forEach { x ->
             val systemMaterialId = x?.systemMaterialId
             val material = updateList[systemMaterialId]
 
-            material?.let{
+            material?.let {
                 it.materialType = x?.materialType
                 it.userMaterialId = x?.userMaterialId
                 it.materialName = x?.materialName

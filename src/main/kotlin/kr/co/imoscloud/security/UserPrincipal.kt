@@ -1,6 +1,7 @@
 package kr.co.imoscloud.security
 
 import kr.co.imoscloud.dto.RoleSummery
+import kr.co.imoscloud.dto.UserSummery
 import kr.co.imoscloud.entity.user.User
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -46,6 +47,21 @@ class UserPrincipal(
                 site = user.site,
                 compCd = user.compCd,
                 username = user.userName,
+                userId = user.loginId,
+                password = user.userPwd,
+                roleId = user.roleId,
+                authorities = authorities
+            )
+        }
+
+        fun create(user: UserSummery, role: RoleSummery): UserPrincipal {
+            val authorities = listOf(SimpleGrantedAuthority(role.roleName))
+
+            return UserPrincipal(
+                id = user.id,
+                site = user.site,
+                compCd = user.compCd,
+                username = user.username,
                 userId = user.loginId,
                 password = user.userPwd,
                 roleId = user.roleId,

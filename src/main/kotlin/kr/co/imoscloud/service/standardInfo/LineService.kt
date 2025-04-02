@@ -90,6 +90,13 @@ class LineService(
         ) > 0
     }
 
+    fun getLineOptions(): List<Line?> {
+        return lineRep.getLineOptions(
+            site = "imos",
+            compCd = "eightPin"
+        )
+    }
+
 }
 
 data class LineResponseModel(

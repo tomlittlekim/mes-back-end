@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.entity.standardInfo.Line
 import kr.co.imoscloud.service.standardInfo.LineResponseModel
 import kr.co.imoscloud.service.standardInfo.LineService
 
@@ -14,6 +15,11 @@ class LineFetcher (
     @DgsQuery
     fun getLines(@InputArgument("filter") filter:LineFilter): List<LineResponseModel?> {
         return lineService.getLines(filter)
+    }
+
+    @DgsQuery
+    fun getLineOptions(): List<Line?> {
+        return lineService.getLineOptions()
     }
 
     @DgsMutation

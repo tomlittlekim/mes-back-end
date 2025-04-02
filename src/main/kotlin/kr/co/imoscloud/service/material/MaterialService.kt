@@ -20,10 +20,15 @@ class MaterialService(
 ) {
     private val DEFAULT_SITE = "imos"
     private val DEFAULT_COMP_CD = "eightPin"
-    private val DEFAULT_USER = "system"
+
+    private fun getCurrentUser() = try {
+        SecurityUtils.getCurrentUserPrincipalOrNull()
+    } catch (e: SecurityException) {
+        null
+    }
 
     fun getRawSubMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
-        val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
+        val currentUser = getCurrentUser()
         val materialList = materialRep.getRawSubMaterialList(
             site = currentUser?.getSite() ?: DEFAULT_SITE,
             compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
@@ -39,7 +44,7 @@ class MaterialService(
     }
 
     fun getCompleteMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
-        val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
+        val currentUser = getCurrentUser()
         val materialList = materialRep.getMaterialList(
             site = currentUser?.getSite() ?: DEFAULT_SITE,
             compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
@@ -54,7 +59,7 @@ class MaterialService(
     }
 
     fun getHalfMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
-        val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
+        val currentUser = getCurrentUser()
         val materialList = materialRep.getMaterialList(
             site = currentUser?.getSite() ?: DEFAULT_SITE,
             compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
@@ -100,14 +105,15 @@ class MaterialService(
     }
 
     fun createMaterials(createdRows: List<MaterialInput?>) {
+        val currentUser = getCurrentUser()
         val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
         val materialList = createdRows.map {
             MaterialMaster().apply {
                 systemMaterialId = "MAT" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3)
-                site = DEFAULT_SITE
-                compCd = DEFAULT_COMP_CD
+                site = currentUser?.getSite() ?: DEFAULT_SITE
+                compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD
                 materialType = it?.materialType
                 userMaterialId = it?.userMaterialId
                 materialName = it?.materialName
@@ -119,9 +125,9 @@ class MaterialService(
                 supplierId = it?.supplierId
                 materialStorage = it?.materialStorage
                 flagActive = it?.flagActive == "Y"
-                createUser = DEFAULT_USER
+                createUser = currentUser?.username
                 createDate = LocalDate.now()
-                updateUser = DEFAULT_USER
+                updateUser = currentUser?.username
                 updateDate = LocalDate.now()
             }
         }
@@ -130,13 +136,14 @@ class MaterialService(
     }
 
     fun updateMaterials(updatedRows: List<MaterialUpdate?>) {
+        val currentUser = getCurrentUser()
         val systemMaterialIds = updatedRows.map {
             it?.systemMaterialId
         }
 
         val materialList = materialRep.getMaterialListByIds(
-            site = DEFAULT_SITE,
-            compCd = DEFAULT_COMP_CD,
+            site = currentUser?.getSite() ?: DEFAULT_SITE,
+            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
             systemMaterialIds = systemMaterialIds
         )
 
@@ -158,7 +165,7 @@ class MaterialService(
                 it.supplierId = x?.supplierId
                 it.materialStorage = x?.materialStorage
                 it.flagActive = x?.flagActive == "Y"
-                it.updateUser = DEFAULT_USER
+                it.updateUser = currentUser?.username
                 it.updateDate = LocalDate.now()
             }
         }
@@ -167,9 +174,10 @@ class MaterialService(
     }
 
     fun deleteMaterials(systemMaterialIds: List<String>): Boolean {
+        val currentUser = getCurrentUser()
         return materialRep.deleteMaterialsByIds(
-            site = DEFAULT_SITE,
-            compCd = DEFAULT_COMP_CD,
+            site = currentUser?.getSite() ?: DEFAULT_SITE,
+            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
             systemMaterialIds = systemMaterialIds
         ) > 0
     }

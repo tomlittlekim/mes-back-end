@@ -18,12 +18,15 @@ import java.time.format.DateTimeFormatter
 class MaterialService(
     private val materialRep: MaterialRepository,
 ) {
-    private val loginUser = SecurityUtils.getCurrentUserPrincipal();
+    private val DEFAULT_SITE = "imos"
+    private val DEFAULT_COMP_CD = "eightPin"
+    private val DEFAULT_USER = "system"
 
     fun getRawSubMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
+        val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
         val materialList = materialRep.getRawSubMaterialList(
-            site = "imos",
-            compCd = "eightPin",
+            site = currentUser?.getSite() ?: DEFAULT_SITE,
+            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
             materialType = filter.materialType,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
@@ -36,9 +39,10 @@ class MaterialService(
     }
 
     fun getCompleteMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
+        val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
         val materialList = materialRep.getMaterialList(
-            site = "imos",
-            compCd = "eightPin",
+            site = currentUser?.getSite() ?: DEFAULT_SITE,
+            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
             materialType = CoreEnum.MaterialType.COMPLETE_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
@@ -50,9 +54,10 @@ class MaterialService(
     }
 
     fun getHalfMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
+        val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
         val materialList = materialRep.getMaterialList(
-            site = "imos",
-            compCd = "eightPin",
+            site = currentUser?.getSite() ?: DEFAULT_SITE,
+            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
             materialType = CoreEnum.MaterialType.HALF_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
@@ -101,8 +106,8 @@ class MaterialService(
             MaterialMaster().apply {
                 systemMaterialId = "MAT" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3)
-                site = "imos"
-                compCd = "eightPin"
+                site = DEFAULT_SITE
+                compCd = DEFAULT_COMP_CD
                 materialType = it?.materialType
                 userMaterialId = it?.userMaterialId
                 materialName = it?.materialName
@@ -114,9 +119,9 @@ class MaterialService(
                 supplierId = it?.supplierId
                 materialStorage = it?.materialStorage
                 flagActive = it?.flagActive == "Y"
-                createUser = loginUser.username
+                createUser = DEFAULT_USER
                 createDate = LocalDate.now()
-                updateUser = loginUser.username
+                updateUser = DEFAULT_USER
                 updateDate = LocalDate.now()
             }
         }
@@ -130,8 +135,8 @@ class MaterialService(
         }
 
         val materialList = materialRep.getMaterialListByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = DEFAULT_SITE,
+            compCd = DEFAULT_COMP_CD,
             systemMaterialIds = systemMaterialIds
         )
 
@@ -153,7 +158,7 @@ class MaterialService(
                 it.supplierId = x?.supplierId
                 it.materialStorage = x?.materialStorage
                 it.flagActive = x?.flagActive == "Y"
-                it.updateUser = loginUser.username
+                it.updateUser = DEFAULT_USER
                 it.updateDate = LocalDate.now()
             }
         }
@@ -163,8 +168,8 @@ class MaterialService(
 
     fun deleteMaterials(systemMaterialIds: List<String>): Boolean {
         return materialRep.deleteMaterialsByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = DEFAULT_SITE,
+            compCd = DEFAULT_COMP_CD,
             systemMaterialIds = systemMaterialIds
         ) > 0
     }

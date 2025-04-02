@@ -5,6 +5,8 @@ import kr.co.imoscloud.entity.company.Company
 import kr.co.imoscloud.entity.user.MenuRole
 import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.entity.user.UserRole
+import kr.co.imoscloud.iface.DtoLoginIdBase
+import kr.co.imoscloud.iface.DtoRoleIdBase
 import kr.co.imoscloud.repository.company.CompanyRepository
 import kr.co.imoscloud.repository.user.MenuRoleRepository
 import kr.co.imoscloud.repository.user.UserRepository
@@ -58,9 +60,9 @@ class Core(
 
     fun <T> getUserFromInMemory(req: T): UserSummery {
         val index: String
-        val userMap: Map<String, UserSummery?> = when (req) {
-            is String -> { index = req; getAllUserMap(listOf(ExistLoginIdRequest(req))) }
-            is User -> { index = req.loginId; getAllUserMap(listOf(req)) }
+        val userMap: Map<String, UserSummery?> = when {
+            req is String -> { index = req; getAllUserMap(listOf(ExistLoginIdRequest(req))) }
+            req is DtoLoginIdBase -> { index = req.loginId; getAllUserMap(listOf(req)) }
             else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
         }
         return userMap[index] ?: throw IllegalArgumentException("User not found with loginId: $index")
@@ -68,9 +70,9 @@ class Core(
 
     fun <T> getUserRoleFromInMemory(req: T): RoleSummery {
         val index: Long
-        val roleMap: Map<Long, RoleSummery?> = when (req) {
-            is Long -> { index = req; getAllRoleMap(listOf(RoleInput(req))) }
-            is UserRole -> { index = req.roleId; getAllRoleMap(listOf(req)) }
+        val roleMap: Map<Long, RoleSummery?> = when  {
+            req is Long -> { index = req; getAllRoleMap(listOf(RoleInput(req))) }
+            req is DtoRoleIdBase -> { index = req.roleId; getAllRoleMap(listOf(req)) }
             else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
         }
         return roleMap[index] ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
@@ -78,11 +80,11 @@ class Core(
 
     fun getUserGroupByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
         return if (getIsInspect()) {
-            userRepo.findAllBySiteAndCompCdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.getCompCd())
+            userRepo.findAllBySiteAndCompCdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd)
                 .map { userToUserSummery(it) }
         } else {
             val userMap = getAllUserMap(listOf(loginUser))
-            return userMap.filterValues { it?.compCd == loginUser.getCompCd() }.values.toList()
+            return userMap.filterValues { it?.compCd == loginUser.compCd }.values.toList()
         }
     }
 

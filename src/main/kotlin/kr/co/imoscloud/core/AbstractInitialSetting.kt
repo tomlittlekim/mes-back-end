@@ -165,6 +165,10 @@ abstract class AbstractInitialSetting(
         )
     }
 
+    fun userToUserSummery(u: User): UserSummery = UserSummery(
+        u.id,u.site,u.compCd,u.userName,u.loginId,u.userPwd,u.imagePath,u.roleId,u.userEmail,u.phoneNum,u.departmentId,u.positionId,u.flagActive
+    )
+
     @Scheduled(cron = "0 0 */2 * * *")
     private fun inspection() {
         isInspect = true
@@ -215,7 +219,4 @@ abstract class AbstractInitialSetting(
 
     private fun booleanToTinyintStr(bool: Boolean): String = if (bool) "1" else "0"
     private fun roleToSummery(it: UserRole): RoleSummery = RoleSummery(it.roleName, it.priorityLevel)
-    fun userToUserSummery(u: User): UserSummery = UserSummery(
-        u.id,u.site,u.compCd,u.userName,u.loginId,u.userPwd,u.imagePath,u.roleId,u.userEmail,u.phoneNum,u.departmentId,u.positionId,u.flagActive
-    )
 }

@@ -41,6 +41,15 @@ type UserOutput {
     message: String!
 }
 
+type UserResponse {
+    loginId: String!
+    username: String!
+    departmentNm: String
+    positionNm: String
+    roleNm: String
+    flagActive: Boolean
+}
+
 extend type Mutation {
     signUp(input: UserInput!): User!
 }
@@ -48,4 +57,5 @@ extend type Mutation {
 extend type Query {
     signIn(input: UserInput!): UserOutput!
     existLoginId(input: ExistLoginRequest!): Boolean!
+    getUserGroup: [UserResponse!]
 }

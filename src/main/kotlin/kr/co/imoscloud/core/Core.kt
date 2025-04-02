@@ -19,12 +19,15 @@ class Core(
     companyRepo: CompanyRepository,
     menuRoleRepo: MenuRoleRepository
 ): AbstractInitialSetting(userRepo, roleRepo, companyRepo, menuRoleRepo) {
-    override fun getAllUsersDuringInspection(indies: List<String>): MutableMap<String, User?> {
+    override fun getAllUsersDuringInspection(indies: List<String>): MutableMap<String, UserSummery?> {
         val userList: List<User> = if (indies.size == 1) {
             userRepo.findByLoginId(indies.first()).map(::listOf)!!.orElseGet { emptyList<User>() }
         } else userRepo.findAllByLoginIdIn(indies)
 
-        return userList.associateBy { it.loginId }.toMutableMap()
+        return userList.associate {
+            val summery = userToUserSummery(it)
+            it.loginId to summery
+        }.toMutableMap()
     }
 
     override fun getAllRolesDuringInspection(indies: List<Long>): MutableMap<Long, RoleSummery?> {
@@ -53,7 +56,7 @@ class Core(
         return menuRoleRepo.findByRoleIdAndMenuId(roleId, menuId)
     }
 
-    fun getUserFromInMemory(loginId: String): User {
+    fun getUserFromInMemory(loginId: String): UserSummery {
         val req = ExistLoginIdRequest(loginId)
         val userMap = getAllUserMap(listOf(req))
         return userMap[loginId] ?: throw IllegalArgumentException("User not found with loginId: $loginId")
@@ -91,10 +94,14 @@ class Core(
         )
     }
 
-    private fun userToUserResponse(u: User?): UserResponse {
-        return u?.let {
-            val role = getUserRoleFromInMemory(u.roleId)
-            UserResponse(u.loginId,u.userName?:"",u.departmentId,u.positionId,role.roleName,u.flagActive)
-        }?: throw IllegalArgumentException("메모리에 유저에 대한 정보 누락")
+    private fun <T> userToUserResponse(any: T): UserResponse {
+        val u = when (any) {
+            is User -> userToUserSummery(any)
+            is UserSummery -> any
+            else -> throw IllegalArgumentException("메모리에 유저에 대한 정보 누락이거나 지원하지 않는 객체입니다. ")
+        }
+
+        val role = getUserRoleFromInMemory(u.roleId)
+        return UserResponse(u.loginId,u.username?:"",u.departmentId,u.positionId,role.roleName,u.flagActive)
     }
 }

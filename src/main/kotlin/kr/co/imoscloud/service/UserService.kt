@@ -79,9 +79,9 @@ class UserService(
         return userMap[req.loginId] != null
     }
 
-//    fun getUserGroupByCompany(): List<UserResponse> {
-//
-//    }
+    fun getUserGroupByCompany(): List<UserResponse> {
+        return core.getUserGroupByCompCd()
+    }
 
     private fun checkRole(loginUser: UserPrincipal): Boolean {
         return loginUser.authorities.first().authority == "admin"

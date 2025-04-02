@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.dto.ExistLoginIdRequest
 import kr.co.imoscloud.dto.UserInput
+import kr.co.imoscloud.dto.UserResponse
 import kr.co.imoscloud.service.UserService
 
 @DgsComponent
@@ -21,5 +22,6 @@ class UserFetcher(
         return userService.existLoginId(input)
     }
 
-
+    @DgsQuery
+    fun getUserGroup(): List<UserResponse> = userService.getUserGroupByCompany()
 }

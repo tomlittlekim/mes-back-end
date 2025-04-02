@@ -8,14 +8,13 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class CustomUserDetailsService(
-    private val userRepo: UserRepository,
     private val core: Core
 ) {
 
     @Transactional(readOnly = true)
     fun loadUserBySiteAndUserId(site: String, userId: String): UserDetails {
-        val loginUserSummery = core.getUserFromInMemory(userId)
-        val roleSummery = core.getUserRoleFromInMemory(loginUserSummery.roleId)
-        return UserPrincipal.create(loginUserSummery, roleSummery)
+        val loginUser = core.getUserFromInMemory(userId)
+        val roleSummery = core.getUserRoleFromInMemory(loginUser.roleId)
+        return UserPrincipal.create(loginUser, roleSummery)
     }
 } 

@@ -45,6 +45,22 @@ data class UserResponse(
     val flagActive: Boolean
 ): DtoLoginIdBase
 
+data class UserSummery(
+    val id: Long,
+    val site: String,
+    override val compCd: String,
+    val username: String?=null,
+    override val loginId: String,
+    val userPwd: String,
+    val imagePath: String?=null,
+    override val roleId: Long,
+    val userEmail: String?=null,
+    val phoneNum: String?=null,
+    val departmentId: String?=null,
+    val positionId: String?=null,
+    val flagActive: Boolean,
+): DtoAllInOneBase
+
 data class RoleInput(
     override val roleId: Long,
 ): DtoRoleIdBase
@@ -53,9 +69,3 @@ data class RoleSummery(
     val roleName: String,
     val priorityLevel: Int?,
 )
-
-data class TestAllInOneDto(
-    override val loginId: String,
-    override val roleId: Long,
-    override val compCd: String
-): DtoAllInOneBase

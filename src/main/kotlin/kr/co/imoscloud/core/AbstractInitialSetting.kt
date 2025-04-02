@@ -2,6 +2,7 @@ package kr.co.imoscloud.core
 
 import kr.co.imoscloud.dto.CompanySummery
 import kr.co.imoscloud.dto.RoleSummery
+import kr.co.imoscloud.dto.UserSummery
 import kr.co.imoscloud.entity.company.Company
 import kr.co.imoscloud.entity.user.MenuRole
 import kr.co.imoscloud.entity.user.User
@@ -23,12 +24,12 @@ abstract class AbstractInitialSetting(
     val menuRoleRepo: MenuRoleRepository
 ) {
     companion object {
-        private var userMap: MutableMap<String, User?> = ConcurrentHashMap()
+        private var userMap: MutableMap<String, UserSummery?> = ConcurrentHashMap()
         private var roleMap: MutableMap<Long, RoleSummery?> = ConcurrentHashMap()
         private var companyMap: MutableMap<String, CompanySummery?> = ConcurrentHashMap()
         private var menuRoleMap: MutableMap<String, Int?> = ConcurrentHashMap()
 
-        private var upsertUserQue: MutableMap<String, User?> = ConcurrentHashMap()
+        private var upsertUserQue: MutableMap<String, UserSummery?> = ConcurrentHashMap()
         private var upsertRoleQue: MutableMap<Long, RoleSummery?> = ConcurrentHashMap()
         private var upsertCompanyQue: MutableMap<String, CompanySummery?> = ConcurrentHashMap()
         private var upsertMenuRoleQue: MutableMap<String, Int?> = ConcurrentHashMap()
@@ -41,7 +42,7 @@ abstract class AbstractInitialSetting(
 
         private fun upsertForSelectMap() {
             synchronized(upsertUserQue) {
-                userMap = (userMap + upsertUserQue) as MutableMap<String, User?>
+                userMap = (userMap + upsertUserQue) as MutableMap<String, UserSummery?>
                 upsertUserQue = ConcurrentHashMap()
             }
             synchronized(upsertRoleQue) {
@@ -65,13 +66,13 @@ abstract class AbstractInitialSetting(
         initialSettings()
     }
 
-    fun <T: DtoLoginIdBase> getAllUserMap(req: List<T>): MutableMap<String, User?> {
+    fun <T: DtoLoginIdBase> getAllUserMap(req: List<T>): MutableMap<String, UserSummery?> {
         return if (getIsInspect()) {
             val indies = extractUserIdFromRequest(req)
             getAllUsersDuringInspection(indies)
         } else userMap
     }
-    fun getAllUserMapByIndies(indies: List<String>): MutableMap<String, User?> {
+    fun getAllUserMapByIndies(indies: List<String>): MutableMap<String, UserSummery?> {
         return if (getIsInspect()) getAllUsersDuringInspection(indies)
         else userMap
     }
@@ -119,14 +120,15 @@ abstract class AbstractInitialSetting(
         }
     }
 
-    protected abstract fun getAllUsersDuringInspection(indies: List<String>): MutableMap<String, User?>
+    protected abstract fun getAllUsersDuringInspection(indies: List<String>): MutableMap<String, UserSummery?>
     protected abstract fun getAllRolesDuringInspection(indies: List<Long>): MutableMap<Long, RoleSummery?>
     protected abstract fun getAllCompanyDuringInspection(indies: List<String>): MutableMap<String, CompanySummery?>
     protected abstract fun getMenuRoleDuringInspection(roleId: Long, menuId: String): MenuRole?
 
     fun upsertUserFromInMemory(user: User) {
-        if (isInspect) upsertUserQue[user.loginId] = user
-        else userMap[user.loginId] = user
+        val summery = userToUserSummery(user)
+        if (isInspect) upsertUserQue[user.loginId] = summery
+        else userMap[user.loginId] = summery
     }
     fun upsertRoleFromInMemory(userRole: UserRole) {
         val summery = roleToSummery(userRole)
@@ -170,7 +172,10 @@ abstract class AbstractInitialSetting(
     }
     
     private fun initialSettings() {
-        userMap = userRepo.findAll().associateBy { it.loginId }.toMutableMap()
+        userMap = userRepo.findAll().associate {
+            val summery = userToUserSummery(it)
+            it.loginId to summery
+        }.toMutableMap()
 
         roleMap = roleRepo.findAll().associate { it.roleId to roleToSummery(it) }.toMutableMap()
 
@@ -210,4 +215,7 @@ abstract class AbstractInitialSetting(
 
     private fun booleanToTinyintStr(bool: Boolean): String = if (bool) "1" else "0"
     private fun roleToSummery(it: UserRole): RoleSummery = RoleSummery(it.roleName, it.priorityLevel)
+    fun userToUserSummery(u: User): UserSummery = UserSummery(
+        u.id,u.site,u.compCd,u.userName,u.loginId,u.userPwd,u.imagePath,u.roleId,u.userEmail,u.phoneNum,u.departmentId,u.positionId,u.flagActive
+    )
 }

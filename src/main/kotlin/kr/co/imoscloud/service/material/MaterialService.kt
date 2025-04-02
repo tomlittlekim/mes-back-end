@@ -8,6 +8,7 @@ import kr.co.imoscloud.fetcher.material.MaterialInput
 import kr.co.imoscloud.fetcher.material.MaterialUpdate
 import kr.co.imoscloud.repository.Material.MaterialRepository
 import kr.co.imoscloud.util.DateUtils
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.LocalDate
@@ -15,12 +16,17 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class MaterialService(
-    private val materialRep: MaterialRepository
+    private val materialRep: MaterialRepository,
 ) {
+    private val DEFAULT_SITE = "imos"
+    private val DEFAULT_COMP_CD = "eightPin"
+    private val DEFAULT_USER = "system"
+
     fun getRawSubMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
+        val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
         val materialList = materialRep.getRawSubMaterialList(
-            site = "imos",
-            compCd = "eightPin",
+            site = currentUser?.getSite() ?: DEFAULT_SITE,
+            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
             materialType = filter.materialType,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
@@ -33,9 +39,10 @@ class MaterialService(
     }
 
     fun getCompleteMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
+        val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
         val materialList = materialRep.getMaterialList(
-            site = "imos",
-            compCd = "eightPin",
+            site = currentUser?.getSite() ?: DEFAULT_SITE,
+            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
             materialType = CoreEnum.MaterialType.COMPLETE_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
@@ -47,9 +54,10 @@ class MaterialService(
     }
 
     fun getHalfMaterials(filter: MaterialFilter): List<MaterialResponseModel?> {
+        val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
         val materialList = materialRep.getMaterialList(
-            site = "imos",
-            compCd = "eightPin",
+            site = currentUser?.getSite() ?: DEFAULT_SITE,
+            compCd = currentUser?.getCompCd() ?: DEFAULT_COMP_CD,
             materialType = CoreEnum.MaterialType.HALF_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
@@ -98,8 +106,8 @@ class MaterialService(
             MaterialMaster().apply {
                 systemMaterialId = "MAT" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3)
-                site = "imos"
-                compCd = "eightPin"
+                site = DEFAULT_SITE
+                compCd = DEFAULT_COMP_CD
                 materialType = it?.materialType
                 userMaterialId = it?.userMaterialId
                 materialName = it?.materialName
@@ -111,8 +119,10 @@ class MaterialService(
                 supplierId = it?.supplierId
                 materialStorage = it?.materialStorage
                 flagActive = it?.flagActive == "Y"
-                createUser = "phj"
+                createUser = DEFAULT_USER
                 createDate = LocalDate.now()
+                updateUser = DEFAULT_USER
+                updateDate = LocalDate.now()
             }
         }
 
@@ -125,8 +135,8 @@ class MaterialService(
         }
 
         val materialList = materialRep.getMaterialListByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = DEFAULT_SITE,
+            compCd = DEFAULT_COMP_CD,
             systemMaterialIds = systemMaterialIds
         )
 
@@ -148,7 +158,7 @@ class MaterialService(
                 it.supplierId = x?.supplierId
                 it.materialStorage = x?.materialStorage
                 it.flagActive = x?.flagActive == "Y"
-                it.updateUser = "phj"
+                it.updateUser = DEFAULT_USER
                 it.updateDate = LocalDate.now()
             }
         }
@@ -158,8 +168,8 @@ class MaterialService(
 
     fun deleteMaterials(systemMaterialIds: List<String>): Boolean {
         return materialRep.deleteMaterialsByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = DEFAULT_SITE,
+            compCd = DEFAULT_COMP_CD,
             systemMaterialIds = systemMaterialIds
         ) > 0
     }

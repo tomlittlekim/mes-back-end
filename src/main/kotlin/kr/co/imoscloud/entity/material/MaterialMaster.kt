@@ -44,6 +44,9 @@ class MaterialMaster {
     @Column(name = "MAX_QUANTITY")
     var maxQuantity: Int? = null
 
+    @Column(name = "BASE_QUANTITY")
+    var baseQuantity: Int? = null
+
     @Column(name = "MANUFACTURER_NAME", length = 100)
     var manufacturerName: String? = null
 

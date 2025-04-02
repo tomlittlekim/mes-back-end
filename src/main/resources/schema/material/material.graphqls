@@ -16,6 +16,7 @@ input MaterialInput {
     unit: String
     minQuantity: Int
     maxQuantity: Int
+    baseQuantity: Int
     manufacturerName: String
     supplierId: String
     materialStorage: String
@@ -31,6 +32,7 @@ input MaterialUpdate {
     unit: String
     minQuantity: Int
     maxQuantity: Int
+    baseQuantity: Int
     manufacturerName: String
     supplierId: String
     materialStorage: String
@@ -47,6 +49,7 @@ type Material {
     unit: String
     minQuantity: Int
     maxQuantity: Int
+    baseQuantity: Int
     manufacturerName: String
     supplierId: String
     materialStorage: String

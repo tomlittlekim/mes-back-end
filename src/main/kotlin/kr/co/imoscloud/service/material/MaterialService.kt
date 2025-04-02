@@ -84,6 +84,7 @@ class MaterialService(
                 it?.unit,
                 it?.minQuantity,
                 it?.maxQuantity,
+                it?.baseQuantity,
                 it?.manufacturerName,
                 it?.supplierId,
                 it?.supplierName,
@@ -125,9 +126,9 @@ class MaterialService(
                 supplierId = it?.supplierId
                 materialStorage = it?.materialStorage
                 flagActive = it?.flagActive == "Y"
-                createUser = currentUser?.username
+                createUser = currentUser?.getUserId()
                 createDate = LocalDate.now()
-                updateUser = currentUser?.username
+                updateUser = currentUser?.getUserId()
                 updateDate = LocalDate.now()
             }
         }
@@ -161,11 +162,12 @@ class MaterialService(
                 it.unit = x?.unit
                 it.minQuantity = x?.minQuantity
                 it.maxQuantity = x?.maxQuantity
+                it.baseQuantity = x?.baseQuantity
                 it.manufacturerName = x?.manufacturerName
                 it.supplierId = x?.supplierId
                 it.materialStorage = x?.materialStorage
                 it.flagActive = x?.flagActive == "Y"
-                it.updateUser = currentUser?.username
+                it.updateUser = currentUser?.getUserId()
                 it.updateDate = LocalDate.now()
             }
         }
@@ -192,6 +194,7 @@ data class MaterialResponseModel(
     val unit: String? = null,
     val minQuantity: Int? = null,
     val maxQuantity: Int? = null,
+    val baseQuantity: Int? = null,
     val manufacturerName: String? = null,
     val supplierId: String? = null,
     val supplierName: String? = null,

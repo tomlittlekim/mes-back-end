@@ -95,13 +95,13 @@ class UserService(
     }
 
     private fun modifyReqByRole(loginUser: UserPrincipal, req: UserInput): UserInput {
-        val isDev = loginUser.authorities.first().authority == "dev"
-        if (isDev && req.site == null || isDev && req.compCd == null)
+        if (core.isAdminOrHigher(loginUser))
             throw IllegalArgumentException("site 또는 compCd 가 비어있습니다. ")
 
         return req.apply {
-            this.site = if (isDev) req.site else loginUser.getSite()
-            this.compCd = if (isDev) req.compCd else loginUser.compCd
+            this.site = loginUser.getSite()
+            this.compCd = loginUser.compCd
+            if (core.isDeveloper(loginUser)) { site = req.site; compCd = req.compCd }
         }
     }
 

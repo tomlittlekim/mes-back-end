@@ -7,4 +7,24 @@ class CoreEnum {
         RAW_MATERIAL("RAW_MATERIAL", "원자재"),
         SUB_MATERIAL("SUB_MATERIAL", "부자재"),
     }
+
+    enum class DateTimeFormat(val value: String) {
+        DATE_TIME("yyyyMMdd_HHmmss"),
+        DATE("yyyyMMdd"),
+        TIME("HHmmss"),
+        SANITATION_SENSOR_DATE_TIME("yyyy-MM-dd HH:mm:ss.SSSSSS"),
+        MOS_EVENT_TIME("yyyyMMddHHmmss"),
+        DATE_TIME_VIEW("yyyy-MM-dd HH:mm:ss"),
+        DATE_TIME_VIEW_SHORT("yyyy-MM-dd HH:mm"),
+        DATE_TIME_SENSOR("yyyy-MM-dd HH:mm:ss.SSSSSS"),
+        DATE_VIEW("yyyy-MM-dd"),
+        TIME_VIEW("HH:mm:ss"),
+        TIME_VIEW_SHORT("HH:mm"),
+        YEAR("yyyy"),
+        YEAR_MONTH("yyyy-MM"),
+        YEAR_MONTH_KOR("yyyy년 MM월"),
+        YEAR_MONTH_DAY_KOR("yyyy년 MM월 dd일"),
+        DAY("dd"),
+        MONTH_DAY_TIME_MIN("MM-dd HH:mm")
+    }
 }

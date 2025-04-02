@@ -23,7 +23,7 @@ class ProductionPlanService(
 
         return productionPlanRepository.getProductionPlanList(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             prodPlanId = filter.prodPlanId,
             orderId = filter.orderId,
             productId = filter.productId,
@@ -52,7 +52,7 @@ class ProductionPlanService(
                 // 신규 계획 생성
                 val newPlan = ProductionPlan().apply {
                     site = currentUser.getSite()
-                    compCd = currentUser.getCompCd()
+                    compCd = currentUser.compCd
                     prodPlanId = "PP" + System.currentTimeMillis()
                     orderId = input.orderId
                     productId = input.productId

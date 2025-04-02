@@ -81,7 +81,7 @@ class ProductionPlanDataFetcher(
 
             return workOrderRepository.getWorkOrdersByProdPlanId(
                 site = currentUser.getSite(),
-                compCd = currentUser.getCompCd(),
+                compCd = currentUser.compCd,
                 prodPlanId = prodPlanId
             )
         } catch (e: SecurityException) {

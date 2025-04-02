@@ -59,11 +59,11 @@ class JwtAuthenticationFilter(
                 
                 // 401 Unauthorized 응답 반환
                 response.status = HttpServletResponse.SC_UNAUTHORIZED
-                response.writer.write("{\"error\":\"Unauthorized\",\"message\":\"유효한 인증 토큰이 필요합니다.\"}")
             }
         } catch (e: Exception) {
             log.error("JWT 인증 처리 중 오류 발생", e)
             SecurityContextHolder.clearContext()
+            response.status = HttpServletResponse.SC_UNAUTHORIZED
         }
 
         // 3. 다음 필터 실행
@@ -83,9 +83,14 @@ class JwtAuthenticationFilter(
     }
 
     private fun resolveToken(request: HttpServletRequest): String? {
-        // 쿠키에서 토큰 추출
-        val cookies = request.cookies ?: return null
+        // 1. Authorization 헤더에서 토큰 추출
+        val bearerToken = request.getHeader("Authorization")
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7)
+        }
 
+        // 2. 쿠키에서 토큰 추출
+        val cookies = request.cookies ?: return null
         val tokenCookie = cookies.firstOrNull { it.name == jwtTokenProvider.ACCESS }
         val tokenValue = tokenCookie?.value ?: return null
 
@@ -96,7 +101,6 @@ class JwtAuthenticationFilter(
             log.debug("쿠키에서 토큰 추출: {}", tokenDisplay)
         }
 
-        // Bearer 접두사 제거
         return if (tokenValue.startsWith("Bearer ")) tokenValue.substring(7) else tokenValue
     }
 }

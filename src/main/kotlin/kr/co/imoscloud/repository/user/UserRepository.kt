@@ -20,4 +20,5 @@ interface UserRepository : JpaRepository<User, Long> {
 
     fun findAllByLoginIdIn(idList: List<String>): List<User>
     fun findByLoginId(loginId: String): Optional<User>
+    fun findAllBySiteAndCompCdAndFlagActiveIsTrue(site: String, userId: String): List<User>
 } 

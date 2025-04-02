@@ -9,6 +9,7 @@ import kr.co.imoscloud.repository.company.CompanyRepository
 import kr.co.imoscloud.repository.user.MenuRoleRepository
 import kr.co.imoscloud.repository.user.UserRepository
 import kr.co.imoscloud.repository.user.UserRoleRepository
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Component
 
 @Component
@@ -18,22 +19,22 @@ class Core(
     companyRepo: CompanyRepository,
     menuRoleRepo: MenuRoleRepository
 ): AbstractInitialSetting(userRepo, roleRepo, companyRepo, menuRoleRepo) {
-    override fun getAllUsersDuringInspection(indies: List<String>): MutableMap<String, UserSummery?> {
+    override fun getAllUsersDuringInspection(indies: List<String>): MutableMap<String, User?> {
         val userList: List<User> = if (indies.size == 1) {
             userRepo.findByLoginId(indies.first()).map(::listOf)!!.orElseGet { emptyList<User>() }
         } else userRepo.findAllByLoginIdIn(indies)
 
-        return userList.associate { it.loginId to userToSummery(it) }.toMutableMap()
+        return userList.associateBy { it.loginId }.toMutableMap()
     }
 
     override fun getAllRolesDuringInspection(indies: List<Long>): MutableMap<Long, RoleSummery?> {
         val roleList: List<UserRole> = if (indies.size == 1) {
             roleRepo.findById(indies.first()).map(::listOf).orElseGet { emptyList<UserRole>() }
-        } else roleRepo.findAllByIdIn(indies)
+        } else roleRepo.findAllByRoleIdIn(indies)
 
         return roleList.associate {
             val summery = RoleSummery(it.roleName, it.priorityLevel)
-            it.id to summery
+            it.roleId to summery
         }.toMutableMap()
     }
 
@@ -52,10 +53,29 @@ class Core(
         return menuRoleRepo.findByRoleIdAndMenuId(roleId, menuId)
     }
 
-    fun getUserRoleFromInMemory(user: User): RoleSummery {
-        val req = RoleInput(user.roleId)
+    fun getUserFromInMemory(loginId: String): User {
+        val req = ExistLoginIdRequest(loginId)
+        val userMap = getAllUserMap(listOf(req))
+        return userMap[loginId] ?: throw IllegalArgumentException("User not found with loginId: $loginId")
+    }
+
+    fun getUserRoleFromInMemory(roleId: Long): RoleSummery {
+        val req = RoleInput(roleId)
         val roleMap: Map<Long, RoleSummery?> = getAllRoleMap(listOf(req))
         return roleMap[req.roleId] ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
+    }
+
+    fun getUserGroupByCompCd(): List<UserResponse> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        return if (getIsInspect()) {
+            userRepo.findAllBySiteAndCompCdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.getCompCd())
+                .map { userToUserResponse(it) }
+        } else {
+            val req = ExistLoginIdRequest(loginUser.getUserId())
+            getAllUserMap(listOf(req))
+                .filterValues { it?.compCd == loginUser.getCompCd() }
+                .map { userToUserResponse(it.value) }
+        }
     }
 
     fun <T> extractReferenceDataMaps(req: List<T>): SummaryMaps {
@@ -69,5 +89,12 @@ class Core(
             roleIdList?.let { getAllRoleMapByIndies(it) },
             companyIdList?.let { getAllCompanyMapByIndies(it) }
         )
+    }
+
+    private fun userToUserResponse(u: User?): UserResponse {
+        return u?.let {
+            val role = getUserRoleFromInMemory(u.roleId)
+            UserResponse(u.loginId,u.userName?:"",u.departmentId,u.positionId,role.roleName,u.flagActive)
+        }?: throw IllegalArgumentException("메모리에 유저에 대한 정보 누락")
     }
 }

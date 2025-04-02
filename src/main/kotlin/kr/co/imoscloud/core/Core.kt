@@ -26,10 +26,7 @@ class Core(
             userRepo.findByLoginId(indies.first()).map(::listOf)!!.orElseGet { emptyList<User>() }
         } else userRepo.findAllByLoginIdIn(indies)
 
-        return userList.associate {
-            val summery = userToUserSummery(it)
-            it.loginId to summery
-        }.toMutableMap()
+        return userList.associate { it.loginId to userToSummery(it) }.toMutableMap()
     }
 
     override fun getAllRolesDuringInspection(indies: List<Long>): MutableMap<Long, RoleSummery?> {
@@ -37,10 +34,7 @@ class Core(
             roleRepo.findById(indies.first()).map(::listOf).orElseGet { emptyList<UserRole>() }
         } else roleRepo.findAllByRoleIdIn(indies)
 
-        return roleList.associate {
-            val summery = RoleSummery(it.roleName, it.priorityLevel)
-            it.roleId to summery
-        }.toMutableMap()
+        return roleList.associate { it.roleId to roleToSummery(it) }.toMutableMap()
     }
 
     override fun getAllCompanyDuringInspection(indies: List<String>): MutableMap<String, CompanySummery?> {
@@ -48,10 +42,7 @@ class Core(
             companyRepo.findByCompCd(indies.first()).map(::listOf).orElseGet { emptyList<Company>() }
         } else companyRepo.findAllByCompCdIn(indies)
 
-        return companyList.associate {
-            val summery = CompanySummery(it.id, it.companyName)
-            it.compCd to summery
-        }.toMutableMap()
+        return companyList.associate { it.compCd to CompanySummery(it.id, it.companyName) }.toMutableMap()
     }
 
     override fun getMenuRoleDuringInspection(roleId: Long, menuId: String): MenuRole? {
@@ -81,7 +72,7 @@ class Core(
     fun getUserGroupByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
         return if (getIsInspect()) {
             userRepo.findAllBySiteAndCompCdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd)
-                .map { userToUserSummery(it) }
+                .map { userToSummery(it) }
         } else {
             val userMap = getAllUserMap(listOf(loginUser))
             return userMap.filterValues { it?.compCd == loginUser.compCd }.values.toList()

@@ -82,3 +82,8 @@ data class RoleSummery(
     val roleName: String,
     val priorityLevel: Int?,
 )
+
+data class RoleResponseForSelect(
+    override val roleId: Long,
+    val roleName: String,
+): DtoRoleIdBase

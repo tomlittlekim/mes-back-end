@@ -28,15 +28,15 @@ class CommonCol (
 ) {
     fun createCommonCol(userPrincipal: UserPrincipal) {
         this.createDate = LocalDateTime.now()
-        this.createUser = userPrincipal.getUserId()
+        this.createUser = userPrincipal.getLoginId()
         this.updateDate = LocalDateTime.now()
-        this.updateUser = userPrincipal.getUserId()
+        this.updateUser = userPrincipal.getLoginId()
     }
 
     fun updateCommonCol(userPrincipal: UserPrincipal) {
         this.createDate = this.createDate
         this.createUser = this.createUser
         this.updateDate = LocalDateTime.now()
-        this.updateUser = userPrincipal.getUserId()
+        this.updateUser = userPrincipal.getLoginId()
     }
 }

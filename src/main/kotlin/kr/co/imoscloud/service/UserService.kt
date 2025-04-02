@@ -6,6 +6,7 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.iface.IUser
+import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.security.JwtTokenProvider
 import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.util.SecurityUtils
@@ -22,6 +23,7 @@ import java.util.*
 class UserService(
     private val core: Core,
     private val jwtProvider: JwtTokenProvider,
+    private val codeRep: CodeRep
 ): IUser {
 
     fun signIn(
@@ -34,7 +36,7 @@ class UserService(
             ?.let { user ->
                 try {
                     validateUser(loginReq.userPwd, user)
-                    val roleSummery = core.getUserRoleFromInMemory(user.roleId)
+                    val roleSummery = core.getUserRoleFromInMemory(user)
 
                     val userDetails = UserPrincipal.create(user, roleSummery)
                     val userPrincipal = UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
@@ -80,7 +82,12 @@ class UserService(
     }
 
     fun getUserGroupByCompany(): List<UserResponse> {
-        return core.getUserGroupByCompCd()
+        val codeMap = codeRep.findAllByCodeClassIdIn(listOf("DEPARTMENT","POSITION"))
+            .associate { it?.codeId to it?.codeName }
+
+        return core.getUserGroupByCompCd().map {
+            core.userToUserResponse(it).apply { departmentNm = codeMap[departmentNm]; positionNm = codeMap[positionNm] }
+        }
     }
 
     private fun checkRole(loginUser: UserPrincipal): Boolean {

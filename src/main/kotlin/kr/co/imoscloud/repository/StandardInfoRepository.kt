@@ -182,6 +182,7 @@ interface CodeRep: JpaRepository<Code,Long>{
         codeClassId:String
     ):List<Code?>
 
+    fun findAllByCodeClassIdIn(codeClassIds: List<String>): List<Code?>
 }
 
 interface VendorRep : JpaRepository<Vendor,Long>{

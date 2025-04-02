@@ -39,8 +39,8 @@ data class ExistLoginIdRequest(
 data class UserResponse(
     override val loginId: String,
     val username: String,
-    val departmentNm: String?,
-    val positionNm: String?,
+    var departmentNm: String?,
+    var positionNm: String?,
     val roleNm: String,
     val flagActive: Boolean
 ): DtoLoginIdBase

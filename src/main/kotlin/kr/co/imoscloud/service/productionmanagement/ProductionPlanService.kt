@@ -8,7 +8,6 @@ import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
 import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.util.SecurityUtils
 import org.slf4j.LoggerFactory
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -77,7 +76,7 @@ class ProductionPlanService(
 
                     // 사용자 정보가 있으면 해당 정보로, 없으면 기본값으로 생성 정보 설정
                     if (currentUser != null) {
-                        createUser = currentUser.getUserId()
+                        createUser = currentUser.getLoginId()
                     } else {
                         createUser = DEFAULT_USER
                     }
@@ -107,7 +106,7 @@ class ProductionPlanService(
 
                         // 사용자 정보가 있으면 해당 정보로, 없으면 기본값으로 업데이트 정보 설정
                         if (currentUser != null) {
-                            updateUser = currentUser.getUserId()
+                            updateUser = currentUser.getLoginId()
                         } else {
                             updateUser = DEFAULT_USER
                         }

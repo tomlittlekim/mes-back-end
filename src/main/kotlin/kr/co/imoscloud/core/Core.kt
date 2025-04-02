@@ -56,28 +56,37 @@ class Core(
         return menuRoleRepo.findByRoleIdAndMenuId(roleId, menuId)
     }
 
-    fun getUserFromInMemory(loginId: String): UserSummery {
-        val req = ExistLoginIdRequest(loginId)
-        val userMap = getAllUserMap(listOf(req))
-        return userMap[loginId] ?: throw IllegalArgumentException("User not found with loginId: $loginId")
+    fun <T> getUserFromInMemory(req: T): UserSummery {
+        val index: String
+        val userMap: Map<String, UserSummery?> = when (req) {
+            is String -> { index = req; getAllUserMap(listOf(ExistLoginIdRequest(req))) }
+            is User -> { index = req.loginId; getAllUserMap(listOf(req)) }
+            else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
+        }
+        return userMap[index] ?: throw IllegalArgumentException("User not found with loginId: $index")
     }
 
-    fun getUserRoleFromInMemory(roleId: Long): RoleSummery {
-        val req = RoleInput(roleId)
-        val roleMap: Map<Long, RoleSummery?> = getAllRoleMap(listOf(req))
-        return roleMap[req.roleId] ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
+    fun <T> getUserRoleFromInMemory(req: T): RoleSummery {
+        val index: Long
+        val roleMap: Map<Long, RoleSummery?> = when (req) {
+            is Long -> { index = req; getAllRoleMap(listOf(RoleInput(req))) }
+            is UserRole -> { index = req.roleId; getAllRoleMap(listOf(req)) }
+            else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
+        }
+        return roleMap[index] ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
     }
 
-    fun getUserGroupByCompCd(): List<UserResponse> {
+    fun getUserGroupByCompCd(): List<UserSummery?> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         return if (getIsInspect()) {
             userRepo.findAllBySiteAndCompCdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.getCompCd())
-                .map { userToUserResponse(it) }
+                .map { userToUserSummery(it) }
         } else {
-            val req = ExistLoginIdRequest(loginUser.getUserId())
-            getAllUserMap(listOf(req))
-                .filterValues { it?.compCd == loginUser.getCompCd() }
-                .map { userToUserResponse(it.value) }
+            val userMap = getAllUserMap(listOf(loginUser))
+            return userMap[loginUser.getLoginId()]
+                ?.takeIf { it.compCd == loginUser.getCompCd() }
+                ?.let { listOf(it) }
+                ?: emptyList()
         }
     }
 
@@ -94,7 +103,7 @@ class Core(
         )
     }
 
-    private fun <T> userToUserResponse(any: T): UserResponse {
+    fun <T> userToUserResponse(any: T): UserResponse {
         val u = when (any) {
             is User -> userToUserSummery(any)
             is UserSummery -> any

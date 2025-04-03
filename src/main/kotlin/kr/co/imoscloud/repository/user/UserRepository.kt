@@ -3,7 +3,7 @@ package kr.co.imoscloud.repository.user
 import kr.co.imoscloud.entity.user.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import java.util.Optional
+import java.util.*
 
 interface UserRepository : JpaRepository<User, Long> {
     fun findBySiteAndLoginIdAndFlagActiveIsTrue(site: String, userId: String): User?

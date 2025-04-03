@@ -5,9 +5,6 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kr.co.imoscloud.entity.material.MaterialMaster
-import kr.co.imoscloud.fetcher.standardInfo.FactoryInput
-import kr.co.imoscloud.fetcher.standardInfo.FactoryUpdate
 import kr.co.imoscloud.service.material.MaterialResponseModel
 import kr.co.imoscloud.service.material.MaterialService
 

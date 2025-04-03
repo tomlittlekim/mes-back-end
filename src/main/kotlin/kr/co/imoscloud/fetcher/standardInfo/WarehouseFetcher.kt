@@ -4,7 +4,6 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kr.co.imoscloud.service.standardInfo.VendorResponse
 import kr.co.imoscloud.service.standardInfo.WarehouseResponse
 import kr.co.imoscloud.service.standardInfo.WarehouseService
 

@@ -1,12 +1,12 @@
 package kr.co.imoscloud.fetcher.inventory
 
-import kr.co.imoscloud.service.InventoryInMResponseModel
-import kr.co.imoscloud.service.InventoryService
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.service.InventoryInMResponseModel
 import kr.co.imoscloud.service.InventoryInResponseModel
+import kr.co.imoscloud.service.InventoryService
 
 @DgsComponent
 class InventoryDataFetcher(

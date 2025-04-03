@@ -8,6 +8,7 @@ import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
+import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.slf4j.LoggerFactory
 
@@ -18,16 +19,42 @@ class ProductionPlanDataFetcher(
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanDataFetcher::class.java)
 
-    // 생산계획 목록 조회
+    // 생산계획 목록 조회 - 필터 처리 개선
     @DgsQuery
-    fun productionPlans(@InputArgument("filter") filter: ProductionPlanFilter): List<ProductionPlan> {
+    fun productionPlans(@InputArgument("filter") filterInput: Map<String, Any>?): List<ProductionPlan> {
         try {
+            // Map으로 받은 입력값을 수동으로 ProductionPlanFilter로 변환
+            val filter = ProductionPlanFilter()
+
+            filterInput?.let { input ->
+                // 문자열 필드들 설정
+                filter.prodPlanId = input["prodPlanId"] as? String
+                filter.orderId = input["orderId"] as? String
+                filter.productId = input["productId"] as? String
+
+                // 날짜 필드 변환
+                if (input.containsKey("planStartDate")) {
+                    val startDateStr = input["planStartDate"] as? String
+                    filter.planStartDate = DateUtils.parseDate(startDateStr)
+                }
+
+                if (input.containsKey("planEndDate")) {
+                    val endDateStr = input["planEndDate"] as? String
+                    filter.planEndDate = DateUtils.parseDate(endDateStr)
+                }
+
+                // Boolean 필드 설정
+                filter.flagActive = input["flagActive"] as? Boolean
+            }
+
+            log.debug("변환된 필터: {}", filter)
             return productionPlanService.getProductionPlans(filter)
         } catch (e: SecurityException) {
             log.error("인증 오류: {}", e.message)
             return emptyList()
         } catch (e: Exception) {
             log.error("생산계획 목록 조회 중 오류 발생", e)
+            log.error("Exception 상세: ", e)
             return emptyList()
         }
     }

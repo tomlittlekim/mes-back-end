@@ -5,7 +5,6 @@ import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
 import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
-import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipalOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

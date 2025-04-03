@@ -1,6 +1,5 @@
 package kr.co.imoscloud.service.standardInfo
 
-import com.fasterxml.jackson.annotation.JsonFormat
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.standardInfo.Line
 import kr.co.imoscloud.fetcher.standardInfo.LineFilter
@@ -10,7 +9,6 @@ import kr.co.imoscloud.repository.LineRep
 import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 

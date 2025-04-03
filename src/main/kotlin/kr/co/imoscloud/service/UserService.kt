@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.user.User
-import kr.co.imoscloud.entity.user.UserRole
 import kr.co.imoscloud.iface.IUser
 import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.security.JwtTokenProvider

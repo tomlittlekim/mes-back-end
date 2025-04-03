@@ -8,7 +8,7 @@ import kr.co.imoscloud.repository.InventoryInMRep
 import kr.co.imoscloud.repository.InventoryInRep
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 @Service
 class InventoryService (

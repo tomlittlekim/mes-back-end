@@ -8,7 +8,6 @@ import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
-import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 

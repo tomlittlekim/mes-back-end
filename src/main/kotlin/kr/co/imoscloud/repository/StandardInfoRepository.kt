@@ -1,15 +1,13 @@
 package kr.co.imoscloud.repository
 
-import kr.co.imoscloud.entity.standardInfo.Factory
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.standardInfo.*
+import kr.co.imoscloud.service.standardInfo.EquipmentResponseModel
 import kr.co.imoscloud.service.standardInfo.LineResponseModel
 import kr.co.imoscloud.service.standardInfo.WarehouseResponse
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import kr.co.imoscloud.entity.standardInfo.Line
-import kr.co.imoscloud.service.standardInfo.EquipmentResponseModel
 
 interface FactoryRep: JpaRepository<Factory,Long>{
     @Query(

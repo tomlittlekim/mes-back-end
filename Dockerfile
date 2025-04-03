@@ -2,7 +2,7 @@
 FROM amazoncorretto:21 AS builder
 
 WORKDIR /app
-COPY . .
+COPY src/main .
 RUN chmod +x ./gradlew
 RUN ./gradlew bootJar
 

@@ -89,11 +89,11 @@ tasks.named('test') {
 }
 
 bootJar {
-    mainClass = 'kr.co.imoscloud.ImosBackEndApplication'
+    mainClass = 'kr.co.imoscloud.ImosBackEndApplicationKt'
 }
 
 springBoot {
-    mainClass = 'kr.co.imoscloud.ImosBackEndApplication'
+    mainClass = 'kr.co.imoscloud.ImosBackEndApplicationKt'
 }
 
 // QueryDSL Q 클래스 생성 경로 설정

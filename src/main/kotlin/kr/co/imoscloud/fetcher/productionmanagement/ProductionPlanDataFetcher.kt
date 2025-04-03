@@ -19,11 +19,11 @@ class ProductionPlanDataFetcher(
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanDataFetcher::class.java)
 
-    // 생산계획 목록 조회 - 필터 처리 개선
+    // 생산계획 목록 조회
     @DgsQuery
     fun productionPlans(@InputArgument("filter") filterInput: Map<String, Any>?): List<ProductionPlan> {
         try {
-            // Map으로 받은 입력값을 수동으로 ProductionPlanFilter로 변환
+            // Map으로 받은 입력값을 ProductionPlanFilter로 변환
             val filter = ProductionPlanFilter()
 
             filterInput?.let { input ->
@@ -32,7 +32,7 @@ class ProductionPlanDataFetcher(
                 filter.orderId = input["orderId"] as? String
                 filter.productId = input["productId"] as? String
 
-                // 날짜 필드 변환 - 필드명 변경
+                // 날짜 필드 변환
                 if (input.containsKey("planStartDateFrom")) {
                     val startDateFromStr = input["planStartDateFrom"] as? String
                     filter.planStartDateFrom = DateUtils.parseDate(startDateFromStr)
@@ -47,14 +47,12 @@ class ProductionPlanDataFetcher(
                 filter.flagActive = input["flagActive"] as? Boolean
             }
 
-            log.debug("변환된 필터: {}", filter)
             return productionPlanService.getProductionPlans(filter)
         } catch (e: SecurityException) {
             log.error("인증 오류: {}", e.message)
             return emptyList()
         } catch (e: Exception) {
             log.error("생산계획 목록 조회 중 오류 발생", e)
-            log.error("Exception 상세: ", e)
             return emptyList()
         }
     }

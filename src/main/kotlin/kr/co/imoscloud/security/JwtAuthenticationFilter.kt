@@ -44,19 +44,13 @@ class JwtAuthenticationFilter(
 
                 // 로깅
                 log.info("JWT 필터에서 인증 설정 완료: {}", authentication.name)
-                if (log.isDebugEnabled) {
-                    log.debug("인증 Principal 타입: {}",
-                        if (authentication.principal != null) authentication.principal.javaClass.name else "null")
-                    log.debug("SecurityContext에 인증 정보 설정됨: {}",
-                        SecurityContextHolder.getContext().authentication != null)
-                }
             } else {
                 // 유효한 토큰이 없는 경우
                 log.debug("JWT 토큰이 없거나 유효하지 않음")
-                
+
                 // 익명 인증을 방지하기 위해 컨텍스트 초기화
                 SecurityContextHolder.clearContext()
-                
+
                 // 401 Unauthorized 응답 반환
                 response.status = HttpServletResponse.SC_UNAUTHORIZED
             }
@@ -68,18 +62,6 @@ class JwtAuthenticationFilter(
 
         // 3. 다음 필터 실행
         filterChain.doFilter(request, response)
-
-        // 4. 필터 체인 실행 후 SecurityContext 확인 (디버깅용)
-        if (log.isDebugEnabled) {
-            val authAfterChain = SecurityContextHolder.getContext().authentication
-            if (authAfterChain != null) {
-                log.debug("필터 체인 이후 인증 타입: {}", authAfterChain.javaClass.name)
-                log.debug("필터 체인 이후 Principal 타입: {}",
-                    if (authAfterChain.principal != null) authAfterChain.principal.javaClass.name else "null")
-            } else {
-                log.debug("필터 체인 이후 인증 정보 없음")
-            }
-        }
     }
 
     private fun resolveToken(request: HttpServletRequest): String? {
@@ -92,15 +74,9 @@ class JwtAuthenticationFilter(
         // 2. 쿠키에서 토큰 추출
         val cookies = request.cookies ?: return null
         val tokenCookie = cookies.firstOrNull { it.name == jwtTokenProvider.ACCESS }
-        val tokenValue = tokenCookie?.value ?: return null
 
-        if (log.isDebugEnabled) {
-            val tokenDisplay = if (tokenValue.length > 15)
-                tokenValue.substring(0, 15) + "..."
-            else tokenValue
-            log.debug("쿠키에서 토큰 추출: {}", tokenDisplay)
+        return tokenCookie?.value?.let {
+            if (it.startsWith("Bearer ")) it.substring(7) else it
         }
-
-        return if (tokenValue.startsWith("Bearer ")) tokenValue.substring(7) else tokenValue
     }
 }

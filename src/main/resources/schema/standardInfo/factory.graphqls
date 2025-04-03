@@ -14,7 +14,7 @@ input FactoryInput {
     factoryCode: String
     address: String
     telNo: String
-    officerName: String
+    remark: String
     flagActive: String
 }
 
@@ -24,7 +24,7 @@ input FactoryUpdate {
     factoryCode: String
     address: String
     telNo: String
-    officerName: String
+    remark: String
     flagActive: String
 }
 
@@ -34,7 +34,7 @@ type Factory {
     factoryCode: String
     address: String
     telNo: String
-    officerName: String
+    remark: String
     flagActive:String
     createUser:String
     createDate:String

@@ -32,6 +32,6 @@ class Factory (
     @Column(name = "TEL_NO", length = 100)
     var telNo: String? = null,
 
-    @Column(name = "OFFICER_NAME", length = 100)
-    var officerName: String? = null,
+    @Column(name = "REMARK", length = 100)
+    var remark: String? = null,
 ):CommonCol()

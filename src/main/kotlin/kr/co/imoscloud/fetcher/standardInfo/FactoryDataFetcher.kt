@@ -49,7 +49,7 @@ data class FactoryInput(
     val factoryCode: String,
     val address: String? = null,
     val telNo: String? = null,
-    val officerName: String? = null,
+    val remark: String? = null,
     val flagActive: String? = null,
 )
 
@@ -59,7 +59,7 @@ data class FactoryUpdate(
     val factoryCode: String,
     val address: String? = null,
     val telNo: String? = null,
-    val officerName: String? = null,
+    val remark: String? = null,
     val flagActive: String? = null,
 )
 

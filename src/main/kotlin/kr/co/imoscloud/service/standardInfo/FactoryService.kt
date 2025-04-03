@@ -55,7 +55,7 @@ class FactoryService(
                 factoryCode = it?.factoryCode,
                 address = it?.address,
                 telNo = it?.telNo,
-                officerName = it?.officerName,
+                remark = it?.remark,
             ).apply{
                 flagActive = it?.flagActive.equals("Y" )
                 createCommonCol(userPrincipal)
@@ -87,7 +87,7 @@ class FactoryService(
                 it.factoryCode = x?.factoryCode
                 it.address = x?.address
                 it.telNo = x?.telNo
-                it.officerName = x?.officerName
+                it.remark = x?.remark
                 it.flagActive = x?.flagActive.equals("Y" )
                 it.updateCommonCol(userPrincipal)
             }
@@ -126,7 +126,7 @@ class FactoryService(
                 it?.address,
                 if (it?.flagActive == true) "Y" else "N",
                 it?.telNo,
-                it?.officerName,
+                it?.remark,
                 it?.createUser,
                 it?.createDate.toString().replace("T", " "),
                 it?.updateUser,
@@ -144,7 +144,7 @@ data class FactoryResponseModel(
     val address:String? = null,
     val flagActive:String? = null,
     val telNo: String? = null,
-    val officerName: String? = null,
+    val remark: String? = null,
     val createUser: String? = null,
     val createDate: String? = null,
     val updateUser: String? = null,

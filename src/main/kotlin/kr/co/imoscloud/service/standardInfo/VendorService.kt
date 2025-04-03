@@ -6,6 +6,8 @@ import kr.co.imoscloud.fetcher.standardInfo.VendorFilter
 import kr.co.imoscloud.fetcher.standardInfo.VendorInput
 import kr.co.imoscloud.fetcher.standardInfo.VendorUpdate
 import kr.co.imoscloud.repository.VendorRep
+import kr.co.imoscloud.security.UserPrincipal
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -16,9 +18,11 @@ class VendorService(
 ) {
 
     fun getVendors(vendorFilter: VendorFilter): List<VendorResponse?> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         val vendorList = vendorRep.getVendorList(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             vendorId = vendorFilter.vendorId,
             vendorName = vendorFilter.vendorName,
             ceoName = vendorFilter.ceoName,
@@ -38,26 +42,28 @@ class VendorService(
                 telNo = it.telNo,
                 flagActive = if (it.flagActive == true) "Y" else "N",
                 createUser = it.createUser,
-                createDate = it.createDate.toString(),
+                createDate = it.createDate.toString().replace("T", " "),
                 updateUser = it.updateUser,
-                updateDate = it.updateDate.toString(),
+                updateDate = it.updateDate.toString().replace("T", " "),
             )
         }
     }
 
     @Transactional
     fun saveVendor(createdRows:List<VendorInput?>, updatedRows:List<VendorUpdate?>){
-        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { createVendor(it) }
-        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { updateVendor(it) }
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
+        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { createVendor(it, userPrincipal) }
+        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let { updateVendor(it, userPrincipal) }
     }
 
-    fun createVendor(createdRows:List<VendorInput>){
+    fun createVendor(createdRows:List<VendorInput>,userPrincipal: UserPrincipal){
         val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
         val vendorList = createdRows.map{
             Vendor(
-                site = "imos",
-                compCd = "eightPin",
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.compCd,
                 vendorId = "V" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),
                 vendorName = it.vendorName,
@@ -67,22 +73,24 @@ class VendorService(
                 businessType = it.businessType,
                 address = it.address,
                 telNo = it.telNo,
+            ).apply {
                 flagActive = it.flagActive.equals("Y" )
-            )
+                createCommonCol(userPrincipal)
+            }
         }
 
         vendorRep.saveAll(vendorList)
 
     }
 
-    fun updateVendor(updatedRows:List<VendorUpdate>){
+    fun updateVendor(updatedRows:List<VendorUpdate>,userPrincipal: UserPrincipal){
         val vendorListIds = updatedRows.map {
             it.vendorId
         }
 
         val vendorList = vendorRep.getVendorListByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             vendorIds = vendorListIds
         )
 
@@ -101,6 +109,7 @@ class VendorService(
                 it.address = x.address
                 it.telNo = x.telNo
                 it.flagActive = x.flagActive.equals("Y" )
+                it.updateCommonCol(userPrincipal)
             }
         }
 
@@ -108,9 +117,11 @@ class VendorService(
     }
 
     fun deleteVendor(vendorId:String): Boolean {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         return vendorRep.deleteByVendorId(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             vendorId = vendorId
         ) > 0
     }

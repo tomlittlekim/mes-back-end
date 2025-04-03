@@ -9,7 +9,7 @@ input VendorFilter {
 input VendorInput {
     vendorName: String
     vendorType: String
-    businessRegNo: String
+    businessRegNo: String!
     ceoName: String
     businessType: String
     address: String
@@ -21,7 +21,7 @@ input VendorUpdate {
     vendorId: String
     vendorName: String
     vendorType: String
-    businessRegNo: String
+    businessRegNo: String!
     ceoName: String
     businessType: String
     address: String

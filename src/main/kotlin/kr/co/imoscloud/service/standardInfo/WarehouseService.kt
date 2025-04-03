@@ -6,6 +6,8 @@ import kr.co.imoscloud.fetcher.standardInfo.WareHouseInput
 import kr.co.imoscloud.fetcher.standardInfo.WarehouseFilter
 import kr.co.imoscloud.fetcher.standardInfo.WarehouseUpdate
 import kr.co.imoscloud.repository.WarehouseRep
+import kr.co.imoscloud.security.UserPrincipal
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -15,11 +17,12 @@ import java.time.format.DateTimeFormatter
 class WarehouseService(
     val warehouseRep: WarehouseRep
 ) {
-
     fun getWarehouse(filter:WarehouseFilter): List<WarehouseResponse?> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         return warehouseRep.getWarehouses(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             factoryId = filter.factoryId,
             factoryName = filter.factoryName,
             warehouseId = filter.warehouseId,
@@ -30,37 +33,41 @@ class WarehouseService(
 
     @Transactional
     fun saveWarehouse(createdRows:List<WareHouseInput?>, updatedRows:List<WarehouseUpdate?>){
-        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {createWarehouse(it)}
-        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {updateWarehouse(it)}
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
+        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {createWarehouse(it, userPrincipal)}
+        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {updateWarehouse(it, userPrincipal)}
     }
 
-    private fun createWarehouse(createdRows: List<WareHouseInput>){
+    private fun createWarehouse(createdRows: List<WareHouseInput>, userPrincipal: UserPrincipal) {
         val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
         val warehouseList = createdRows.map {
             Warehouse(
-                site = "imos",
-                compCd = "eightPin",
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.compCd,
                 factoryId = it.factoryId,
                 warehouseId = "W" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),
                 warehouseName = it.warehouseName,
                 warehouseType = it.warehouseType,
-                flagActive = it.flagActive.equals("Y" ),
-            )
+            ).apply{
+                flagActive = it.flagActive.equals("Y" )
+                createCommonCol(userPrincipal)
+            }
         }
 
         warehouseRep.saveAll(warehouseList)
     }
 
-    private fun updateWarehouse(updatedRows: List<WarehouseUpdate>){
+    private fun updateWarehouse(updatedRows: List<WarehouseUpdate>, userPrincipal: UserPrincipal) {
         val warehouseIds = updatedRows.map {
             it.warehouseId
         }
 
         val warehouseList = warehouseRep.getWarehouseListByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             warehouseIds = warehouseIds,
         )
 
@@ -75,6 +82,7 @@ class WarehouseService(
                 it.warehouseName = x.warehouseName
                 it.warehouseType = x.warehouseType
                 it.flagActive = x.flagActive.equals("Y" )
+                it.updateCommonCol(userPrincipal)
             }
         }
 
@@ -83,9 +91,11 @@ class WarehouseService(
     }
 
     fun deleteWarehouse(warehouseId:String): Boolean {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         return warehouseRep.deleteByWarehouseId(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             warehouseId = warehouseId
         ) > 0
     }
@@ -100,7 +110,7 @@ data class WarehouseResponse(
     val warehouseType: String,
     val flagActive: String,
     val createUser: String?= null,
-    val createDate: LocalDate? = null,
+    val createDate: LocalDateTime? = null,
     val updateUser: String? = null,
-    val updateDate: LocalDate? = null,
+    val updateDate: LocalDateTime? = null,
 )

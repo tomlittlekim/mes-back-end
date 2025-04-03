@@ -1,6 +1,7 @@
 package kr.co.imoscloud.entity.standardInfo
 
 import jakarta.persistence.*
+import kr.co.imoscloud.entity.CommonCol
 import java.time.LocalDate
 
 @Entity
@@ -27,20 +28,5 @@ class Warehouse (
     var warehouseName: String? = null,
 
     @Column(name = "WAREHOUSE_TYPE", length = 20)
-    var warehouseType: String? = null,
-
-    @Column(name = "FLAG_ACTIVE")
-    var flagActive: Boolean? = null,
-
-    @Column(name = "CREATE_USER", length = 100)
-    var createUser: String? = null,
-
-    @Column(name = "CREATE_DATE")
-    var createDate: LocalDate? = null,
-
-    @Column(name = "UPDATE_USER", length = 100)
-    var updateUser: String? = null,
-
-    @Column(name = "UPDATE_DATE")
-    var updateDate: LocalDate? = null
-)
+    var warehouseType: String? = null
+):CommonCol()

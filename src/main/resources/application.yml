@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: jdbc:p6spy:mysql://121.169.203.219:3306/imos
+    url: jdbc:mysql://121.169.203.219:3306/imos
     username: epin
     password: epin
-    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       auto-commit: false
 
@@ -22,6 +22,7 @@ spring:
         show_sql: false
         format_sql: false
         use_sql_comments: false
+    open-in-view: false
 
 jwt:
   secret: your_jwt_secret_key_should_be_very_long_and_secure_at_least_256_bits

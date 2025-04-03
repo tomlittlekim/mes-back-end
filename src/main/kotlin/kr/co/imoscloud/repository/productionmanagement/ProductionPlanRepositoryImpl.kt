@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
 import kr.co.imoscloud.entity.productionmanagement.QProductionPlan
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -12,6 +13,7 @@ class ProductionPlanRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : ProductionPlanRepositoryCustom, QuerydslRepositorySupport(ProductionPlan::class.java) {
 
+    @Transactional(readOnly = true)
     override fun getProductionPlanList(
         site: String,
         compCd: String,

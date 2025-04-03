@@ -32,15 +32,15 @@ class ProductionPlanDataFetcher(
                 filter.orderId = input["orderId"] as? String
                 filter.productId = input["productId"] as? String
 
-                // 날짜 필드 변환
-                if (input.containsKey("planStartDate")) {
-                    val startDateStr = input["planStartDate"] as? String
-                    filter.planStartDate = DateUtils.parseDate(startDateStr)
+                // 날짜 필드 변환 - 필드명 변경
+                if (input.containsKey("planStartDateFrom")) {
+                    val startDateFromStr = input["planStartDateFrom"] as? String
+                    filter.planStartDateFrom = DateUtils.parseDate(startDateFromStr)
                 }
 
-                if (input.containsKey("planEndDate")) {
-                    val endDateStr = input["planEndDate"] as? String
-                    filter.planEndDate = DateUtils.parseDate(endDateStr)
+                if (input.containsKey("planStartDateTo")) {
+                    val startDateToStr = input["planStartDateTo"] as? String
+                    filter.planStartDateTo = DateUtils.parseDate(startDateToStr)
                 }
 
                 // Boolean 필드 설정

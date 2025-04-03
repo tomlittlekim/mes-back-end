@@ -11,8 +11,8 @@ input ProductionPlanFilter {
     prodPlanId: String
     orderId: String
     productId: String
-    planStartDate: String
-    planEndDate: String
+    planStartDateFrom: String
+    planStartDateTo: String
     flagActive: Boolean
 }
 

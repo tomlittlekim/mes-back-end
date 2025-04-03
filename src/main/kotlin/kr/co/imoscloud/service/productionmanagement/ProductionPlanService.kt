@@ -26,8 +26,8 @@ class ProductionPlanService(
             prodPlanId = filter.prodPlanId,
             orderId = filter.orderId,
             productId = filter.productId,
-            planStartDate = filter.planStartDate,
-            planEndDate = filter.planEndDate,
+            planStartDateFrom = filter.planStartDateFrom,  // 변경된 필드명
+            planStartDateTo = filter.planStartDateTo,      // 변경된 필드명
             flagActive = filter.flagActive
         )
     }

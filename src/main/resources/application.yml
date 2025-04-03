@@ -1,9 +1,11 @@
 spring:
   datasource:
-    url: jdbc:mysql://121.169.203.219:3306/imos
+    url: jdbc:p6spy:mysql://121.169.203.219:3306/imos
     username: epin
     password: epin
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    hikari:
+      auto-commit: false
 
   application:
     name: imos-back-end
@@ -14,6 +16,14 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        use_sql_comments: true
+        type:
+          descriptor:
+            sql: trace  # 파라미터 바인딩 값 출력
 
 jwt:
   secret: your_jwt_secret_key_should_be_very_long_and_secure_at_least_256_bits
@@ -22,10 +32,22 @@ jwt:
 server:
   port: 8080
 
-# ?? ?? ??
+# 로깅 설정 업데이트
 logging:
   level:
     root: INFO
     kr.co.imoscloud: DEBUG
     org.springframework: INFO
     org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG  # SQL 쿼리 로깅
+    org.hibernate.type.descriptor.sql: TRACE  # 쿼리 파라미터 값 로깅
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # 파라미터 바인딩 로깅
+    org.hibernate.orm.jdbc.bind: TRACE  # Hibernate 6+ 바인딩 로깅
+
+# p6spy 로깅 설정
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+      multiline: true
+      logging: slf4j

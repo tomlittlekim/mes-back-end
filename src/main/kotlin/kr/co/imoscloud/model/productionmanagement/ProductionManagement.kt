@@ -10,9 +10,9 @@ data class ProductionPlanFilter(
     var prodPlanId: String? = null,
     var orderId: String? = null,
     var productId: String? = null,
-    var planStartDate: LocalDate? = null,
-    var planEndDate: LocalDate? = null,
-    var flagActive: Boolean? = null
+    var planStartDateFrom: LocalDate? = null,  // 변경됨
+    var planStartDateTo: LocalDate? = null,    // 변경됨
+    var flagActive: Boolean? = null,
 )
 
 data class ProductionPlanInput(

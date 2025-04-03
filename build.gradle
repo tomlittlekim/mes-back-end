@@ -64,6 +64,9 @@ dependencies {
     kapt 'com.querydsl:querydsl-apt:5.0.0:jakarta'
     kapt 'jakarta.annotation:jakarta.annotation-api'
     kapt 'jakarta.persistence:jakarta.persistence-api'
+
+    // p6spy 의존성 추가 (SQL 로깅 향상)
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
 }
 
 dependencyManagement {

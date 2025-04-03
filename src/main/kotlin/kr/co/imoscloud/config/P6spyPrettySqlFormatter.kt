@@ -20,7 +20,24 @@ class P6spyPrettySqlFormatter : MessageFormattingStrategy {
         private const val ANSI_YELLOW = "\u001B[33m"
         private const val ANSI_RED = "\u001B[31m"
         private const val ANSI_PURPLE = "\u001B[35m"
+        private const val ANSI_BLACK = "\u001B[30m"
+        private const val ANSI_BLUE = "\u001B[34m"
+        private const val ANSI_WHITE = "\u001B[37m"
+        private const val ANSI_MAGENTA = "\u001B[35m"
+        private const val ANSI_BRIGHT_BLACK = "\u001B[90m"
+        private const val ANSI_BRIGHT_RED = "\u001B[91m"
+        private const val ANSI_BRIGHT_GREEN = "\u001B[92m"
+        private const val ANSI_BRIGHT_YELLOW = "\u001B[93m"
+        private const val ANSI_BRIGHT_BLUE = "\u001B[94m"
+        private const val ANSI_BRIGHT_MAGENTA = "\u001B[95m"
+        private const val ANSI_BRIGHT_CYAN = "\u001B[96m"
+        private const val ANSI_BRIGHT_WHITE = "\u001B[97m"
+
+        // 스타일 추가
         private const val ANSI_BOLD = "\u001B[1m"
+        private const val ANSI_UNDERLINE = "\u001B[4m"
+        private const val ANSI_REVERSE = "\u001B[7m"
+
     }
 
     override fun formatMessage(
@@ -55,7 +72,7 @@ class P6spyPrettySqlFormatter : MessageFormattingStrategy {
             // 파라미터(물음표) 강조
             .replace("\\?".toRegex(), "$ANSI_BOLD$ANSI_PURPLE?$ANSI_RESET")
             // 문자열 리터럴 강조 ('로 감싸진 부분)
-            .replace("'([^']*)'".toRegex(), "$ANSI_YELLOW'$1'$ANSI_RESET")
+            .replace("'([^']*)'".toRegex(), "$ANSI_BRIGHT_YELLOW'$1'$ANSI_RESET")
 
         // 로그 메시지 구성
         return StringBuilder()

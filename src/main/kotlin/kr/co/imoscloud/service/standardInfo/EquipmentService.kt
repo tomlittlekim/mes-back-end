@@ -54,6 +54,8 @@ class EquipmentService(
                         System.nanoTime().toString().takeLast(3),
                 factoryId = it.factoryId,
                 lineId = it.lineId,
+                equipmentBuyDate = it.equipmentBuyDate,
+                equipmentBuyVendor = it.equipmentBuyVendor,
                 equipmentSn = it.equipmentSn,
                 equipmentType = it.equipmentType,
                 equipmentName = it.equipmentName,
@@ -87,6 +89,8 @@ class EquipmentService(
             equipment?.let{
                 it.factoryId = x.factoryId
                 it.equipmentId = x.equipmentId
+                it.equipmentBuyDate = x.equipmentBuyDate
+                it.equipmentBuyVendor = x.equipmentBuyVendor
                 it.equipmentSn = x.equipmentSn
                 it.equipmentType = x.equipmentType
                 it.equipmentName = x.equipmentName
@@ -117,6 +121,8 @@ data class EquipmentResponseModel(
     val lineId: String?,
     val lineName: String?,
     val equipmentId: String?,
+    val equipmentBuyDate: String?,
+    val equipmentBuyVendor: String?,
     val equipmentSn: String?,
     val equipmentType: String?,
     val equipmentName: String?,

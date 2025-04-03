@@ -413,6 +413,8 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
                 e.lineId,
                 l.lineName,
                 e.equipmentId,
+                e.equipmentBuyDate,
+                e.equipmentBuyVendor,
                 e.equipmentSn,
                 e.equipmentType,
                 e.equipmentName,

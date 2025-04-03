@@ -13,6 +13,8 @@ input EquipmentFilter{
 input EquipmentInput{
     factoryId: String,
     lineId: String,
+    equipmentBuyDate: String,
+    equipmentBuyVendor: String,
     equipmentSn: String,
     equipmentType: String,
     equipmentName: String,
@@ -24,6 +26,8 @@ input EquipmentUpdate{
     factoryId: String,
     lineId: String,
     equipmentId: String,
+    equipmentBuyDate: String,
+    equipmentBuyVendor: String,
     equipmentSn: String,
     equipmentType: String,
     equipmentName: String,
@@ -37,6 +41,8 @@ type Equipment{
     lineId: String
     lineName: String
     equipmentId: String
+    equipmentBuyDate: String
+    equipmentBuyVendor: String
     equipmentSn: String
     equipmentType: String
     equipmentName: String

@@ -26,6 +26,12 @@ class Equipment (
     @Column(name = "LINE_ID", length = 50)
     var lineId: String? = null,
 
+    @Column(name = "EQUIPMENT_BUY_DATE", length = 50)
+    var equipmentBuyDate: String? = null,
+
+    @Column(name = "EQUIPMENT_BUY_VENDOR", length = 50)
+    var equipmentBuyVendor: String? = null,
+
     @Column(name = "EQUIPMENT_SN", length = 50)
     var equipmentSn: String? = null,
 

@@ -47,6 +47,8 @@ data class EquipmentFilter(
 data class EquipmentInput(
     val factoryId: String,
     val lineId: String,
+    val equipmentBuyDate: String,
+    val equipmentBuyVendor: String,
     val equipmentSn: String,
     val equipmentType: String,
     val equipmentName: String,
@@ -58,6 +60,8 @@ data class EquipmentUpdate(
     val factoryId: String,
     val lineId: String,
     val equipmentId: String,
+    val equipmentBuyDate: String?,
+    val equipmentBuyVendor: String?,
     val equipmentSn: String,
     val equipmentType: String,
     val equipmentName: String,

@@ -18,12 +18,10 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
-        format_sql: true
-        show_sql: true
-        use_sql_comments: true
-        type:
-          descriptor:
-            sql: trace  # 파라미터 바인딩 값 출력
+        # SQL 로깅 비활성화 (p6spy에서 담당)
+        show_sql: false
+        format_sql: false
+        use_sql_comments: false
 
 jwt:
   secret: your_jwt_secret_key_should_be_very_long_and_secure_at_least_256_bits
@@ -32,19 +30,20 @@ jwt:
 server:
   port: 8080
 
-# 로깅 설정 업데이트
+# 로깅 설정
 logging:
   level:
     root: INFO
     kr.co.imoscloud: DEBUG
     org.springframework: INFO
     org.springframework.security: INFO
-    org.hibernate.SQL: DEBUG  # SQL 쿼리 로깅
-    org.hibernate.type.descriptor.sql: TRACE  # 쿼리 파라미터 값 로깅
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # 파라미터 바인딩 로깅
-    org.hibernate.orm.jdbc.bind: TRACE  # Hibernate 6+ 바인딩 로깅
+    # Hibernate 로깅 비활성화 (p6spy에서 담당)
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql: OFF
+    # p6spy 로그 레벨 설정
+    p6spy: INFO
 
-# p6spy 로깅 설정
+# p6spy 설정
 decorator:
   datasource:
     p6spy:

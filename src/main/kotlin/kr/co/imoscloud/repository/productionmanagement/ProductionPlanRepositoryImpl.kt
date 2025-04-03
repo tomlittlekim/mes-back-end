@@ -23,20 +23,6 @@ class ProductionPlanRepositoryImpl(
         flagActive: Boolean?
     ): List<ProductionPlan> {
         val productionPlan = QProductionPlan.productionPlan
-        val log = org.slf4j.LoggerFactory.getLogger(this::class.java)
-
-        // 로깅 추가: 입력 파라미터 출력
-        log.debug(
-            "쿼리 파라미터 - site: {}, compCd: {}, prodPlanId: {}, orderId: {}, productId: {}, planStartDateFrom: {}, planStartDateTo: {}, flagActive: {}",
-            site,
-            compCd,
-            prodPlanId,
-            orderId,
-            productId,
-            planStartDateFrom,
-            planStartDateTo,
-            flagActive
-        )
 
         val query = queryFactory
             .selectFrom(productionPlan)
@@ -67,19 +53,17 @@ class ProductionPlanRepositoryImpl(
         }
 
         // planStartDateFrom 필터링 (계획시작일 범위 시작)
-        var startDateTime: LocalDateTime? = null
         planStartDateFrom?.let {
-            startDateTime = LocalDateTime.of(it, LocalTime.MIN)
-            query.where(productionPlan.planStartDate.goe(startDateTime))
-            log.debug("계획시작일 하한값: {}", startDateTime)
+            val startOfDay = LocalDateTime.of(it, LocalTime.MIN)
+            query.where(productionPlan.planStartDate.goe(startOfDay))
         }
 
         // planStartDateTo 필터링 (계획시작일 범위 끝)
-        var endDateTime: LocalDateTime? = null
         planStartDateTo?.let {
-            endDateTime = LocalDateTime.of(it, LocalTime.MAX)
-            query.where(productionPlan.planStartDate.loe(endDateTime))
-            log.debug("계획시작일 상한값: {}", endDateTime)
+            // 다음 날 자정(00:00:00)으로 설정하고 그 값보다 작은 값만 포함
+            val nextDay = it.plusDays(1)
+            val startOfNextDay = LocalDateTime.of(nextDay, LocalTime.MIN)
+            query.where(productionPlan.planStartDate.lt(startOfNextDay))
         }
 
         // flagActive 필터링
@@ -87,33 +71,6 @@ class ProductionPlanRepositoryImpl(
             query.where(productionPlan.flagActive.eq(it))
         }
 
-        val results = query.fetch()
-
-        // 결과 로깅
-        log.debug("조회 결과 - 레코드 수: {}", results.size)
-        if (startDateTime != null && endDateTime != null) {
-            results.forEach { plan ->
-                if (plan.planStartDate != null) {
-                    val isInRange =
-                        !plan.planStartDate!!.isBefore(startDateTime) && !plan.planStartDate!!.isAfter(
-                            endDateTime
-                        )
-                    log.debug(
-                        "계획 ID: {}, 계획시작일: {}, 범위 내 여부: {}",
-                        plan.prodPlanId, plan.planStartDate, isInRange
-                    )
-
-                    // 범위를 벗어난 날짜가 있으면 경고 로그
-                    if (!isInRange) {
-                        log.warn(
-                            "범위를 벗어난 날짜 발견! 계획 ID: {}, 계획시작일: {}, 범위: {} ~ {}",
-                            plan.prodPlanId, plan.planStartDate, startDateTime, endDateTime
-                        )
-                    }
-                }
-            }
-        }
-
-        return results
+        return query.fetch()
     }
 }

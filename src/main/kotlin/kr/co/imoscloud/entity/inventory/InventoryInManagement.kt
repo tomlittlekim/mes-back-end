@@ -4,8 +4,8 @@ import jakarta.persistence.*
 import java.time.LocalDate
 
 @Entity
-@Table(name = "INVENTORY_IN_M")
-class InventoryInM {
+@Table(name = "INVENTORY_IN_MANAGEMENT")
+class InventoryInManagement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SEQ", nullable = false)

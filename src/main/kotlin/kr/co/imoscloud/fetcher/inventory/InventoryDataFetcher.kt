@@ -1,31 +1,32 @@
 package kr.co.imoscloud.fetcher.inventory
 
+import kr.co.imoscloud.service.InventoryInManagementResponseModel
+import kr.co.imoscloud.service.InventoryService
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kr.co.imoscloud.service.InventoryInMResponseModel
 import kr.co.imoscloud.service.InventoryInResponseModel
-import kr.co.imoscloud.service.InventoryService
 
 @DgsComponent
 class InventoryDataFetcher(
     val inventoryService: InventoryService,
 ) {
     @DgsQuery
-    fun getInventoryList(@InputArgument("filter") filter: InventoryInMFilter): List<InventoryInMResponseModel?> {
-        return inventoryService.getInventoryList(filter)
+    fun getInventoryInManagementList(@InputArgument("filter") filter: InventoryInManagementFilter): List<InventoryInManagementResponseModel?> {
+        return inventoryService.getInventoryInManagementListWithFactoryAndWarehouse(filter)
     }
 
     @DgsQuery
-    fun getDetailedInventoryList(@InputArgument("filter") filter: InventoryInFilter): List<InventoryInResponseModel?> {
-        return inventoryService.getDetailedInventoryList(filter)
+    fun getInventoryInList(@InputArgument("filter") filter: InventoryInFilter): List<InventoryInResponseModel?> {
+        return inventoryService.getInventoryInListWithMaterial(filter)
     }
 
     @DgsMutation
-    fun saveDetailedInventory(@InputArgument("createdRows") createdRows: List<DetailedInventoryInput?>,
-//        @InputArgument("updatedRows") updatedRows:List<DetailedInventoryUpdate?>
-    ): Boolean { inventoryService.saveDetailedInventory(createdRows)
+    fun saveDetailedInventory(
+        @InputArgument("createdRows") createdRows: List<DetailedInventoryInput?>,
+        @InputArgument("updatedRows") updatedRows:List<DetailedInventoryUpdateInput?>
+    ): Boolean { inventoryService.saveDetailedInventory(createdRows, updatedRows)
         return true
     }
 
@@ -35,21 +36,19 @@ class InventoryDataFetcher(
         return true
     }
     @DgsMutation
-    fun deleteInventory(@InputArgument("inManagementId") inManagementId: inventoryDeleteInput,
+    fun deleteInventory(@InputArgument("inManagementId") inManagementId: InventoryDeleteInput,
     ): Boolean { inventoryService.deleteInventory(inManagementId)
         return true
     }
 
-    @DgsQuery
-    fun testString(): String {
-        println("테스트 쿼리 호출됨")
-        return "테스트가 성공했습니다!"
+    @DgsMutation
+    fun deleteDetailedInventory(@InputArgument("inInventoryId") inInventoryId: InventoryDetailDeleteInput,
+    ): Boolean { inventoryService.deleteDetailInventory(inInventoryId)
+        return true
     }
 }
 
 data class InventoryInFilter(
-    val site: String,
-    val compCd: String,
     val inManagementId: String? = null
 )
 
@@ -57,9 +56,9 @@ data class DetailedInventoryInput(
     val inManagementId: String,
     val supplierName: String? = null,
     val manufactureName: String? = null,
-    val userMaterialId: String? = null,
     val inType: String? = null,
     val systemMaterialId: String? = null,
+    val userMaterialId: String? = null,
     val materialName: String? = null,
     val materialCategory: String? = null,
     val materialStandard: String? = null,
@@ -73,7 +72,7 @@ data class DetailedInventoryInput(
     val updateDate: String? = null
 )
 
-data class DetailedInventoryUpdate(
+data class DetailedInventoryUpdateInput(
     val inManagementId: String,
     val inInventoryId: String,
     val supplierName: String? = null,
@@ -94,11 +93,15 @@ data class DetailedInventoryUpdate(
     val updateDate: String? = null
 )
 
-data class InventoryInMFilter(
-    var site: String? = null,
-    var compCd: String? = null,
-    var factoryId: String? = null,
-    var warehouseId: String? = null,
+data class InventoryInManagementFilter(
+    var inManagementId: String? = null,
+    var inType: String? = null,
+    var factoryName: String? = null,
+    var warehouseName: String? = null,
+    var createUser: String? = null,
+    var hasInvoice: String? = null,
+    var startDate: String? = null,
+    var endDate: String? = null,
 )
 
 data class InventoryInMInput(
@@ -111,8 +114,14 @@ data class InventoryInMInput(
     var hasInvoice: String? = null,
 )
 
-data class inventoryDeleteInput (
+data class InventoryDeleteInput (
     var site: String,
     var compCd: String,
     var inManagementId: String,
+)
+
+data class InventoryDetailDeleteInput (
+    var site: String,
+    var compCd: String,
+    var inInventoryId: String,
 )

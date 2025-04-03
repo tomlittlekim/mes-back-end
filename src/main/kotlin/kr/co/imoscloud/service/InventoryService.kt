@@ -1,11 +1,14 @@
 package kr.co.imoscloud.service
 
 import jakarta.transaction.Transactional
+import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.inventory.InventoryIn
-import kr.co.imoscloud.entity.inventory.InventoryInM
+import kr.co.imoscloud.entity.inventory.InventoryInManagement
 import kr.co.imoscloud.fetcher.inventory.*
+import kr.co.imoscloud.iface.DtoLoginIdBase
 import kr.co.imoscloud.repository.InventoryInMRep
 import kr.co.imoscloud.repository.InventoryInRep
+import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipalOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.*
@@ -14,76 +17,62 @@ import java.util.*
 class InventoryService (
     val inventoryInMRep: InventoryInMRep,
     val inventoryInRep: InventoryInRep,
+    val core: Core
 ){
 
     /*
-    * TODO:안 - 공통 - site,compCd 는 아마 유저정보에서 가져오는걸로
-    * inType -> 드롭다운 방식으로 수정
-    * system_material_id -> material 테이블에서 가져옴 */
+    * TODO:안 - 공통
+    * inType -> 드롭다운 방식으로 수정*/
 
-    fun getInventoryList(filter: InventoryInMFilter): List<InventoryInMResponseModel?> {
-        val inventoryList = inventoryInMRep.getInventoryList(
-            site = filter.site ?: "imos",
-            compCd = filter.compCd ?: "eightPin",
-            warehouseId = filter.warehouseId ?: "WH-001",
-            factoryId = filter.factoryId ?: "FTY-001",
+    fun getInventoryInManagementListWithFactoryAndWarehouse(filter: InventoryInManagementFilter): List<InventoryInManagementResponseModel?> {
+
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        return inventoryInMRep.findInventoryInManagementWithMaterialInfo(
+            inManagementId = filter.inManagementId ?: "",
+            inType = filter.inType ?: "",
+            factoryName = filter.factoryName ?: "",
+            warehouseName = filter.warehouseName ?: "",
+            createUser = filter.createUser ?: "",
+            hasInvoice = filter.hasInvoice,
+            startDate = filter.startDate ?: "",
+            endDate = filter.endDate ?: "",
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            flagActive = true,
         )
-
-        val result = inventoryList.map {
-            InventoryInMResponseModel(
-                inManagementId = it?.inManagementId,
-                factoryId = it?.factoryId,
-                warehouseId = it?.warehouseId,
-                totalPrice = it?.totalPrice.toString(),
-                hasInvoice = it?.hasInvoice.toString(),
-                createDate = it?.createDate.toString(),
-            )
-        }
-        return result
     }
 
-    fun getDetailedInventoryList(filter: InventoryInFilter): List<InventoryInResponseModel?> {
-        val detailedInventoryList = inventoryInMRep.getDetailedInventoryList(
-            site = filter.site ?: "imos",
-            compCd = filter.compCd ?: "eightPin",
+    fun getInventoryInListWithMaterial(filter: InventoryInFilter): List<InventoryInResponseModel?> {
+
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        return inventoryInMRep.findInventoryInWithMaterial(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
             inManagementId = filter.inManagementId ?: throw IllegalArgumentException("입고관리번호는 필수입니다.")
         )
-
-        return detailedInventoryList.map { result ->
-            InventoryInResponseModel(
-                inManagementId = result["IN_MANAGEMENT_ID"] as String?,
-                inInventoryId = result["IN_INVENTORY_ID"] as String?,
-                supplierName = result["SUPPLIER_NAME"] as String?,
-                manufacturerName = result["MANUFACTURER_NAME"] as String?,
-                userMaterialId = result["USER_MATERIAL_ID"] as String?,
-                materialName = result["MATERIAL_NAME"] as String?,
-                materialCategory = result["MATERIAL_CATEGORY"] as String?,
-                materialStandard = result["MATERIAL_STANDARD"] as String?,
-                qty = result["QTY"]?.toString(),
-                unitPrice = result["UNIT_PRICE"]?.toString(),
-                unitVat = result["UNIT_VAT"]?.toString(),
-                totalPrice = result["TOTAL_PRICE"]?.toString(),
-                createUser = result["CREATE_USER"] as String?,
-                createDate = result["CREATE_DATE"]?.toString(),
-                updateUser = result["UPDATE_USER"] as String?,
-                updateDate = result["UPDATE_DATE"]?.toString()
-            )
-        }
     }
 
     @Transactional
     fun saveDetailedInventory(
         createdRows: List<DetailedInventoryInput?>,
-//        updatedRows:List<DetailedInventoryUpdate?>
+        updatedRows:List<DetailedInventoryUpdateInput?>
     ){
         createDetailedInventory(createdRows)
-//        updateFactory(updatedRows)
+        updateDetailedInventory(updatedRows)
     }
 
     @Transactional
     fun saveInventory(
         createdRows: List<InventoryInMInput?>,
     ){
+
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
         val now = LocalDate.now()
 
         // 1. 마지막 inManagementId 가져오기
@@ -98,9 +87,9 @@ class InventoryService (
                 val newIdNumber = lastIdNumber + 1
                 val newInManagementId = "IN$newIdNumber"
 
-                InventoryInM().apply {
-                    site = it.site ?: "imos"
-                    compCd = it.compCd ?: "eightPin"
+                InventoryInManagement().apply {
+                    site = currentUser.getSite()
+                    compCd = currentUser.compCd
                     factoryId = it.factoryId
                     warehouseId = it.warehouseId
                     totalPrice = it.totalPrice?.toIntOrNull()
@@ -121,19 +110,38 @@ class InventoryService (
     }
 
     @Transactional
-    fun deleteInventory(param: inventoryDeleteInput){
+    fun deleteInventory(param: InventoryDeleteInput){
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
         inventoryInMRep.deleteByInManagementIdAndSiteAndCompCd(
-            param.site,
-            param.compCd,
-            param.inManagementId)
+            param.inManagementId,
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,)
         inventoryInRep.deleteByInManagementIdAndSiteAndCompCd(
-            param.site,
-            param.compCd,
-            param.inManagementId
+            param.inManagementId,
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+        )
+    }
+
+    @Transactional
+    fun deleteDetailInventory(param: InventoryDetailDeleteInput){
+
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        inventoryInRep.deleteByInInventoryIdAndSiteAndCompCd(
+            param.inInventoryId,
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
         )
     }
 
     fun createDetailedInventory(createdRows: List<DetailedInventoryInput?>){
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
         // 1. 마지막 입고 번호 조회
         val lastInManagementId = inventoryInRep.findTopByOrderByInManagementIdDesc()?.inManagementId
 
@@ -148,8 +156,8 @@ class InventoryService (
         val now = LocalDate.now()
         val inventoryInList = createdRows.mapIndexed { index, it ->
             InventoryIn().apply {
-                site = "imos"
-                compCd = "eightPin"
+                site = currentUser.getSite()
+                compCd = currentUser.compCd
                 inManagementId = it?.inManagementId ?: "IN${nextInManagementBase + index}"
                 systemMaterialId = it?.systemMaterialId
                 inType = it?.inType
@@ -169,52 +177,38 @@ class InventoryService (
         inventoryInRep.saveAll(inventoryInList)
     }
 
-//    fun updateFactory(updatedRows: List<FactoryUpdate?>){
-//        val factoryListId = updatedRows.map {
-//            it?.factoryId
-//        }
-//
-//        val factoryList = factoryRep.getFactoryListByIds(
-//            site = "imos",
-//            compCd = "eightPin",
-//            factoryIds = factoryListId
-//        )
-//
-//        val updateList = factoryList.associateBy { it?.factoryId }
-//
-//        updatedRows.forEach{ x ->
-//            val factoryId = x?.factoryId
-//            val factory = updateList[factoryId]
-//
-//            factory?.let{
-//                it.factoryName = x?.factoryName
-//                it.factoryCode = x?.factoryCode
-//                it.address = x?.address
-//                it.telNo = x?.telNo
-//                it.officerName = x?.officerName
-//                it.flagActive = x?.flagActive.equals("Y" )
-//            }
-//        }
-//
-//        factoryRep.saveAll(factoryList)
-//    }
-}
+    fun updateDetailedInventory(updatedRows: List<DetailedInventoryUpdateInput?>){
 
-data class InventoryInMResponseModel(
-    val inManagementId: String? = null,
-    val factoryId: String? = null,
-    val warehouseId: String? = null,
-    val totalPrice: String? = null,
-    val hasInvoice: String? = null,
-    val createDate: String? = null,
-    val id: String? = null,
-    val site: String? = null,
-    val compCd: String? = null,
-    val remarks: String? = null,
-    val createUser: String? = null,
-    val updateUser: String? = null,
-    val updateDate: String? = null
-)
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        val detailedInInventoryListIds = updatedRows.map {
+            it?.inInventoryId
+        }
+
+        val factoryList = inventoryInRep.getDetailedInventoryInListByIds(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            inInventoryId = detailedInInventoryListIds
+        )
+
+        val updateList = factoryList.associateBy { it?.inInventoryId }
+
+        updatedRows.forEach{ x ->
+            val inInventoryId = x?.inInventoryId
+            val inInventory = updateList[inInventoryId]
+
+            inInventory?.let{
+                it.qty = x?.qty?.toInt()
+                it.unitPrice = x?.unitPrice?.toInt()
+                it.unitVat = x?.unitVat?.toInt()
+                it.totalPrice = x?.totalPrice?.toInt()
+            }
+        }
+
+        inventoryInRep.saveAll(factoryList)
+    }
+}
 
 data class InventoryInResponseModel(
     val inManagementId: String? = null,
@@ -234,3 +228,20 @@ data class InventoryInResponseModel(
     val updateUser: String? = null,
     val updateDate: String? = null
 )
+
+data class InventoryInManagementResponseModel(
+    val inManagementId: String,
+    val inType: String,
+    val factoryName: String?,
+    val warehouseName: String?,
+    val materialInfo: String?,
+    val totalPrice: Int?,
+    val hasInvoice: String?,
+//    override val userName: String?,
+    override val loginId: String,
+    val createDate: String?
+): DtoLoginIdBase {
+    fun getLocalDate(): LocalDate? {
+        return createDate?.let { LocalDate.parse(it) }
+    }
+}

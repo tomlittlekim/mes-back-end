@@ -1,19 +1,14 @@
-# InventoryInM 타입 정의
-type InventoryInM {
-    seq: Int
-    site: String
-    compCd: String
-    factoryId: String
-    warehouseId: String
-    totalPrice: Int
-    hasInvoice: Boolean
-    remarks: String
-    flagActive: Boolean
-    createUser: String
-    createDate: String
-    updateUser: String
-    updateDate: String
-    inManagementId: String
+# 테이블 타입 정의
+type InventoryInManagement {
+    inManagementId: String,
+    inType: String,
+    factoryName: String,
+    warehouseName: String,
+    materialInfo: String,
+    totalPrice: String,
+    hasInvoice: String,
+    userName: String,
+    createDate: String,
 }
 
 # InventoryIn 타입 정의
@@ -47,16 +42,18 @@ input InventoryInMInput {
     hasInvoice: String
 }
 
-input InventoryInMFilter {
-    site: String
-    compCd: String
-    factoryId: String
-    warehouseId: String
+input InventoryInManagementFilter {
+    inManagementId: String
+    inType: String
+    factoryName: String
+    warehouseName: String
+    createUser: String
+    hasInvoice: String
+    startDate: String
+    endDate: String
 }
 
 input InventoryInFilter {
-    site: String
-    compCd: String
     inManagementId: String
 }
 
@@ -80,9 +77,9 @@ input DetailedInventoryInput {
     updateDate: String
 }
 
-input DetailedInventoryUpdate {
+input DetailedInventoryUpdateInput {
     inManagementId: String!
-    inInventoryId: String
+    inInventoryId: String!
     supplierName: String
     manufactureName: String
     userMaterialId: String
@@ -98,23 +95,28 @@ input DetailedInventoryUpdate {
     updateUser: String
     updateDate: String
 }
-input inventoryDeleteInput {
+input InventoryDeleteInput {
     site: String
     compCd: String
     inManagementId: String
 }
 
+input InventoryDetailDeleteInput {
+    site: String
+    compCd: String
+    inInventoryId: String
+}
+
 # 쿼리 정의
 extend type Query {
-    getInventoryList(filter: InventoryInMFilter): [InventoryInM]
-    getDetailedInventoryList(filter: InventoryInFilter): [InventoryIn]
-    testString: String
+    getInventoryInManagementList(filter: InventoryInManagementFilter): [InventoryInManagement]
+    getInventoryInList(filter: InventoryInFilter): [InventoryIn]
 }
 
 # 뮤테이션 정의
 extend type Mutation {
-#    saveDetailedInventory(createdRows: [DetailedInventoryInput], updatedRows:[DetailedInventoryUpdate] ): Boolean
-    saveDetailedInventory(createdRows: [DetailedInventoryInput]): Boolean
+    saveDetailedInventory(createdRows: [DetailedInventoryInput], updatedRows:[DetailedInventoryUpdateInput] ): Boolean
     saveInventory(createdRows: [InventoryInMInput]) :Boolean
-    deleteInventory(inManagementId: inventoryDeleteInput): Boolean
+    deleteInventory(inManagementId: InventoryDeleteInput): Boolean
+    deleteDetailedInventory(inInventoryId: InventoryDetailDeleteInput): Boolean
 }

@@ -27,6 +27,9 @@ class ProductionPlan : CommonCol() {
     @Column(name = "PRODUCT_ID", length = 100)
     var productId: String? = null
 
+    @Column(name = "SHIFT_TYPE", length = 10)
+    var shiftType: String? = null
+
     @Column(name = "PLAN_QTY")
     var planQty: Double? = null
 

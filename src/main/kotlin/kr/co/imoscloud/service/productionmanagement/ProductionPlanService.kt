@@ -26,6 +26,7 @@ class ProductionPlanService(
             prodPlanId = filter.prodPlanId,
             orderId = filter.orderId,
             productId = filter.productId,
+            shiftType = filter.shiftType,
             planStartDateFrom = filter.planStartDateFrom,  // 변경된 필드명
             planStartDateTo = filter.planStartDateTo,      // 변경된 필드명
             flagActive = filter.flagActive
@@ -37,9 +38,6 @@ class ProductionPlanService(
         updatedRows: List<ProductionPlanUpdate>? = null,
     ): Boolean {
         try {
-            // 인증 정보 확인 및 로깅
-            log.debug("서비스에서 인증 정보 요청 처리 시작")
-
             // 1. 사용자 정보 획득 - 파라미터로 받은 정보가 우선, 없으면 SecurityContext에서 조회
             val currentUser = getCurrentUserPrincipalOrNull()
                 ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
@@ -55,6 +53,7 @@ class ProductionPlanService(
                     prodPlanId = "PP" + System.currentTimeMillis()
                     orderId = input.orderId
                     productId = input.productId
+                    shiftType = input.shiftType
                     planQty = input.planQty
                     planStartDate = startDate
                     planEndDate = endDate
@@ -65,7 +64,6 @@ class ProductionPlanService(
 
                 // 저장
                 productionPlanRepository.save(newPlan)
-                log.debug("새 생산계획 저장: {}", newPlan.prodPlanId)
             }
 
             // 수정 요청 처리
@@ -79,6 +77,7 @@ class ProductionPlanService(
                     plan.apply {
                         update.orderId?.let { orderId = it }
                         update.productId?.let { productId = it }
+                        update.shiftType?.let { shiftType = it }
                         update.planQty?.let { planQty = it }
                         startDate?.let { planStartDate = it }
                         endDate?.let { planEndDate = it }
@@ -89,7 +88,6 @@ class ProductionPlanService(
 
                     // 저장
                     productionPlanRepository.save(plan)
-                    log.debug("생산계획 업데이트: {}", plan.prodPlanId)
                 }
             }
 
@@ -109,7 +107,6 @@ class ProductionPlanService(
 
             existingPlan?.let {
                 productionPlanRepository.delete(it)
-                log.debug("생산계획 삭제: {}", prodPlanId)
                 return true
             }
 

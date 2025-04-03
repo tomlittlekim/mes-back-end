@@ -20,6 +20,7 @@ class ProductionPlanRepositoryImpl(
         prodPlanId: String?,
         orderId: String?,
         productId: String?,
+        shiftType: String?,
         planStartDateFrom: LocalDate?,
         planStartDateTo: LocalDate?,
         flagActive: Boolean?
@@ -51,6 +52,12 @@ class ProductionPlanRepositoryImpl(
         productId?.let {
             if (it.isNotBlank()) {
                 query.where(productionPlan.productId.like("%$it%"))
+            }
+        }
+
+        shiftType?.let {
+            if (it.isNotBlank()) {
+                query.where(productionPlan.shiftType.eq(it))
             }
         }
 

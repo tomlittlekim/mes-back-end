@@ -11,6 +11,7 @@ input ProductionPlanFilter {
     prodPlanId: String
     orderId: String
     productId: String
+    shiftType: String
     planStartDateFrom: String
     planStartDateTo: String
     flagActive: Boolean
@@ -23,6 +24,7 @@ type ProductionPlan {
     prodPlanId: String
     orderId: String
     productId: String
+    shiftType: String
     planQty: Float
     planStartDate: String
     planEndDate: String
@@ -37,6 +39,7 @@ type ProductionPlan {
 input ProductionPlanInput {
     orderId: String
     productId: String
+    shiftType: String
     planQty: Float
     planStartDate: String
     planEndDate: String
@@ -47,6 +50,7 @@ input ProductionPlanUpdate {
     prodPlanId: String!
     orderId: String
     productId: String
+    shiftType: String
     planQty: Float
     planStartDate: String
     planEndDate: String

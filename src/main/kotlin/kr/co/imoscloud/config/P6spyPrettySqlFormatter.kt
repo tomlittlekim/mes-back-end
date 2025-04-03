@@ -55,7 +55,7 @@ class P6spyPrettySqlFormatter : MessageFormattingStrategy {
             // 파라미터(물음표) 강조
             .replace("\\?".toRegex(), "$ANSI_BOLD$ANSI_PURPLE?$ANSI_RESET")
             // 문자열 리터럴 강조 ('로 감싸진 부분)
-            .replace("'([^']*)'".toRegex(), "$ANSI_RED'$1'$ANSI_RESET")
+            .replace("'([^']*)'".toRegex(), "$ANSI_YELLOW'$1'$ANSI_RESET")
 
         // 로그 메시지 구성
         return StringBuilder()

@@ -49,16 +49,8 @@ class JwtTokenProvider(
         try {
             val claims = parseClaims(token)
 
-            // 토큰에서 추출한 정보 로깅 (디버깅)
-            logger.debug("토큰 페이로드: subject={}, 발행일={}, 만료일={}",
-                claims.subject, claims.issuedAt, claims.expiration)
-
             // 사용자 정보 로드
             val userDetails = userDetailsService.loadUserBySiteAndUserId(site, claims.subject)
-
-            // 사용자 정보가 성공적으로 로드되었는지 확인
-            logger.debug("사용자 인증 정보 로드: userId={}, 타입={}",
-                claims.subject, userDetails.javaClass.name)
 
             return UsernamePasswordAuthenticationToken(
                 userDetails,  // principal로 UserPrincipal 객체 설정
@@ -66,7 +58,7 @@ class JwtTokenProvider(
                 userDetails.authorities  // 권한 정보
             )
         } catch (e: Exception) {
-            logger.error("인증 객체 생성 중 오류 발생: {}", e.message, e)
+            logger.error("인증 객체 생성 중 오류 발생: {}", e.message)
             throw e
         }
     }
@@ -98,20 +90,5 @@ class JwtTokenProvider(
             .build()
             .parseClaimsJws(token)
             .body
-    }
-
-    // 디버깅용 토큰 검사 메서드
-    fun inspectToken(token: String): Map<String, Any> {
-        try {
-            val claims = parseClaims(token)
-            return mapOf(
-                "subject" to (claims.subject ?: ""),
-                "issuedAt" to claims.issuedAt.toString(),
-                "expiration" to claims.expiration.toString(),
-                "claims" to claims.entries.associate { it.key to (it.value?.toString() ?: "") }
-            )
-        } catch (e: Exception) {
-            return mapOf("error" to e.message.toString())
-        }
     }
 }

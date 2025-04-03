@@ -177,10 +177,7 @@ abstract class AbstractInitialSetting(
     }
     
     private fun initialSettings() {
-        userMap = userRepo.findAll().associate {
-            val summery = userToSummery(it)
-            it.loginId to summery
-        }.toMutableMap()
+        userMap = userRepo.findAll().associate { it.loginId to userToSummery(it) }.toMutableMap()
 
         roleMap = roleRepo.findAll().associate { it.roleId to roleToSummery(it) }.toMutableMap()
 

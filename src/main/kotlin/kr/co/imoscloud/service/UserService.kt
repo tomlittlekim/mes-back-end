@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.user.User
-import kr.co.imoscloud.entity.user.UserRole
 import kr.co.imoscloud.iface.IUser
 import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.security.JwtTokenProvider
@@ -62,7 +61,7 @@ class UserService(
         return userRes
     }
 
-    fun signUp(req: UserInput): User {
+    fun signUp(req: UserInput): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         if (!core.isAdminOrHigher(loginUser)) throw IllegalArgumentException("관리자 이상의 등급을 가진 유저가 아닙니다. ")
 
@@ -78,7 +77,7 @@ class UserService(
 
         core.userRepo.save(newUser)
         core.upsertUserFromInMemory(newUser)
-        return newUser
+        return newUser.let { "${req.userId} 로그인 성공" }
     }
 
     fun existLoginId(req: ExistLoginIdRequest): Boolean {

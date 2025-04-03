@@ -6,11 +6,11 @@ import kr.co.imoscloud.fetcher.standardInfo.FactoryFilter
 import kr.co.imoscloud.fetcher.standardInfo.FactoryInput
 import kr.co.imoscloud.fetcher.standardInfo.FactoryUpdate
 import kr.co.imoscloud.repository.FactoryRep
+import kr.co.imoscloud.security.UserPrincipal
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
-//TODO site, compCd  security 에 저장된 정보로 로직 변경
 
 @Service
 class FactoryService(
@@ -18,9 +18,11 @@ class FactoryService(
 ) {
 
     fun getFactories(filter: FactoryFilter): List<FactoryResponseModel?> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         val factoryList = factoryRep.getFactoryList(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             factoryId = filter.factoryId,
             factoryName = filter.factoryName,
             factoryCode = filter.factoryCode,
@@ -34,41 +36,43 @@ class FactoryService(
 
     @Transactional
     fun saveFactory(createdRows: List<FactoryInput?>, updatedRows:List<FactoryUpdate?>){
-        //TODO 저장 ,수정시 공통 으로 작성자 ,작성일 ,수정자 ,수정일 변경 저장이 필요함
-        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {createFactory(it)}
-        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {updateFactory(it)}
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
+        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {createFactory(it, userPrincipal)}
+        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {updateFactory(it, userPrincipal)}
     }
 
-    fun createFactory(createdRows: List<FactoryInput?>){
+    fun createFactory(createdRows: List<FactoryInput?>, userPrincipal: UserPrincipal){
         val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
         val factoryList = createdRows.map {
             Factory(
                 factoryId = "FAC" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),
-                site = "imos",
-                compCd = "eightPin",
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.compCd,
                 factoryName = it?.factoryName,
                 factoryCode = it?.factoryCode,
                 address = it?.address,
                 telNo = it?.telNo,
                 officerName = it?.officerName,
-                flagActive = it?.flagActive.equals("Y" ),
-                createUser = "syh"
-            )
+            ).apply{
+                flagActive = it?.flagActive.equals("Y" )
+                createCommonCol(userPrincipal)
+            }
         }
 
         factoryRep.saveAll(factoryList)
     }
 
-    fun updateFactory(updatedRows: List<FactoryUpdate?>){
+    fun updateFactory(updatedRows: List<FactoryUpdate?>,userPrincipal: UserPrincipal){
         val factoryListIds = updatedRows.map {
             it?.factoryId
         }
 
         val factoryList = factoryRep.getFactoryListByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             factoryIds = factoryListIds
         )
 
@@ -85,6 +89,7 @@ class FactoryService(
                 it.telNo = x?.telNo
                 it.officerName = x?.officerName
                 it.flagActive = x?.flagActive.equals("Y" )
+                it.updateCommonCol(userPrincipal)
             }
         }
 
@@ -92,17 +97,21 @@ class FactoryService(
     }
 
     fun deleteFactory(factoryId:String): Boolean {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         return factoryRep.deleteByFactoryId(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             factoryId = factoryId
         ) > 0
     }
 
     fun getGridFactory(): List<FactoryResponseModel> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         val factoryList = factoryRep.getGridFactory(
-            site = "imos",
-            compCd = "eightPin"
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd
         )
 
         return entityToResponse(factoryList)
@@ -119,9 +128,9 @@ class FactoryService(
                 it?.telNo,
                 it?.officerName,
                 it?.createUser,
-                it?.createDate.toString(),
+                it?.createDate.toString().replace("T", " "),
                 it?.updateUser,
-                it?.updateDate.toString()
+                it?.updateDate.toString().replace("T", " "),
             )
         }
     }

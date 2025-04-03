@@ -40,10 +40,11 @@ type InventoryIn {
 input InventoryInMInput {
     site: String
     compCd: String
+    inType: String
     factoryId: String
     warehouseId: String
-    totalPrice: Int
-    hasInvoice: Boolean
+    totalPrice: String
+    hasInvoice: String
 }
 
 input InventoryInMFilter {
@@ -97,6 +98,11 @@ input DetailedInventoryUpdate {
     updateUser: String
     updateDate: String
 }
+input inventoryDeleteInput {
+    site: String
+    compCd: String
+    inManagementId: String
+}
 
 # 쿼리 정의
 extend type Query {
@@ -110,4 +116,5 @@ extend type Mutation {
 #    saveDetailedInventory(createdRows: [DetailedInventoryInput], updatedRows:[DetailedInventoryUpdate] ): Boolean
     saveDetailedInventory(createdRows: [DetailedInventoryInput]): Boolean
     saveInventory(createdRows: [InventoryInMInput]) :Boolean
+    deleteInventory(inManagementId: inventoryDeleteInput): Boolean
 }

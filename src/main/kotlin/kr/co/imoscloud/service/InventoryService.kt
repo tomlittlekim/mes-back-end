@@ -2,10 +2,8 @@ package kr.co.imoscloud.service
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.inventory.InventoryIn
-import kr.co.imoscloud.fetcher.inventory.DetailedInventoryInput
-import kr.co.imoscloud.fetcher.inventory.InventoryInFilter
-import kr.co.imoscloud.fetcher.inventory.InventoryInMFilter
-import kr.co.imoscloud.fetcher.inventory.InventoryInMInput
+import kr.co.imoscloud.entity.inventory.InventoryInM
+import kr.co.imoscloud.fetcher.inventory.*
 import kr.co.imoscloud.repository.InventoryInMRep
 import kr.co.imoscloud.repository.InventoryInRep
 import org.springframework.stereotype.Service
@@ -86,6 +84,53 @@ class InventoryService (
     fun saveInventory(
         createdRows: List<InventoryInMInput?>,
     ){
+        val now = LocalDate.now()
+
+        // 1. 마지막 inManagementId 가져오기
+        val lastEntity = inventoryInMRep.findTopByOrderByInManagementIdDesc()
+        val lastIdNumber = lastEntity?.inManagementId
+            ?.removePrefix("IN")
+            ?.toLongOrNull() ?: 0L
+
+        // 2. 생성할 엔티티 리스트 만들기
+        val inventoryList = createdRows.mapIndexedNotNull { index, input ->
+            input?.let {
+                val newIdNumber = lastIdNumber + 1
+                val newInManagementId = "IN$newIdNumber"
+
+                InventoryInM().apply {
+                    site = it.site ?: "imos"
+                    compCd = it.compCd ?: "eightPin"
+                    factoryId = it.factoryId
+                    warehouseId = it.warehouseId
+                    totalPrice = it.totalPrice?.toIntOrNull()
+                    hasInvoice = it.hasInvoice
+                    remarks = null
+                    flagActive = true
+                    createUser = "admin"
+                    createDate = now
+                    updateUser = "admin"
+                    updateDate = now
+                    inManagementId = newInManagementId
+                    inType = it.inType
+                }
+            }
+        }
+
+        inventoryInMRep.saveAll(inventoryList)
+    }
+
+    @Transactional
+    fun deleteInventory(param: inventoryDeleteInput){
+        inventoryInMRep.deleteByInManagementIdAndSiteAndCompCd(
+            param.site,
+            param.compCd,
+            param.inManagementId)
+        inventoryInRep.deleteByInManagementIdAndSiteAndCompCd(
+            param.site,
+            param.compCd,
+            param.inManagementId
+        )
     }
 
     fun createDetailedInventory(createdRows: List<DetailedInventoryInput?>){

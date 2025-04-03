@@ -49,4 +49,7 @@ class InventoryInM {
 
     @Column(name = "IN_MANAGEMENT_ID", length = 50)
     var inManagementId: String? = null
+
+    @Column(name = "IN_TYPE", length = 20)
+    var inType: String? = null
 }

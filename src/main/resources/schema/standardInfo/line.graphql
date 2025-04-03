@@ -39,6 +39,7 @@ type Line{
 
 extend type Query {
     getLines(filter:LineFilter): [Line]
+    getLineOptions: [Line]
 }
 
 extend type Mutation {

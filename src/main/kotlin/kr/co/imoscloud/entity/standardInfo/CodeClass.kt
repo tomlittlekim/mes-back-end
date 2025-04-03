@@ -1,6 +1,7 @@
 package kr.co.imoscloud.entity.standardInfo
 
 import jakarta.persistence.*
+import kr.co.imoscloud.entity.CommonCol
 import java.time.LocalDate
 
 @Entity
@@ -25,16 +26,4 @@ class CodeClass (
 
     @Column(name = "CODE_CLASS_DESC", length = 200)
     var codeClassDesc: String? = null,
-
-    @Column(name = "CREATE_USER", length = 100)
-    var createUser: String? = null,
-
-    @Column(name = "CREATE_DATE")
-    var createDate: LocalDate? = null,
-
-    @Column(name = "UPDATE_USER", length = 100)
-    var updateUser: String? = null,
-
-    @Column(name = "UPDATE_DATE")
-    var updateDate: LocalDate? = null
-)
+):CommonCol()

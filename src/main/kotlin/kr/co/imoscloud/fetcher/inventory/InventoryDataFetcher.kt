@@ -34,6 +34,11 @@ class InventoryDataFetcher(
     ): Boolean { inventoryService.saveInventory(createdRows)
         return true
     }
+    @DgsMutation
+    fun deleteInventory(@InputArgument("inManagementId") inManagementId: inventoryDeleteInput,
+    ): Boolean { inventoryService.deleteInventory(inManagementId)
+        return true
+    }
 
     @DgsQuery
     fun testString(): String {
@@ -99,8 +104,15 @@ data class InventoryInMFilter(
 data class InventoryInMInput(
     var site: String,
     var compCd: String,
+    var inType: String,
     var factoryId: String? = null,
     var warehouseId: String? = null,
     var totalPrice: String? = null,
     var hasInvoice: String? = null,
+)
+
+data class inventoryDeleteInput (
+    var site: String,
+    var compCd: String,
+    var inManagementId: String,
 )

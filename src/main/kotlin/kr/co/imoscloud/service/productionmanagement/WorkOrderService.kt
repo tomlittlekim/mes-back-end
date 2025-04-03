@@ -16,7 +16,7 @@ class WorkOrderService(
         val currentUser = getCurrentUserPrincipal()
         return workOrderRepository.getWorkOrdersByProdPlanId(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             prodPlanId = prodPlanId
         )
     }
@@ -24,7 +24,7 @@ class WorkOrderService(
     fun getWorkOrders(filter: WorkOrderFilter): List<WorkOrder> {
         return workOrderRepository.getWorkOrderList(
             site = "imos",
-            compCd = "epin",
+            compCd = "8pin",
             workOrderId = filter.workOrderId,
             prodPlanId = filter.prodPlanId,
             productId = filter.productId,
@@ -45,7 +45,7 @@ class WorkOrderService(
             createdRows?.forEach { input ->
                 val newWorkOrder = WorkOrder().apply {
                     site = currentUser.getSite()
-                    compCd = currentUser.getCompCd()
+                    compCd = currentUser.compCd
                     workOrderId = "WO" + System.currentTimeMillis() // 임시 ID 생성 방식
                     prodPlanId = input.prodPlanId
                     productId = input.productId

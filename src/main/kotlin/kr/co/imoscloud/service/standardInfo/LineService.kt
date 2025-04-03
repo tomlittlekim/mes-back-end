@@ -1,11 +1,14 @@
 package kr.co.imoscloud.service.standardInfo
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.standardInfo.Line
 import kr.co.imoscloud.fetcher.standardInfo.LineFilter
 import kr.co.imoscloud.fetcher.standardInfo.LineInput
 import kr.co.imoscloud.fetcher.standardInfo.LineUpdate
 import kr.co.imoscloud.repository.LineRep
+import kr.co.imoscloud.security.UserPrincipal
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -17,9 +20,11 @@ class LineService(
 )
 {
     fun getLines(filter: LineFilter): List<LineResponseModel?> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         return lineRep.getLines(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             factoryId = filter.factoryId,
             factoryName = filter.factoryName,
             factoryCode = filter.factoryCode,
@@ -31,37 +36,41 @@ class LineService(
 
     @Transactional
     fun saveLine( createdRows:List<LineInput?>,updatedRows:List<LineUpdate?>){
-        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {createLine(it)}
-        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {updateLine(it)}
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
+        createdRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {createLine(it, userPrincipal)}
+        updatedRows.filterNotNull().takeIf { it.isNotEmpty() }?.let {updateLine(it, userPrincipal)}
     }
 
-    fun createLine(createdRows:List<LineInput>){
+    fun createLine(createdRows:List<LineInput>, userPrincipal: UserPrincipal){
         val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
         val lineList = createdRows.map{
             Line(
-                site = "imos",
-                compCd = "eightPin",
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.compCd,
                 factoryId = it.factoryId,
                 lineId = "L" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3),
                 lineName = it.lineName,
                 lineDesc = it.lineDesc,
+            ).apply {
                 flagActive = it.flagActive.equals("Y" )
-            )
+                createCommonCol(userPrincipal)
+            }
         }
 
         lineRep.saveAll(lineList)
     }
 
-    fun updateLine(updatedRows:List<LineUpdate>) {
+    fun updateLine(updatedRows:List<LineUpdate>, userPrincipal: UserPrincipal) {
         val lineListIds = updatedRows.map {
             it.lineId
         }
 
         val lineList = lineRep.getLineListByIds(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             lineIds = lineListIds
         )
 
@@ -76,6 +85,7 @@ class LineService(
                 it.lineName = x.lineName
                 it.lineDesc = x.lineDesc
                 it.flagActive = x.flagActive.equals("Y" )
+                it.updateCommonCol(userPrincipal)
             }
         }
 
@@ -83,11 +93,21 @@ class LineService(
     }
 
     fun deleteLine(lineId:String):Boolean {
-        return lineRep.deleteByVendorId(
-            site = "imos",
-            compCd = "eightPin",
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+        return lineRep.deleteByLineId(
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             lineId = lineId
         ) > 0
+    }
+
+    fun getLineOptions(): List<Line?> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
+        return lineRep.getLineOptions(
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd
+        )
     }
 
 }
@@ -101,7 +121,7 @@ data class LineResponseModel(
     val lineDesc: String?,
     val flagActive: String? = null,
     val createUser: String?,
-    val createDate: LocalDate?,
+    val createDate: LocalDateTime?,
     val updateUser: String?,
-    val updateDate: LocalDate?
+    val updateDate: LocalDateTime?
 )

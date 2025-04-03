@@ -16,7 +16,7 @@ class ProductionResultService(
         val currentUser = getCurrentUserPrincipal()
         return productionResultRepository.getProductionResultsByWorkOrderId(
             site = currentUser.getSite(),
-            compCd = currentUser.getCompCd(),
+            compCd = currentUser.compCd,
             workOrderId = workOrderId
         )
     }
@@ -24,7 +24,7 @@ class ProductionResultService(
     fun getProductionResults(filter: ProductionResultFilter): List<ProductionResult> {
         return productionResultRepository.getProductionResultList(
             site = "imos",
-            compCd = "epin",
+            compCd = "8pin",
             workOrderId = filter.workOrderId,
             prodResultId = filter.prodResultId,
             equipmentId = filter.equipmentId,
@@ -56,7 +56,7 @@ class ProductionResultService(
 
                 val newResult = ProductionResult().apply {
                     site = currentUser.getSite()
-                    compCd = currentUser.getCompCd()
+                    compCd = currentUser.compCd
                     prodResultId = "PR" + System.currentTimeMillis() // 임시 ID 생성 방식
                     workOrderId = input.workOrderId
                     this.goodQty = goodQty

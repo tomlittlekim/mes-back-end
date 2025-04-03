@@ -2,6 +2,7 @@ package kr.co.imoscloud.entity.user
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
+import kr.co.imoscloud.iface.DtoAllInOneBase
 
 @Entity
 @Table(name = "USER")
@@ -15,39 +16,36 @@ class User(
     val site: String,
 
     @Column(name = "COMP_CD", length = 20)
-    val compCd: String,
-
-    @Column(name = "EMPLOYEE_NUM", length = 20)
-    val employeeNum: String,
+    override val compCd: String,
 
     @Column(name = "USER_NAME", length = 20)
-    val userName: String,
+    val userName: String? = null,
 
     @Column(name = "LOGIN_ID", length = 100, unique = true)
-    val loginId: String,
+    override val loginId: String,
 
-    @Column(name = "USER_PWD", length = 100)
+    @Column(name = "USER_PWD", length = 100, nullable = false)
     val userPwd: String,
 
-    @Column(name = "IMAGE_PATH", length = 50)
+    @Column(name = "IMAGE_PATH", length = 100)
     val imagePath: String? = null,
 
     @Column(name = "ROLE_ID")
-    val roleId: Long,
+    override val roleId: Long,
 
-    @Column(name = "USER_EMAIL", length = 20)
-    val userEmail: String,
+    @Column(name = "USER_EMAIL", length = 100)
+    val userEmail: String? = null,
 
     @Column(name = "PHONE_NUM", length = 11)
-    val phoneNum: String,
+    val phoneNum: String? = null,
 
-    @Column(name = "DEPARTMENT_ID", length = 20)
-    val departmentId: String,
+    @Column(name = "DEPARTMENT_ID", length = 100)
+    val departmentId: String? = null,
 
-    @Column(name = "TEXT_AREA", length = 1000)
-    val textArea: String? = null,
+    @Column(name = "POSITION_ID", length = 100)
+    val positionId: String? = null,
 
     @Column(name = "FLAG_LOCK")
     val flagLock: Boolean = false
 
-) : CommonCol()
+) : CommonCol(), DtoAllInOneBase

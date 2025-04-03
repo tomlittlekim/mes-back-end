@@ -1,0 +1,75 @@
+input MaterialFilter {
+    materialType: String
+    systemMaterialId: String
+    userMaterialId: String
+    materialName: String
+    flagActive: String
+    fromDate: String
+    toDate: String
+}
+
+input MaterialInput {
+    materialType: String
+    materialCategory: String
+    userMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    baseQuantity: Int
+    manufacturerName: String
+    supplierId: String
+    materialStorage: String
+    flagActive: String
+}
+
+input MaterialUpdate {
+    systemMaterialId: String!
+    materialType: String
+    materialCategory: String
+    userMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    baseQuantity: Int
+    manufacturerName: String
+    supplierId: String
+    materialStorage: String
+    flagActive: String
+}
+
+type Material {
+    seq: Int
+    materialType: String
+    materialCategory: String
+    systemMaterialId: String
+    userMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    baseQuantity: Int
+    manufacturerName: String
+    supplierId: String
+    materialStorage: String
+    flagActive: String
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+
+extend type Query {
+    getRawSubMaterials(filter: MaterialFilter): [Material]
+    getCompleteMaterials(filter: MaterialFilter): [Material]
+    getHalfMaterials(filter: MaterialFilter): [Material]
+}
+
+extend type Mutation {
+    saveMaterials(createdRows: [MaterialInput], updatedRows: [MaterialUpdate]): Boolean
+    deleteMaterials(systemMaterialIds: [String!]!): Boolean
+}

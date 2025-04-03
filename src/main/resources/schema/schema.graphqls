@@ -10,7 +10,6 @@ type User {
     userEmail: String
     phoneNum: String
     departmentId: String
-    textArea: String
     isLock: Boolean!
     createdAt: String!
     updatedAt: String!
@@ -27,7 +26,10 @@ input UserInput {
     userEmail: String
     phoneNum: String
     departmentId: String
-    textArea: String
+}
+
+input ExistLoginRequest {
+    loginId: String!
 }
 
 type UserOutput {
@@ -39,10 +41,41 @@ type UserOutput {
     message: String!
 }
 
+type UserResponse {
+    id: Int!
+    loginId: String!
+    userName: String!
+    departmentName: String
+    position: String
+    authorityName: String
+    flagActive: String
+}
+
+type UserDetail {
+    id: Int!
+    loginId: String!
+    userName: String!
+    departmentName: String
+    position: String
+    authorityName: String!
+    email: String
+    phoneNumber: String
+    flagActive: String
+}
+
+type RoleResponseForSelect {
+    roleId: String!
+    roleName: String!
+}
+
 extend type Mutation {
     signUp(input: UserInput!): User!
 }
 
 extend type Query {
     signIn(input: UserInput!): UserOutput!
+    existLoginId(input: ExistLoginRequest!): Boolean!
+    getUserGroup: [UserDetail]
+    getUserDetail(id: Int): UserDetail
+    getRoles: [RoleResponseForSelect]
 }

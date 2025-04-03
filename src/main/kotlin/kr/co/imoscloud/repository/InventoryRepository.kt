@@ -72,10 +72,27 @@ interface InventoryInMRep : JpaRepository<InventoryInM, Long>{
         @Param("site") site: String,
         @Param("compCd") compCd: String,
     ): List<Map<String, Any>>
+
+    // 가장 최근의 IN_MANAGEMENT_ID
+    fun findTopByOrderByInManagementIdDesc(): InventoryInM?
+
+    fun deleteByInManagementIdAndSiteAndCompCd(
+        inManagementId: String,
+        site: String,
+        compCd: String
+    )
 }
 
 interface InventoryInRep : JpaRepository<InventoryIn, Long> {
+
     fun findTopByOrderByInManagementIdDesc(): InventoryIn?
+
+    // 자식노드 cascade 시 사용
+    fun deleteByInManagementIdAndSiteAndCompCd(
+        inManagementId: String,
+        site: String,
+        compCd: String
+    )
 }
 
 

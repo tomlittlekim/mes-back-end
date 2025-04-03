@@ -1,0 +1,116 @@
+extend type Query {
+    # 생산실적 조회 관련 쿼리
+    productionResultList(filter: ProductionResultInquiryFilter): [ProductionResultSummary]!
+    productionResultDetail(prodResultId: String!): ProductionResultDetail
+    productionResultStatistics(fromDate: String!, toDate: String!): ProductionStatistics
+    productionResultByEquipment(fromDate: String!, toDate: String!): [ProductionEquipmentStat]!
+}
+
+# 생산실적 조회용 필터
+input ProductionResultInquiryFilter {
+    workOrderId: String
+    prodResultId: String
+    productId: String
+    equipmentId: String
+    fromDate: String
+    toDate: String
+    status: String
+    flagActive: Boolean
+}
+
+# 생산실적 요약 정보
+type ProductionResultSummary {
+    id: Int
+    prodResultId: String
+    workOrderId: String
+    productId: String
+    productName: String
+    equipmentId: String
+    equipmentName: String
+    productionDate: String
+    planQuantity: Float
+    actualQuantity: Float
+    defectQuantity: Float
+    progressRate: String
+    defectRate: String
+    worker: String
+    status: String
+    createDate: String
+    updateDate: String
+}
+
+# 생산실적 상세 정보
+type ProductionResultDetail {
+    id: Int
+    prodResultId: String
+    workOrderId: String
+    productId: String
+    productName: String
+    factoryId: String
+    factoryName: String
+    lineId: String
+    lineName: String
+    equipmentId: String
+    equipmentName: String
+    productionDate: String
+    planQuantity: Float
+    goodQuantity: Float
+    defectQuantity: Float
+    inputAmount: Float
+    outputAmount: Float
+    yieldRate: String
+    productionTime: String
+    startTime: String
+    endTime: String
+    worker: String
+    supervisor: String
+    progressRate: String
+    defectRate: String
+    status: String
+    defectCause: String
+    resultInfo: String
+    createDate: String
+    updateDate: String
+    createUser: String
+    updateUser: String
+}
+
+# 생산실적 통계 정보
+type ProductionStatistics {
+    fromDate: String
+    toDate: String
+    totalPlanQty: Float
+    totalGoodQty: Float
+    totalDefectQty: Float
+    achievementRate: String
+    defectRate: String
+    dailyStats: [ProductionDailyStat]
+    productStats: [ProductionProductStat]
+}
+
+# 일별 생산 통계
+type ProductionDailyStat {
+    date: String
+    planQty: Float
+    goodQty: Float
+    defectQty: Float
+}
+
+# 제품별 생산 통계
+type ProductionProductStat {
+    productId: String
+    productName: String
+    planQty: Float
+    goodQty: Float
+    defectQty: Float
+}
+
+# 설비별 생산 통계
+type ProductionEquipmentStat {
+    equipmentId: String
+    equipmentName: String
+    goodQty: Float
+    defectQty: Float
+    totalQty: Float
+    defectRate: String
+}

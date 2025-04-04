@@ -1,4 +1,4 @@
-package kr.co.imoscloud.repository.Material
+package kr.co.imoscloud.repository.material
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.material.MaterialMaster
@@ -74,20 +74,20 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         systemMaterialIds: List<String?>
     ): List<MaterialMaster?>
 
-    @Transactional
-    @Modifying
-    @Query(
-        """
-        DELETE 
-        FROM MaterialMaster m
-        WHERE m.systemMaterialId IN (:systemMaterialIds)
-        AND   m.site = :site
-        AND   m.compCd = :compCd
-        """
-    )
-    fun deleteMaterialsByIds(
-        site: String,
-        compCd: String,
-        systemMaterialIds: List<String?>
-    ): Int
+//    @Transactional
+//    @Modifying
+//    @Query(
+//        """
+//        DELETE
+//        FROM MaterialMaster m
+//        WHERE m.systemMaterialId IN (:systemMaterialIds)
+//        AND   m.site = :site
+//        AND   m.compCd = :compCd
+//        """
+//    )
+//    fun deleteMaterialsByIds(
+//        site: String,
+//        compCd: String,
+//        systemMaterialIds: List<String?>
+//    ): Int
 }

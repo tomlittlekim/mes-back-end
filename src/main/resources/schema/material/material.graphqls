@@ -1,46 +1,4 @@
-input MaterialFilter {
-    materialType: String
-    systemMaterialId: String
-    userMaterialId: String
-    materialName: String
-    flagActive: String
-    fromDate: String
-    toDate: String
-}
-
-input MaterialInput {
-    materialType: String
-    materialCategory: String
-    userMaterialId: String
-    materialName: String
-    materialStandard: String
-    unit: String
-    minQuantity: Int
-    maxQuantity: Int
-    baseQuantity: Int
-    manufacturerName: String
-    supplierId: String
-    materialStorage: String
-    flagActive: String
-}
-
-input MaterialUpdate {
-    systemMaterialId: String!
-    materialType: String
-    materialCategory: String
-    userMaterialId: String
-    materialName: String
-    materialStandard: String
-    unit: String
-    minQuantity: Int
-    maxQuantity: Int
-    baseQuantity: Int
-    manufacturerName: String
-    supplierId: String
-    materialStorage: String
-    flagActive: String
-}
-
+# Material 타입 정의
 type Material {
     seq: Int
     materialType: String
@@ -63,12 +21,60 @@ type Material {
     updateDate: String
 }
 
+# Material 입력 타입 정의 (검색 조건)
+input MaterialFilter {
+    materialType: String
+    systemMaterialId: String
+    userMaterialId: String
+    materialName: String
+    flagActive: String
+    fromDate: String
+    toDate: String
+}
+
+# Material 입력 타입 정의 (행 insert 조건)
+input MaterialInput {
+    materialType: String
+    materialCategory: String
+    userMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    baseQuantity: Int
+    manufacturerName: String
+    supplierId: String
+    materialStorage: String
+    flagActive: String
+}
+
+# Material 입력 타입 정의 (행 update 조건)
+input MaterialUpdate {
+    systemMaterialId: String!
+    materialType: String
+    materialCategory: String
+    userMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    baseQuantity: Int
+    manufacturerName: String
+    supplierId: String
+    materialStorage: String
+    flagActive: String
+}
+
+# 쿼리 정의(데이터 정보 호출)
 extend type Query {
     getRawSubMaterials(filter: MaterialFilter): [Material]
     getCompleteMaterials(filter: MaterialFilter): [Material]
     getHalfMaterials(filter: MaterialFilter): [Material]
 }
 
+# 뮤테이션 정의(데이터 CUD)
 extend type Mutation {
     saveMaterials(createdRows: [MaterialInput], updatedRows: [MaterialUpdate]): Boolean
     deleteMaterials(systemMaterialIds: [String!]!): Boolean

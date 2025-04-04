@@ -6,7 +6,7 @@ import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.fetcher.material.MaterialFilter
 import kr.co.imoscloud.fetcher.material.MaterialInput
 import kr.co.imoscloud.fetcher.material.MaterialUpdate
-import kr.co.imoscloud.repository.Material.MaterialRepository
+import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
@@ -34,7 +34,7 @@ class MaterialService(
             materialType = filter.materialType,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
-            flagActive = filter.flagActive?.let { it == "Y" },
+            flagActive = true,
             fromDate = DateUtils.parseDateTime(filter.fromDate),
             toDate = DateUtils.parseDateTime(filter.toDate)
         )
@@ -50,7 +50,7 @@ class MaterialService(
             materialType = CoreEnum.MaterialType.COMPLETE_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
-            flagActive = filter.flagActive?.let { it == "Y" },
+            flagActive = true,
             fromDate = DateUtils.parseDateTime(filter.fromDate),
             toDate = DateUtils.parseDateTime(filter.toDate)
         )
@@ -65,7 +65,7 @@ class MaterialService(
             materialType = CoreEnum.MaterialType.HALF_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
-            flagActive = filter.flagActive?.let { it == "Y" },
+            flagActive = true,
             fromDate = DateUtils.parseDateTime(filter.fromDate),
             toDate = DateUtils.parseDateTime(filter.toDate)
         )
@@ -176,11 +176,20 @@ class MaterialService(
 
     fun deleteMaterials(systemMaterialIds: List<String>): Boolean {
         val userPrincipal = getCurrentUser()
-        return materialRep.deleteMaterialsByIds(
+        val materialList = materialRep.getMaterialListByIds(
             site = userPrincipal?.getSite() ?: DEFAULT_SITE,
             compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
             systemMaterialIds = systemMaterialIds
-        ) > 0
+        )
+
+        materialList.forEach { material ->
+            material?.let {
+                it.flagActive = false
+                it.updateCommonCol(userPrincipal!!)
+            }
+        }
+
+        return materialRep.saveAll(materialList).isNotEmpty()
     }
 }
 

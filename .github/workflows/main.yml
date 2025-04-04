@@ -45,6 +45,7 @@ jobs:
           chmod 600 my_ec2_key.pem
           ssh -o StrictHostKeyChecking=no -i my_ec2_key.pem ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
     
+          docker login -u ${{ secrets.DOCKER_ID }} -p ${{ secrets.DOCKER_PWD }}
           docker stop springboot || true
           docker rm springboot || true
           docker pull 8pin/imos:springboot

@@ -73,6 +73,12 @@ data class UserDetail(
     val flagActive: String
 ): DtoLoginIdBase
 
+data class UserGroupRequest(
+    var userName: String? = null,
+    var departmentId: String? = null,
+    var roleId: Long? = null
+)
+
 data class RoleInput(
     override val roleId: Long,
 ): DtoRoleIdBase

@@ -47,8 +47,14 @@ type UserDetail {
 }
 
 type RoleResponseForSelect {
-    roleId: String!
+    roleId: Int!
     roleName: String!
+}
+
+input UserGroupRequest {
+    departmentId: String
+    roleId: Int
+    userName: String
 }
 
 extend type Mutation {
@@ -57,8 +63,8 @@ extend type Mutation {
 
 extend type Query {
     signIn(input: UserInput!): UserOutput!
-    existLoginId(input: ExistLoginRequest!): Boolean!
-    getUserGroup: [UserDetail]
+    existLoginId(req: ExistLoginRequest!): Boolean!
+    getUserGroup(req: UserGroupRequest!): [UserDetail]
     getUserDetail(id: Int): UserDetail
     getRoles: [RoleResponseForSelect]
 }

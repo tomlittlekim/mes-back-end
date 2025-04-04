@@ -85,15 +85,19 @@ class UserService(
         return userMap[req.loginId] != null
     }
 
-    fun getUserGroupByCompany(): List<UserDetail?> {
+    fun getUserGroupByCompany(req: UserGroupRequest?): List<UserDetail?> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val codeMap = codeRep.findAllByCodeClassIdIn(listOf("DEPARTMENT","POSITION"))
             .associate { it?.codeId to it?.codeName }
 
         return if (core.isDeveloper(loginUser)) {
-            core.getAllUserMap(listOf(loginUser)).mapValues { userToUserDetail(it.value, codeMap) }.values.toList()
+            core.getAllUserMap(listOf(loginUser))
+                .filterValues { userGroupFilter(req, it) }
+                .mapValues { userToUserDetail(it.value, codeMap) }.values.toList()
         } else {
-            core.getUserGroupByCompCd(loginUser).map { userToUserDetail(it, codeMap) }
+            core.getUserGroupByCompCd(loginUser)
+                .filter { userGroupFilter(req, it) }
+                .map { userToUserDetail(it, codeMap) }
         }
     }
 
@@ -155,5 +159,16 @@ class UserService(
         val positionNm = codeMap[us.positionId]
         val isActive = if(us.flagActive) "Y" else "N"
         return UserDetail(us.id,us.loginId,us.username?:"",departmentNm,positionNm,r.roleName,us.userEmail,us.phoneNum,isActive)
+    }
+
+    private fun userGroupFilter(req: UserGroupRequest?, it: UserSummery?): Boolean {
+        val modifyReq = req?.apply {
+            roleId = if(roleId==0L) null else roleId
+            departmentId = if(departmentId!=null&& departmentId!!.isNotBlank()) null else departmentId
+            userName = if(userName!=null && userName!!.isBlank()) null else userName
+        }
+        return (modifyReq?.roleId?.let { r -> it?.roleId == r } ?: true)
+                && (modifyReq?.userName?.let { un -> it?.username == un } ?: true)
+                && (modifyReq?.departmentId?.let { dp -> it?.departmentId == dp } ?: true)
     }
 }

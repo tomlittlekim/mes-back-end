@@ -46,6 +46,7 @@ data class MaterialFilter(
     var materialType: String? = null,
     var userMaterialId: String? = null,
     var materialName: String? = null,
+    var flagActive: String? = null,
     var fromDate: String? = null,
     var toDate: String? = null
 )

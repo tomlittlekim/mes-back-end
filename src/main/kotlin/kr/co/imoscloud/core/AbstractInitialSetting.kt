@@ -66,7 +66,7 @@ abstract class AbstractInitialSetting(
         initialSettings()
     }
 
-    fun <T: DtoLoginIdBase> getAllUserMap(req: List<T>): MutableMap<String, UserSummery?> {
+    fun <T: DtoLoginIdBase> getAllUserMap(req: List<T?>): MutableMap<String, UserSummery?> {
         return if (getIsInspect()) {
             val indies = extractUserIdFromRequest(req)
             getAllUsersDuringInspection(indies)
@@ -77,7 +77,7 @@ abstract class AbstractInitialSetting(
         else userMap
     }
 
-    fun <T: DtoRoleIdBase>  getAllRoleMap(req: List<T>): MutableMap<Long, RoleSummery?> {
+    fun <T: DtoRoleIdBase>  getAllRoleMap(req: List<T?>): MutableMap<Long, RoleSummery?> {
         return if (getIsInspect()) {
             val indies = extractRoleIdFromRequest(req)
             getAllRolesDuringInspection(indies)
@@ -88,7 +88,7 @@ abstract class AbstractInitialSetting(
         else roleMap
     }
 
-    fun <T: DtoCompCdBase>  getAllCompanyMap(req: List<T>): MutableMap<String, CompanySummery?> {
+    fun <T: DtoCompCdBase>  getAllCompanyMap(req: List<T?>): MutableMap<String, CompanySummery?> {
         return if (getIsInspect()) {
             val indies = extractCompCdFromRequest(req)
             getAllCompanyDuringInspection(indies)
@@ -120,9 +120,9 @@ abstract class AbstractInitialSetting(
         }
     }
 
-    protected abstract fun getAllUsersDuringInspection(indies: List<String>): MutableMap<String, UserSummery?>
-    protected abstract fun getAllRolesDuringInspection(indies: List<Long>): MutableMap<Long, RoleSummery?>
-    protected abstract fun getAllCompanyDuringInspection(indies: List<String>): MutableMap<String, CompanySummery?>
+    protected abstract fun getAllUsersDuringInspection(indies: List<String?>): MutableMap<String, UserSummery?>
+    protected abstract fun getAllRolesDuringInspection(indies: List<Long?>): MutableMap<Long, RoleSummery?>
+    protected abstract fun getAllCompanyDuringInspection(indies: List<String?>): MutableMap<String, CompanySummery?>
     protected abstract fun getMenuRoleDuringInspection(roleId: Long, menuId: String): MenuRole?
 
     fun upsertUserFromInMemory(user: User) {
@@ -197,19 +197,19 @@ abstract class AbstractInitialSetting(
         menuRoleMap = encodeMenuRoleMap
     }
 
-    private fun <T: DtoLoginIdBase> extractUserIdFromRequest(req: List<T>): List<String> {
+    private fun <T: DtoLoginIdBase> extractUserIdFromRequest(req: List<T?>): List<String?> {
         if (req.isEmpty()) throw IllegalArgumentException("Request is empty")
-        return req.map { it.loginId }
+        return req.map { it?.loginId }
     }
 
-    private fun <T: DtoRoleIdBase> extractRoleIdFromRequest(req: List<T>): List<Long> {
+    private fun <T: DtoRoleIdBase> extractRoleIdFromRequest(req: List<T?>): List<Long?> {
         if (req.isEmpty()) throw IllegalArgumentException("Request is empty")
-        return req.map { it.roleId }
+        return req.map { it?.roleId }
     }
 
-    private fun <T: DtoCompCdBase> extractCompCdFromRequest(req: List<T>): List<String> {
+    private fun <T: DtoCompCdBase> extractCompCdFromRequest(req: List<T?>): List<String?> {
         if (req.isEmpty()) throw IllegalArgumentException("Request is empty")
-        return req.map { it.compCd }
+        return req.map { it?.compCd }
     }
 
     private fun encodeMenuRolePermissions(mr: MenuRole): Int {

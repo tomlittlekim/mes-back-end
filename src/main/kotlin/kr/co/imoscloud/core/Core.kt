@@ -21,7 +21,7 @@ class Core(
     companyRepo: CompanyRepository,
     menuRoleRepo: MenuRoleRepository
 ): AbstractInitialSetting(userRepo, roleRepo, companyRepo, menuRoleRepo) {
-    override fun getAllUsersDuringInspection(indies: List<String>): MutableMap<String, UserSummery?> {
+    override fun getAllUsersDuringInspection(indies: List<String?>): MutableMap<String, UserSummery?> {
         val userList: List<User> = if (indies.size == 1) {
             userRepo.findByLoginId(indies.first()).map(::listOf)!!.orElseGet { emptyList<User>() }
         } else userRepo.findAllByLoginIdIn(indies)
@@ -29,15 +29,15 @@ class Core(
         return userList.associate { it.loginId to userToSummery(it) }.toMutableMap()
     }
 
-    override fun getAllRolesDuringInspection(indies: List<Long>): MutableMap<Long, RoleSummery?> {
-        val roleList: List<UserRole> = if (indies.size == 1) {
-            roleRepo.findById(indies.first()).map(::listOf).orElseGet { emptyList<UserRole>() }
+    override fun getAllRolesDuringInspection(indies: List<Long?>): MutableMap<Long, RoleSummery?> {
+        val roleList: List<UserRole> = if (indies.size == 1 && indies.first() != null) {
+            roleRepo.findById(indies.first()!!).map(::listOf).orElseGet { emptyList<UserRole>() }
         } else roleRepo.findAllByRoleIdIn(indies)
 
         return roleList.associate { it.roleId to roleToSummery(it) }.toMutableMap()
     }
 
-    override fun getAllCompanyDuringInspection(indies: List<String>): MutableMap<String, CompanySummery?> {
+    override fun getAllCompanyDuringInspection(indies: List<String?>): MutableMap<String, CompanySummery?> {
         val companyList: List<Company> = if (indies.size == 1) {
             companyRepo.findByCompCd(indies.first()).map(::listOf).orElseGet { emptyList<Company>() }
         } else companyRepo.findAllByCompCdIn(indies)

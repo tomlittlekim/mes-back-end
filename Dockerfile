@@ -11,8 +11,7 @@ RUN chmod +x gradlew && ./gradlew --no-daemon dependencies
 
 # 소스 코드를 복사하고 애플리케이션 빌드
 COPY src/ src/
-RUN ./gradlew --no-daemon bootJar
-
+RUN ./gradlew --no-daemon clean bootJar
 # 2단계: 런타임 이미지
 FROM amazoncorretto:21
 WORKDIR /app

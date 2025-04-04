@@ -15,8 +15,7 @@ data class UserInput(
     var email: String?=null,
     var roleId: Long?=null,
     var phoneNum: String?=null,
-    var departmentId: String?=null,
-    var textarea: String?=null,
+    var departmentId: String?=null
 )
 
 data class LoginOutput(

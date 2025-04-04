@@ -7,7 +7,7 @@ plugins {
     id 'org.jetbrains.kotlin.kapt' version '1.9.25' // 추가: Kotlin 어노테이션 프로세서 지원
 }
 
-group = 'com.example'
+group = 'kr.co.imoscloud'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -89,6 +89,14 @@ allOpen {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+bootJar {
+    mainClass = 'kr.co.imoscloud.ImosBackEndApplicationKt'
+}
+
+springBoot {
+    mainClass = 'kr.co.imoscloud.ImosBackEndApplicationKt'
 }
 
 // QueryDSL Q 클래스 생성 경로 설정

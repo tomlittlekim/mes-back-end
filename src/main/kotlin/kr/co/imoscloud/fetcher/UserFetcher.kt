@@ -18,7 +18,7 @@ class UserFetcher(
 ) {
 
     @DgsMutation
-    fun signUp(@InputArgument("input") input: UserInput) = userService.signUp(input)
+    fun signUp(@InputArgument("input") input: UserInput) { userService.signUp(input) }
 
     @DgsQuery
     fun existLoginId(@InputArgument("input") input: ExistLoginIdRequest): Boolean {

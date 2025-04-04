@@ -5,9 +5,10 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.inventory.InventoryIn
 import kr.co.imoscloud.entity.inventory.InventoryInManagement
 import kr.co.imoscloud.fetcher.inventory.*
-import kr.co.imoscloud.iface.DtoLoginIdBase
-import kr.co.imoscloud.repository.InventoryInMRep
+import kr.co.imoscloud.repository.InventoryInManagementRep
 import kr.co.imoscloud.repository.InventoryInRep
+import kr.co.imoscloud.repository.InventoryOutManagementRep
+import kr.co.imoscloud.repository.InventoryOutRep
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipalOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -15,8 +16,10 @@ import java.util.*
 
 @Service
 class InventoryService (
-    val inventoryInMRep: InventoryInMRep,
+    val inventoryInManagementRep: InventoryInManagementRep,
     val inventoryInRep: InventoryInRep,
+    val inventoryOutManagementRep: InventoryOutManagementRep,
+    val inventoryOutRep: InventoryOutRep,
     val core: Core
 ){
 
@@ -29,7 +32,7 @@ class InventoryService (
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-        return inventoryInMRep.findInventoryInManagementWithMaterialInfo(
+        return inventoryInManagementRep.findInventoryInManagementWithMaterialInfo(
             inManagementId = filter.inManagementId ?: "",
             inType = filter.inType ?: "",
             factoryName = filter.factoryName ?: "",
@@ -49,7 +52,7 @@ class InventoryService (
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-        return inventoryInMRep.findInventoryInWithMaterial(
+        return inventoryInRep.findInventoryInWithMaterial(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
             inManagementId = filter.inManagementId ?: throw IllegalArgumentException("입고관리번호는 필수입니다.")
@@ -57,17 +60,17 @@ class InventoryService (
     }
 
     @Transactional
-    fun saveDetailedInventory(
-        createdRows: List<DetailedInventoryInput?>,
-        updatedRows:List<DetailedInventoryUpdateInput?>
+    fun saveInventoryIn(
+        createdRows: List<InventoryInSaveInput?>,
+        updatedRows:List<InventoryInUpdateInput?>
     ){
         createDetailedInventory(createdRows)
         updateDetailedInventory(updatedRows)
     }
 
     @Transactional
-    fun saveInventory(
-        createdRows: List<InventoryInMInput?>,
+    fun saveInventoryInManagement(
+        createdRows: List<InventoryInManagementSaveInput?>,
     ){
 
         val currentUser = getCurrentUserPrincipalOrNull()
@@ -76,7 +79,7 @@ class InventoryService (
         val now = LocalDate.now()
 
         // 1. 마지막 inManagementId 가져오기
-        val lastEntity = inventoryInMRep.findTopByOrderByInManagementIdDesc()
+        val lastEntity = inventoryInManagementRep.findTopByOrderByInManagementIdDesc()
         val lastIdNumber = lastEntity?.inManagementId
             ?.removePrefix("IN")
             ?.toLongOrNull() ?: 0L
@@ -106,15 +109,15 @@ class InventoryService (
             }
         }
 
-        inventoryInMRep.saveAll(inventoryList)
+        inventoryInManagementRep.saveAll(inventoryList)
     }
 
     @Transactional
-    fun deleteInventory(param: InventoryDeleteInput){
+    fun deleteInventoryInManagement(param: InventoryInManagementDeleteInput){
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-        inventoryInMRep.deleteByInManagementIdAndSiteAndCompCd(
+        inventoryInManagementRep.deleteByInManagementIdAndSiteAndCompCd(
             param.inManagementId,
             site = currentUser.getSite(),
             compCd = currentUser.compCd,)
@@ -126,8 +129,7 @@ class InventoryService (
     }
 
     @Transactional
-    fun deleteDetailInventory(param: InventoryDetailDeleteInput){
-
+    fun deleteInventoryIn(param: InventoryInDeleteInput){
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
@@ -138,7 +140,7 @@ class InventoryService (
         )
     }
 
-    fun createDetailedInventory(createdRows: List<DetailedInventoryInput?>){
+    fun createDetailedInventory(createdRows: List<InventoryInSaveInput?>){
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
@@ -177,7 +179,7 @@ class InventoryService (
         inventoryInRep.saveAll(inventoryInList)
     }
 
-    fun updateDetailedInventory(updatedRows: List<DetailedInventoryUpdateInput?>){
+    fun updateDetailedInventory(updatedRows: List<InventoryInUpdateInput?>){
 
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
@@ -208,7 +210,52 @@ class InventoryService (
 
         inventoryInRep.saveAll(factoryList)
     }
+
+    // 출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리
+
+    fun getInventoryOutManagementListWithFactoryAndWarehouse(filter: InventoryOutManagementFilter): List<InventoryOutManagementResponseModel?> {
+
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        return inventoryOutManagementRep.findInventoryOutManagementWithMaterialInfo(
+            outManagementId = filter.outManagementId ?: "",
+            outType = filter.outType ?: "",
+            factoryName = filter.factoryName ?: "",
+            warehouseName = filter.warehouseName ?: "",
+            createUser = filter.createUser ?: "",
+            startDate = filter.startDate ?: "",
+            endDate = filter.endDate ?: "",
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            flagActive = true,
+        )
+    }
+
+    fun getInventoryOutListWithMaterial(filter: InventoryOutFilter): List<InventoryOutResponseModel?> {
+
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        return inventoryOutRep.findInventoryOutWithMaterial(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            outManagementId = filter.outManagementId ?: throw IllegalArgumentException("출고관리번호는 필수입니다.")
+        )
+    }
 }
+
+data class InventoryInManagementResponseModel(
+    val inManagementId: String,
+    val inType: String,
+    val factoryName: String?,
+    val warehouseName: String?,
+    val materialInfo: String?,
+    val totalPrice: Int?,
+    val hasInvoice: String?,
+    val userName: String?,
+    val createDate: String?
+)
 
 data class InventoryInResponseModel(
     val inManagementId: String? = null,
@@ -229,19 +276,32 @@ data class InventoryInResponseModel(
     val updateDate: String? = null
 )
 
-data class InventoryInManagementResponseModel(
-    val inManagementId: String,
-    val inType: String,
+data class InventoryOutManagementResponseModel(
+    val outManagementId: String,
+    val outType: String,
     val factoryName: String?,
     val warehouseName: String?,
     val materialInfo: String?,
     val totalPrice: Int?,
-    val hasInvoice: String?,
-//    override val userName: String?,
-    override val loginId: String,
+    val userName: String?,
     val createDate: String?
-): DtoLoginIdBase {
-    fun getLocalDate(): LocalDate? {
-        return createDate?.let { LocalDate.parse(it) }
-    }
-}
+)
+
+data class InventoryOutResponseModel(
+    val outManagementId: String? = null,
+    val outInventoryId: String? = null,
+    val supplierName: String? = null,
+    val manufacturerName: String? = null,
+    val userMaterialId: String? = null,
+    val materialName: String? = null,
+    val materialCategory: String? = null,
+    val materialStandard: String? = null,
+    val qty: String? = null,
+    val unitPrice: String? = null,
+    val unitVat: String? = null,
+    val totalPrice: String? = null,
+    val createUser: String? = null,
+    val createDate: String? = null,
+    val updateUser: String? = null,
+    val updateDate: String? = null
+)

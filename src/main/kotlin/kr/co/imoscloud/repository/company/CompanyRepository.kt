@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
 interface CompanyRepository: JpaRepository<Company, Long> {
-    fun findByCompCd(compCd: String): Optional<Company>
-    fun findAllByCompCdIn(compCdList: List<String>): List<Company>
+    fun findByCompCd(compCd: String?): Optional<Company>
+    fun findAllByCompCdIn(compCdList: List<String?>): List<Company>
 }

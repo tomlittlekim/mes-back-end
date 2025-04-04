@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
 interface UserRoleRepository: JpaRepository<UserRole, Long> {
-    fun findAllByRoleIdIn(idList: List<Long>): List<UserRole>
+    fun findAllByRoleIdIn(idList: List<Long?>): List<UserRole>
     @Query("""
         select ur
         from UserRole ur

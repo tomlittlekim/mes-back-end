@@ -43,14 +43,14 @@ class InventoryDataFetcher(
     }
 
     //출고 관리
-    @DgsQuery
-    fun getInventoryOutManagementList(@InputArgument("filter") filter: InventoryOutManagementFilter): List<InventoryOutManagementResponseModel?> {
-        return inventoryService.getInventoryOutManagementListWithFactoryAndWarehouse(filter)
-    }
-    @DgsQuery
-    fun getInventoryOutList(@InputArgument("filter") filter: InventoryOutFilter): List<InventoryOutResponseModel?> {
-        return inventoryService.getInventoryOutListWithMaterial(filter)
-    }
+//    @DgsQuery
+//    fun getInventoryOutManagementList(@InputArgument("filter") filter: InventoryOutManagementFilter): List<InventoryOutManagementResponseModel?> {
+//        return inventoryService.getInventoryOutManagementListWithFactoryAndWarehouse(filter)
+//    }
+//    @DgsQuery
+//    fun getInventoryOutList(@InputArgument("filter") filter: InventoryOutFilter): List<InventoryOutResponseModel?> {
+//        return inventoryService.getInventoryOutListWithMaterial(filter)
+//    }
 //    @DgsMutation
 //    fun saveInventoryOutManagement(@InputArgument("createdRows") createdRows: List<InventoryOutManagementSaveInput?>,
 //    ): Boolean { inventoryService.saveInventoryInManagement(createdRows)

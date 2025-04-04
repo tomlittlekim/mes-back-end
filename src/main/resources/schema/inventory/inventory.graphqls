@@ -102,103 +102,103 @@ input InventoryInDeleteInput {
 }
 
 #출고 관리
-type InventoryOutManagement {
-    outManagementId: String,
-    outType: String,
-    factoryName: String,
-    warehouseName: String,
-    materialInfo: String,
-    totalPrice: String,
-    userName: String,
-    createDate: String,
-}
-type InventoryOut {
-    outManagementId: String
-    outInventoryId: String
-    supplierName: String
-    manufacturerName: String
-    userMaterialId: String
-    materialName: String
-    materialCategory: String
-    materialStandard: String
-    qty: Int
-    unitPrice: Int
-    unitVat: Int
-    totalPrice: Int
-    createUser: String
-    createDate: String
-    updateUser: String
-    updateDate: String
-}
-
-input InventoryOutManagementFilter {
-    outManagementId: String
-    outType: String
-    factoryName: String
-    warehouseName: String
-    createUser: String
-    startDate: String
-    endDate: String
-}
-input InventoryOutFilter {
-    outManagementId: String
-}
-input InventoryOutManagementInput {
-    site: String
-    compCd: String
-    outType: String
-    factoryId: String
-    warehouseId: String
-    totalPrice: String
-}
-
-input InventoryOutSaveInput {
-    outManagementId: String!
-    supplierName: String
-    manufactureName: String
-    userMaterialId: String
-    outType: String
-    systemMaterialId: String
-    materialName: String
-    materialCategory: String
-    materialStandard: String
-    qty: String
-    unitPrice: String
-    unitVat: String
-    totalPrice: String
-    createUser: String
-    createDate: String
-    updateUser: String
-    updateDate: String
-}
-input InventoryOutUpdateInput {
-    outManagementId: String!
-    outInventoryId: String!
-    supplierName: String
-    manufactureName: String
-    userMaterialId: String
-    materialName: String
-    materialCategory: String
-    materialStandard: String
-    qty: String
-    unitPrice: String
-    unitVat: String
-    totalPrice: String
-    createUser: String
-    createDate: String
-    updateUser: String
-    updateDate: String
-}
-input InventoryOutManagementDeleteInput {
-    site: String
-    compCd: String
-    outManagementId: String
-}
-input InventoryOutDeleteInput {
-    site: String
-    compCd: String
-    outInventoryId: String
-}
+#type InventoryOutManagement {
+#    outManagementId: String,
+#    outType: String,
+#    factoryName: String,
+#    warehouseName: String,
+#    materialInfo: String,
+#    totalPrice: String,
+#    userName: String,
+#    createDate: String,
+#}
+#type InventoryOut {
+#    outManagementId: String
+#    outInventoryId: String
+#    supplierName: String
+#    manufacturerName: String
+#    userMaterialId: String
+#    materialName: String
+#    materialCategory: String
+#    materialStandard: String
+#    qty: Int
+#    unitPrice: Int
+#    unitVat: Int
+#    totalPrice: Int
+#    createUser: String
+#    createDate: String
+#    updateUser: String
+#    updateDate: String
+#}
+#
+#input InventoryOutManagementFilter {
+#    outManagementId: String
+#    outType: String
+#    factoryName: String
+#    warehouseName: String
+#    createUser: String
+#    startDate: String
+#    endDate: String
+#}
+#input InventoryOutFilter {
+#    outManagementId: String
+#}
+#input InventoryOutManagementInput {
+#    site: String
+#    compCd: String
+#    outType: String
+#    factoryId: String
+#    warehouseId: String
+#    totalPrice: String
+#}
+#
+#input InventoryOutSaveInput {
+#    outManagementId: String!
+#    supplierName: String
+#    manufactureName: String
+#    userMaterialId: String
+#    outType: String
+#    systemMaterialId: String
+#    materialName: String
+#    materialCategory: String
+#    materialStandard: String
+#    qty: String
+#    unitPrice: String
+#    unitVat: String
+#    totalPrice: String
+#    createUser: String
+#    createDate: String
+#    updateUser: String
+#    updateDate: String
+#}
+#input InventoryOutUpdateInput {
+#    outManagementId: String!
+#    outInventoryId: String!
+#    supplierName: String
+#    manufactureName: String
+#    userMaterialId: String
+#    materialName: String
+#    materialCategory: String
+#    materialStandard: String
+#    qty: String
+#    unitPrice: String
+#    unitVat: String
+#    totalPrice: String
+#    createUser: String
+#    createDate: String
+#    updateUser: String
+#    updateDate: String
+#}
+#input InventoryOutManagementDeleteInput {
+#    site: String
+#    compCd: String
+#    outManagementId: String
+#}
+#input InventoryOutDeleteInput {
+#    site: String
+#    compCd: String
+#    outInventoryId: String
+#}
 
 # 쿼리 정의
 extend type Query {
@@ -207,8 +207,8 @@ extend type Query {
     getInventoryInList(filter: InventoryInFilter): [InventoryIn]
 
     #출고관리
-    getInventoryOutManagementList(filter: InventoryOutManagementFilter): [InventoryOutManagement]
-    getInventoryInList(filter: InventoryOutFilter): [InventoryOut]
+#    getInventoryOutManagementList(filter: InventoryOutManagementFilter): [InventoryOutManagement]
+#    getInventoryOutList(filter: InventoryOutFilter): [InventoryOut]
 }
 
 # 뮤테이션 정의
@@ -218,8 +218,8 @@ extend type Mutation {
     deleteInventoryInManagement(inManagementId: InventoryInManagementDeleteInput): Boolean
     deleteInventoryIn(inInventoryId: InventoryInDeleteInput): Boolean
 
-    saveInventoryOutManagement(createdRows: [InventoryOutManagementSaveInput]) :Boolean
-    saveInventoryOut(createdRows: [InventoryOutSaveInput], updatedRows:[InventoryOutUpdateInput] ): Boolean
-    deleteInventoryOutManagement(outManagementId: InventoryOutManagementDeleteInput): Boolean
-    deleteInventoryOut(outInventoryId: InventoryOutDeleteInput): Boolean
+#    saveInventoryOutManagement(createdRows: [InventoryOutManagementSaveInput]) :Boolean
+#    saveInventoryOut(createdRows: [InventoryOutSaveInput], updatedRows:[InventoryOutUpdateInput] ): Boolean
+#    deleteInventoryOutManagement(outManagementId: InventoryOutManagementDeleteInput): Boolean
+#    deleteInventoryOut(outInventoryId: InventoryOutDeleteInput): Boolean
 }

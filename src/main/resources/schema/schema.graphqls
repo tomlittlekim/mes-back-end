@@ -24,35 +24,36 @@ type UserOutput {
     message: String!
 }
 
-type UserResponse {
-    id: Int!
-    loginId: String!
-    userName: String!
-    departmentName: String
-    position: String
-    authorityName: String
-    flagActive: String
+type User {
+    id: ID                      # Primary Key
+    site: String                # 사이트 식별자
+    compCd: String             # 회사 코드
+    userName: String             # 사용자 이름
+    loginId: String!             # 로그인 ID
+    userPwd: String             # 사용자 비밀번호 (노출 주의)
+    imagePath: String            # 프로필 이미지 경로
+    roleId: Int!                # 권한 ID
+    userEmail: String            # 이메일
+    phoneNum: String             # 전화번호
+    departmentId: String         # 부서 ID
+    positionId: String           # 직급 ID
+    flagLock: Boolean           # 잠금 여부
+    flagActive: Boolean
 }
 
-type UserDetail {
-    id: Int!
-    loginId: String!
-    userName: String!
-    departmentName: String
-    position: String
-    authorityName: String!
-    email: String
-    phoneNumber: String
-    flagActive: String
-}
-
-type RoleResponseForSelect {
-    roleId: Int!
-    roleName: String!
+type Role {
+    roleId: Int!              # 권한 ID (PK)
+    site: String             # 사이트
+    compCd: String           # 회사 코드
+    priorityLevel: Int       # 우선순위 레벨 (선택)
+    roleName: String!        # 권한 이름
+    flagDefault: Boolean     # 기본 권한 여부
+    sequence: Int            # 정렬 순서
 }
 
 input UserGroupRequest {
     departmentId: String
+    positionId: String
     roleId: Int
     userName: String
 }
@@ -64,7 +65,7 @@ extend type Mutation {
 extend type Query {
     signIn(input: UserInput!): UserOutput!
     existLoginId(req: ExistLoginRequest!): Boolean!
-    getUserGroup(req: UserGroupRequest!): [UserDetail]
-    getUserDetail(id: Int): UserDetail
-    getRoles: [RoleResponseForSelect]
+    getUserGroup(req: UserGroupRequest!): [User]
+    getUserDetail(id: Int): User
+    getRoles: [Role]
 }

@@ -85,19 +85,13 @@ class UserService(
         return userMap[req.loginId] != null
     }
 
-    fun getUserGroupByCompany(req: UserGroupRequest?): List<UserDetail?> {
+    fun getUserGroupByCompany(req: UserGroupRequest?): List<UserSummery?> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        val codeMap = codeRep.findAllByCodeClassIdIn(listOf("DEPARTMENT","POSITION"))
-            .associate { it?.codeId to it?.codeName }
 
         return if (core.isDeveloper(loginUser)) {
-            core.getAllUserMap(listOf(loginUser))
-                .filterValues { userGroupFilter(req, it) }
-                .mapValues { userToUserDetail(it.value, codeMap) }.values.toList()
+            core.getAllUserMap(listOf(loginUser)).filterValues { userGroupFilter(req, it) }.values.toList()
         } else {
-            core.getUserGroupByCompCd(loginUser)
-                .filter { userGroupFilter(req, it) }
-                .map { userToUserDetail(it, codeMap) }
+            core.getUserGroupByCompCd(loginUser).filter { userGroupFilter(req, it) }
         }
     }
 
@@ -158,17 +152,12 @@ class UserService(
         val departmentNm = codeMap[us.departmentId]
         val positionNm = codeMap[us.positionId]
         val isActive = if(us.flagActive) "Y" else "N"
-        return UserDetail(us.id,us.loginId,us.username?:"",departmentNm,positionNm,r.roleName,us.userEmail,us.phoneNum,isActive)
+        return UserDetail(us.id,us.loginId,us.userName?:"",departmentNm,positionNm,r.roleName,us.userEmail,us.phoneNum,isActive)
     }
 
-    private fun userGroupFilter(req: UserGroupRequest?, it: UserSummery?): Boolean {
-        val modifyReq = req?.apply {
-            roleId = if(roleId==0L) null else roleId
-            departmentId = if(departmentId!=null&& departmentId!!.isNotBlank()) null else departmentId
-            userName = if(userName!=null && userName!!.isBlank()) null else userName
-        }
-        return (modifyReq?.roleId?.let { r -> it?.roleId == r } ?: true)
-                && (modifyReq?.userName?.let { un -> it?.username == un } ?: true)
-                && (modifyReq?.departmentId?.let { dp -> it?.departmentId == dp } ?: true)
-    }
+    private fun userGroupFilter(req: UserGroupRequest?, it: UserSummery?) =
+        (req?.roleId?.let { r ->  it?.roleId == r } ?: true)
+        && (req?.userName?.let { un -> (un.isBlank() || it?.userName == un) } ?: true)
+        && (req?.departmentId?.let { dp -> (dp.isBlank() || it?.departmentId == dp) } ?: true)
+        && (req?.positionId?.let { p -> (p.isBlank() || it?.positionId == p) } ?: true)
 }

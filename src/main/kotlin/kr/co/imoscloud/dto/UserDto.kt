@@ -49,7 +49,7 @@ data class UserSummery(
     val id: Long,
     val site: String,
     override val compCd: String,
-    val username: String?=null,
+    val userName: String?=null,
     override val loginId: String,
     val userPwd: String,
     val imagePath: String?=null,
@@ -76,6 +76,7 @@ data class UserDetail(
 data class UserGroupRequest(
     var userName: String? = null,
     var departmentId: String? = null,
+    var positionId: String? = null,
     var roleId: Long? = null
 )
 

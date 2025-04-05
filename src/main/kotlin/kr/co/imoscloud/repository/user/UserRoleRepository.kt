@@ -9,10 +9,9 @@ interface UserRoleRepository: JpaRepository<UserRole, Long> {
     @Query("""
         select ur
         from UserRole ur
-        where (ur.site = 'default' or ur.site = :site)
-            and (ur.compCd = 'default' or ur.compCd = :compCd)
+        where (ur.compCd = 'default' or ur.compCd = :compCd)
             and ur.flagActive is true 
         order by ur.sequence desc
     """)
-    fun getRolesByCompany(site: String, compCd: String): List<UserRole>
+    fun getRolesByCompany(compCd: String): List<UserRole>
 }

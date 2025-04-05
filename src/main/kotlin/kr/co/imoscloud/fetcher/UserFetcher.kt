@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.dto.*
+import kr.co.imoscloud.entity.user.UserRole
 import kr.co.imoscloud.service.UserRoleService
 import kr.co.imoscloud.service.UserService
 
@@ -23,12 +24,12 @@ class UserFetcher(
     }
 
     @DgsQuery
-    fun getUserGroup(@InputArgument("req") req: UserGroupRequest?): List<UserDetail?> =
+    fun getUserGroup(@InputArgument("req") req: UserGroupRequest?): List<UserSummery?> =
         userService.getUserGroupByCompany(req)
 
     @DgsQuery
     fun getUserDetail(@InputArgument("id") id: Long): UserDetail = userService.getUserDetail(id)
 
     @DgsQuery
-    fun getRoles(): List<RoleResponseForSelect> = userRoleService.getUserRoleGroup()
+    fun getRoles(): List<UserRole> = userRoleService.getUserRoleGroup()
 }

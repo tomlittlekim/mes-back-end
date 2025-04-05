@@ -59,7 +59,7 @@ class UserPrincipal(
                 id = user.id,
                 site = user.site,
                 compCd = user.compCd,
-                username = user.username,
+                username = user.userName,
                 loginId = user.loginId,
                 password = user.userPwd,
                 roleId = user.roleId,

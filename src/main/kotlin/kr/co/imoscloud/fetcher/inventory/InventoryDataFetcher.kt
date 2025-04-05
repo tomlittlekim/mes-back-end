@@ -1,12 +1,10 @@
 package kr.co.imoscloud.fetcher.inventory
 
-import kr.co.imoscloud.service.InventoryInManagementResponseModel
-import kr.co.imoscloud.service.InventoryService
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kr.co.imoscloud.service.InventoryInResponseModel
+import kr.co.imoscloud.service.*
 
 @DgsComponent
 class InventoryDataFetcher(
@@ -21,38 +19,86 @@ class InventoryDataFetcher(
     fun getInventoryInList(@InputArgument("filter") filter: InventoryInFilter): List<InventoryInResponseModel?> {
         return inventoryService.getInventoryInListWithMaterial(filter)
     }
-
     @DgsMutation
-    fun saveDetailedInventory(
-        @InputArgument("createdRows") createdRows: List<DetailedInventoryInput?>,
-        @InputArgument("updatedRows") updatedRows:List<DetailedInventoryUpdateInput?>
-    ): Boolean { inventoryService.saveDetailedInventory(createdRows, updatedRows)
+    fun saveInventoryInManagement(@InputArgument("createdRows") createdRows: List<InventoryInManagementSaveInput?>,
+    ): Boolean { inventoryService.saveInventoryInManagement(createdRows)
+        return true
+    }
+    @DgsMutation
+    fun saveInventoryIn(
+        @InputArgument("createdRows") createdRows: List<InventoryInSaveInput?>,
+        @InputArgument("updatedRows") updatedRows:List<InventoryInUpdateInput?>
+    ): Boolean { inventoryService.saveInventoryIn(createdRows, updatedRows)
+        return true
+    }
+    @DgsMutation
+    fun deleteInventoryInManagement(@InputArgument("inManagementId") inManagementId: InventoryInManagementDeleteInput,
+    ): Boolean { inventoryService.deleteInventoryInManagement(inManagementId)
+        return true
+    }
+    @DgsMutation
+    fun deleteInventoryIn(@InputArgument("inInventoryId") inInventoryId: InventoryInDeleteInput,
+    ): Boolean { inventoryService.deleteInventoryIn(inInventoryId)
         return true
     }
 
-    @DgsMutation
-    fun saveInventory(@InputArgument("createdRows") createdRows: List<InventoryInMInput?>,
-    ): Boolean { inventoryService.saveInventory(createdRows)
-        return true
-    }
-    @DgsMutation
-    fun deleteInventory(@InputArgument("inManagementId") inManagementId: InventoryDeleteInput,
-    ): Boolean { inventoryService.deleteInventory(inManagementId)
-        return true
-    }
-
-    @DgsMutation
-    fun deleteDetailedInventory(@InputArgument("inInventoryId") inInventoryId: InventoryDetailDeleteInput,
-    ): Boolean { inventoryService.deleteDetailInventory(inInventoryId)
-        return true
-    }
+    //출고 관리
+//    @DgsQuery
+//    fun getInventoryOutManagementList(@InputArgument("filter") filter: InventoryOutManagementFilter): List<InventoryOutManagementResponseModel?> {
+//        return inventoryService.getInventoryOutManagementListWithFactoryAndWarehouse(filter)
+//    }
+//    @DgsQuery
+//    fun getInventoryOutList(@InputArgument("filter") filter: InventoryOutFilter): List<InventoryOutResponseModel?> {
+//        return inventoryService.getInventoryOutListWithMaterial(filter)
+//    }
+//    @DgsMutation
+//    fun saveInventoryOutManagement(@InputArgument("createdRows") createdRows: List<InventoryOutManagementSaveInput?>,
+//    ): Boolean { inventoryService.saveInventoryInManagement(createdRows)
+//        return true
+//    }
+//    @DgsMutation
+//    fun saveInventoryOut(
+//        @InputArgument("createdRows") createdRows: List<InventoryOutSaveInput?>,
+//        @InputArgument("updatedRows") updatedRows:List<InventoryOutUpdateInput?>
+//    ): Boolean { inventoryService.saveInventoryOut(createdRows, updatedRows)
+//        return true
+//    }
+//    @DgsMutation
+//    fun deleteInventoryOutManagement(@InputArgument("outManagementId") outManagementId: InventoryOutManagementDeleteInput,
+//    ): Boolean { inventoryService.deleteInventoryOutManagement(outManagementId)
+//        return true
+//    }
+//    @DgsMutation
+//    fun deleteInventoryOut(@InputArgument("outInventoryId") outInventoryId: InventoryOutDeleteInput,
+//    ): Boolean { inventoryService.deleteInventoryOut(outInventoryId)
+//        return true
+//    }
 }
 
+// 입고관리 DTO
 data class InventoryInFilter(
     val inManagementId: String? = null
 )
-
-data class DetailedInventoryInput(
+data class InventoryInManagementFilter(
+    var inManagementId: String? = null,
+    var inType: String? = null,
+    var factoryName: String? = null,
+    var warehouseName: String? = null,
+    var createUser: String? = null,
+    var hasInvoice: String? = null,
+    var startDate: String? = null,
+    var endDate: String? = null,
+)
+data class InventoryInManagementSaveInput(
+    var site: String,
+    var compCd: String,
+    var inType: String,
+    var factoryId: String? = null,
+    var warehouseId: String? = null,
+    var totalPrice: String? = null,
+    var hasInvoice: String? = null,
+)
+data class InventoryInSaveInput(
     val inManagementId: String,
     val supplierName: String? = null,
     val manufactureName: String? = null,
@@ -71,8 +117,7 @@ data class DetailedInventoryInput(
     val updateUser: String? = null,
     val updateDate: String? = null
 )
-
-data class DetailedInventoryUpdateInput(
+data class InventoryInUpdateInput(
     val inManagementId: String,
     val inInventoryId: String,
     val supplierName: String? = null,
@@ -92,36 +137,84 @@ data class DetailedInventoryUpdateInput(
     val updateUser: String? = null,
     val updateDate: String? = null
 )
+data class InventoryInManagementDeleteInput (
+    var site: String,
+    var compCd: String,
+    var inManagementId: String,
+)
+data class InventoryInDeleteInput (
+    var site: String,
+    var compCd: String,
+    var inInventoryId: String,
+)
 
-data class InventoryInManagementFilter(
-    var inManagementId: String? = null,
-    var inType: String? = null,
+// 출고관리 DTO
+data class InventoryOutFilter(
+    val outManagementId: String? = null
+)
+data class InventoryOutManagementFilter(
+    var outManagementId: String? = null,
+    var outType: String? = null,
     var factoryName: String? = null,
     var warehouseName: String? = null,
     var createUser: String? = null,
-    var hasInvoice: String? = null,
     var startDate: String? = null,
     var endDate: String? = null,
 )
-
-data class InventoryInMInput(
+data class InventoryOutManagementSaveInput(
     var site: String,
     var compCd: String,
     var inType: String,
     var factoryId: String? = null,
     var warehouseId: String? = null,
     var totalPrice: String? = null,
-    var hasInvoice: String? = null,
 )
-
-data class InventoryDeleteInput (
+data class InventoryOutSaveInput(
+    val outManagementId: String,
+    val supplierName: String? = null,
+    val manufactureName: String? = null,
+    val outType: String? = null,
+    val systemMaterialId: String? = null,
+    val userMaterialId: String? = null,
+    val materialName: String? = null,
+    val materialCategory: String? = null,
+    val materialStandard: String? = null,
+    val qty: String? = null,
+    val unitPrice: String? = null,
+    val unitVat: String? = null,
+    val totalPrice: String? = null,
+    val createUser: String? = null,
+    val createDate: String? = null,
+    val updateUser: String? = null,
+    val updateDate: String? = null
+)
+data class InventoryOutUpdateInput(
+    val outManagementId: String,
+    val outInventoryId: String,
+    val supplierName: String? = null,
+    val manufactureName: String? = null,
+    val outType: String? = null,
+    val systemMaterialId: String? = null,
+    val userMaterialId: String? = null,
+    val materialName: String? = null,
+    val materialCategory: String? = null,
+    val materialStandard: String? = null,
+    val qty: String? = null,
+    val unitPrice: String? = null,
+    val unitVat: String? = null,
+    val totalPrice: String? = null,
+    val createUser: String? = null,
+    val createDate: String? = null,
+    val updateUser: String? = null,
+    val updateDate: String? = null
+)
+data class InventoryOutManagementDeleteInput (
     var site: String,
     var compCd: String,
-    var inManagementId: String,
+    var outManagementId: String,
 )
-
-data class InventoryDetailDeleteInput (
+data class InventoryOutDeleteInput (
     var site: String,
     var compCd: String,
-    var inInventoryId: String,
+    var outInventoryId: String,
 )

@@ -38,4 +38,7 @@ class UserFetcher(
 
     @DgsMutation
     fun resetPwd(@InputArgument("id")  id: Long) = userService.resetPassword(id)
+
+    @DgsQuery
+    fun getMenuRoleGroup() = userRoleService.getMenuRoleGroup()
 }

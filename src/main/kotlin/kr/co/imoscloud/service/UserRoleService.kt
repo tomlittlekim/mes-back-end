@@ -16,4 +16,9 @@ class UserRoleService(
         val result = core.roleRepo.getRolesByCompany(loginUser.compCd)
         return result
     }
+
+    fun getMenuRoleGroup(): List<MenuRole> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        return core.getAllMenuRoleByRoleId(loginUser.roleId)
+    }
 }

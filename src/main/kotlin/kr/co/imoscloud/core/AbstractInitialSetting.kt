@@ -107,6 +107,18 @@ abstract class AbstractInitialSetting(
         }
     }
 
+    fun getAllMenuRoleByRoleId(roleId: Long): List<MenuRole> {
+        return if (getIsInspect()) return getMenuRoleDuringInspection(roleId)
+        else {
+            val index = "${roleId}-"
+            menuRoleMap
+                .filter { (key, value) -> key.contains(index) && value != null }
+                .mapNotNull { (key, encoded) ->
+                    decodePermissionBitsToMenuRole(encoded!!, roleId, key.substringAfter(index))
+                }
+        }
+    }
+
     protected abstract fun getAllUsersDuringInspection(indies: List<String?>): MutableMap<String, UserSummery?>
     protected abstract fun getAllRolesDuringInspection(indies: List<Long?>): MutableMap<Long, RoleSummery?>
     protected abstract fun getAllCompanyDuringInspection(indies: List<String?>): MutableMap<String, CompanySummery?>

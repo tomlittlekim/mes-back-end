@@ -61,6 +61,20 @@ input UserGroupRequest {
     userName: String
 }
 
+type MenuRole {
+    id: Int
+    roleId: Int
+    menuId: String
+    isOpen: Boolean
+    isDelete: Boolean
+    isInsert: Boolean
+    isAdd: Boolean
+    isPopup: Boolean
+    isPrint: Boolean
+    isSelect: Boolean
+    isUpdate: Boolean
+}
+
 extend type Mutation {
     upsertUser(req: UserInput!): String
     deleteUser(id: Int!): String
@@ -73,4 +87,5 @@ extend type Query {
     getUserGroup(req: UserGroupRequest!): [User]
     getUserDetail(id: Int): User
     getRoles: [Role]
+    getMenuRoleGroup: [MenuRole]
 }

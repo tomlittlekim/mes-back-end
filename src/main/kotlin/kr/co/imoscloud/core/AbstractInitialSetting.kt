@@ -125,26 +125,29 @@ abstract class AbstractInitialSetting(
     protected abstract fun getAllCompanyDuringInspection(indies: List<String?>): MutableMap<String, CompanySummery?>
     protected abstract fun getMenuRoleDuringInspection(roleId: Long, menuId: String): MenuRole?
 
-    fun upsertUserFromInMemory(user: User) {
-        val summery = userToSummery(user)
-        if (isInspect) upsertUserQue[user.loginId] = summery
-        else userMap[user.loginId] = summery
-    }
-    fun upsertRoleFromInMemory(userRole: UserRole) {
-        val summery = roleToSummery(userRole)
-        if (isInspect) upsertRoleQue[userRole.roleId] = summery
-        else roleMap[userRole.roleId] = summery
-    }
-    fun upsertCompanyFromInMemory(company: Company) {
-        val summery = CompanySummery(company.id, company.companyName)
-        if (isInspect) upsertCompanyQue[company.compCd] = summery
-        else companyMap[company.compCd] = summery
-    }
-    fun upsertMenuRoleFromInMemory(mr: MenuRole) {
-        val index = "${mr.roleId}-${mr.menuId}"
-        val encoded = encodeMenuRolePermissions(mr)
-        if (isInspect) upsertMenuRoleQue[index] = encoded
-        else menuRoleMap[index] = encoded
+    fun <T> upsertFromInMemory(req: T): Unit = when (req) {
+        is User -> {
+            val summery = userToSummery(req)
+            if (isInspect) upsertUserQue[req.loginId] = summery
+            else userMap[req.loginId] = summery
+        }
+        is UserRole -> {
+            val summery = roleToSummery(req)
+            if (isInspect) upsertRoleQue[req.roleId] = summery
+            else roleMap[req.roleId] = summery
+        }
+        is Company -> {
+            val summery = CompanySummery(req.id, req.companyName)
+            if (isInspect) upsertCompanyQue[req.compCd] = summery
+            else companyMap[req.compCd] = summery
+        }
+        is MenuRole -> {
+            val index = "${req.roleId}-${req.menuId}"
+            val encoded = encodeMenuRolePermissions(req)
+            if (isInspect) upsertMenuRoleQue[index] = encoded
+            else menuRoleMap[index] = encoded
+        }
+        else -> throw IllegalArgumentException("지원하지 않는 타입입니다. ")
     }
 
     fun <T> extractAllFromRequest(req: List<T>): Map<String, List<Any>> {

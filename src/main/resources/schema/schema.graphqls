@@ -1,14 +1,17 @@
 input UserInput {
+    id: Int,
     site: String
     compCd: String
-    userName: String
-    userId: String
-    userPwd: String
+    userName: String!
+    loginId: String!
+    userPwd: String!
     imagePath: String
-    roleId: String
+    roleId: Int!
     userEmail: String
     phoneNum: String
     departmentId: String
+    positionId: String
+    flagActive: Boolean
 }
 
 input ExistLoginRequest {
@@ -25,7 +28,7 @@ type UserOutput {
 }
 
 type User {
-    id: ID                      # Primary Key
+    id: Int                      # Primary Key
     site: String                # 사이트 식별자
     compCd: String             # 회사 코드
     userName: String             # 사용자 이름
@@ -59,11 +62,12 @@ input UserGroupRequest {
 }
 
 extend type Mutation {
-    signUp(input: UserInput!): String
+    upsertUser(req: UserInput!): String
+    deleteUser(id: Int!): String
 }
 
 extend type Query {
-    signIn(input: UserInput!): UserOutput!
+    signIn(req: UserInput!): UserOutput!
     existLoginId(req: ExistLoginRequest!): Boolean!
     getUserGroup(req: UserGroupRequest!): [User]
     getUserDetail(id: Int): User

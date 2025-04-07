@@ -110,6 +110,24 @@ class UserService(
             ?:throw UsernameNotFoundException("유저가 존재하지 않습니다. ")
     }
 
+    @AuthLevel(minLevel = 3)
+    fun deleteUser(id: Long): String {
+        return core.userRepo.findById(id).map { u ->
+            val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+            val roleMap = core.getAllRoleMap(listOf(u, loginUser))
+            val targetRole = roleMap[u.roleId]!!
+            val loginUserRole = roleMap[loginUser.roleId]!!
+
+            if (targetRole.priorityLevel!! >= loginUserRole.priorityLevel!!)
+                throw IllegalArgumentException("접속 유저의 권한 레벨이 부족합니다. ")
+
+            core.userRepo.delete(u)
+            core.deleteFromInMemory(u)
+            "${u.loginId} 의 계정 삭제 완료"
+        }.orElseThrow { throw IllegalArgumentException("삭제 대상의 정보가 존재하지 않습니다. ") }
+    }
+
     private fun modifyReqByRole(loginUser: UserPrincipal, req: UserInput): UserInput {
         return if (core.isDeveloper(loginUser)) {
             req.site ?: throw IllegalArgumentException("site 가 존재하지 않습니다. ")

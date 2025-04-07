@@ -16,7 +16,7 @@ class UserFetcher(
 ) {
 
     @DgsMutation
-    fun signUp(@InputArgument("input") input: UserInput) { userService.signUp(input) }
+    fun upsertUser(@InputArgument("req") req: UserInput) { userService.upsertUser(req) }
 
     @DgsQuery
     fun existLoginId(@InputArgument("req") req: ExistLoginIdRequest): Boolean {
@@ -32,4 +32,7 @@ class UserFetcher(
 
     @DgsQuery
     fun getRoles(): List<UserRole> = userRoleService.getUserRoleGroup()
+
+    @DgsMutation
+    fun deleteUser(@InputArgument("id") id: Long) = userService.deleteUser(id)
 }

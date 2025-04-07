@@ -184,11 +184,12 @@ interface CodeRep: JpaRepository<Code,Long>{
 
     @Query("""
         select c
-        from CodeClass c
+        from Code c
         where c.site = 'default'
             and c.compCd = 'default'
             and c.codeClassId = :codeClassId
             and c.flagActive = true 
+        order by c.sortOrder
     """)
     fun getInitialCodes(codeClassId:String):List<Code?>
 }

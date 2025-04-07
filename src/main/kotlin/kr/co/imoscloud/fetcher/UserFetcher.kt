@@ -41,4 +41,7 @@ class UserFetcher(
 
     @DgsQuery
     fun getMenuRoleGroup() = userRoleService.getMenuRoleGroup()
+
+    @DgsQuery
+    fun getMenuRole(@InputArgument("menuId") menuId: String) = userRoleService.getMenuRole(menuId)
 }

@@ -43,8 +43,10 @@ class Core(
         return companyList.associate { it.compCd to CompanySummery(it.id, it.companyName) }.toMutableMap()
     }
 
-    override fun getMenuRoleDuringInspection(roleId: Long, menuId: String): MenuRole? {
-        return menuRoleRepo.findByRoleIdAndMenuId(roleId, menuId)
+    override fun getMenuRoleDuringInspection(roleId: Long, menuId: String?): List<MenuRole> {
+        return menuId
+            ?.let { menuRoleRepo.findByRoleIdAndMenuId(roleId, menuId)?.let { listOf(it) } }
+            ?:run { menuRoleRepo.findAllByRoleId(roleId) }
     }
 
     fun <T> getUserFromInMemory(req: T): UserSummery? {

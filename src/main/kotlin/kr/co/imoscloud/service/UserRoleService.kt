@@ -1,6 +1,7 @@
 package kr.co.imoscloud.service
 
 import kr.co.imoscloud.core.Core
+import kr.co.imoscloud.entity.user.MenuRole
 import kr.co.imoscloud.entity.user.UserRole
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service

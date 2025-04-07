@@ -100,30 +100,17 @@ abstract class AbstractInitialSetting(
     }
 
     fun getMenuRole(roleId: Long, menuId: String): MenuRole? {
-        return if (getIsInspect()) getMenuRoleDuringInspection(roleId, menuId)
+        return if (getIsInspect()) getMenuRoleDuringInspection(roleId, menuId).first()
         else {
             val encoded = menuRoleMap["$roleId-$menuId"] ?: return null
-            val bits = encoded.toString(2).padStart(8, '0').map { it == '1' }
-            return MenuRole(
-                id = -1L,
-                roleId = roleId,
-                menuId = menuId,
-                isOpen = bits[0],
-                isDelete = bits[1],
-                isInsert = bits[2],
-                isAdd = bits[3],
-                isPopup = bits[4],
-                isPrint = bits[5],
-                isSelect = bits[6],
-                isUpdate = bits[7]
-            )
+            return decodePermissionBitsToMenuRole(encoded, roleId, menuId)
         }
     }
 
     protected abstract fun getAllUsersDuringInspection(indies: List<String?>): MutableMap<String, UserSummery?>
     protected abstract fun getAllRolesDuringInspection(indies: List<Long?>): MutableMap<Long, RoleSummery?>
     protected abstract fun getAllCompanyDuringInspection(indies: List<String?>): MutableMap<String, CompanySummery?>
-    protected abstract fun getMenuRoleDuringInspection(roleId: Long, menuId: String): MenuRole?
+    protected abstract fun getMenuRoleDuringInspection(roleId: Long, menuId: String?=null): List<MenuRole>
 
     fun <T> upsertFromInMemory(req: T): Unit = when (req) {
         is User -> {
@@ -237,6 +224,27 @@ abstract class AbstractInitialSetting(
         val permissions = listOf(mr.isOpen, mr.isDelete, mr.isInsert, mr.isAdd, mr.isPopup, mr.isPrint, mr.isSelect, mr.isUpdate)
         val binary = permissions.joinToString(separator = "") { booleanToTinyintStr(it) }
         return binary.toInt(2)
+    }
+
+    private fun decodePermissionBitsToMenuRole(
+        encoded: Int,
+        roleId: Long,
+        menuId: String
+    ): MenuRole {
+        val bits = encoded.toString(2).padStart(8, '0').map { it == '1' }
+        return MenuRole(
+            id = -1L,
+            roleId = roleId,
+            menuId = menuId,
+            isOpen = bits[0],
+            isDelete = bits[1],
+            isInsert = bits[2],
+            isAdd = bits[3],
+            isPopup = bits[4],
+            isPrint = bits[5],
+            isSelect = bits[6],
+            isUpdate = bits[7]
+        )
     }
 
     private fun booleanToTinyintStr(bool: Boolean): String = if (bool) "1" else "0"

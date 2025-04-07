@@ -9,6 +9,7 @@ import kr.co.imoscloud.iface.IUser
 import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.security.JwtTokenProvider
 import kr.co.imoscloud.security.UserPrincipal
+import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
@@ -61,9 +62,9 @@ class UserService(
         return userRes
     }
 
+    @AuthLevel(minLevel = 3)
     fun signUp(req: UserInput): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        if (!core.isAdminOrHigher(loginUser)) throw IllegalArgumentException("관리자 이상의 등급을 가진 유저가 아닙니다. ")
 
         val modifyReq = modifyReqByRole(loginUser, req)
         val newUser = try {

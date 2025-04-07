@@ -99,6 +99,18 @@ class Core(
 
     fun isAdminOrHigher(loginUser: UserPrincipal): Boolean {
         val roleSummery = getUserRoleFromInMemory(loginUser)
-        return roleSummery.priorityLevel!! >= 3
+        return roleSummery.priorityLevel >= 3
+    }
+
+    fun validatePriorityIsHigherThan(target: User, loginUser: UserPrincipal): Boolean {
+        val roleMap = getAllRoleMap(listOf(target, loginUser))
+
+        return try {
+            val targetRole = roleMap[target.roleId]!!
+            val loginUserRole = roleMap[loginUser.roleId]!!
+            targetRole.priorityLevel >= loginUserRole.priorityLevel
+        } catch (e: NullPointerException) {
+            throw IllegalArgumentException("대상: ${target.roleId} 또는 로그인 유저: ${loginUser.roleId} 의 권한 정보가 존재하지 않습니다. ")
+        }
     }
 }

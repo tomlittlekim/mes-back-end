@@ -34,7 +34,7 @@ class UserService(
         response: HttpServletResponse
     ): ResponseEntity<LoginOutput> {
         val site = getSiteByDomain(request)
-        val userRes = core.userRepo.findBySiteAndLoginIdAndFlagActiveIsTrue(site, loginReq.userId)
+        val userRes = core.userRepo.findByLoginIdAndFlagActiveIsTrue(loginReq.userId)
             ?.let { user ->
                 try {
                     validateUser(loginReq.userPwd, user)
@@ -63,22 +63,21 @@ class UserService(
     }
 
     @AuthLevel(minLevel = 3)
-    fun signUp(req: UserInput): String {
+    fun upsertUser(req: UserInput): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-
         val modifyReq = modifyReqByRole(loginUser, req)
-        val newUser = try {
-            val site = modifyReq.site ?: throw IllegalArgumentException("site is null")
-            val target = core.userRepo.findBySiteAndLoginIdForSignUp(site, modifyReq.userId)!!
-            if (!target.flagActive) target.apply { flagActive = true; createCommonCol(loginUser) }
-            else throw IllegalArgumentException("이미 존재하는 유저입니다. ")
-        } catch (e: NullPointerException) {
-            generateUser(req)
-        }
 
-        core.userRepo.save(newUser)
-        core.upsertUserFromInMemory(newUser)
-        return newUser.let { "${req.userId} 로그인 성공" }
+        val upsertUser = core.getUserFromInMemory(req.loginId)
+            ?.let { user ->
+                val site = modifyReq.site ?: throw IllegalArgumentException("site is null")
+                val target = core.userRepo.findBySiteAndLoginIdForSignUp(site, user.loginId)!!
+                modifyUser(target, req, loginUser)
+            }
+            ?:run { generateUser(req, loginUser) }
+
+        core.userRepo.save(upsertUser)
+        core.upsertFromInMemory(upsertUser)
+        return upsertUser.let { "${req.loginId} 로그인 성공" }
     }
 
     fun existLoginId(req: ExistLoginIdRequest): Boolean {
@@ -90,7 +89,7 @@ class UserService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         return if (core.isDeveloper(loginUser)) {
-            core.getAllUserMap(listOf(loginUser)).filterValues { userGroupFilter(req, it) }.values.toList()
+            core.getAllUserMap(listOf(loginUser)).filterValues { userGroupFilter(req, it) }.values.mapNotNull { it }
         } else {
             core.getUserGroupByCompCd(loginUser).filter { userGroupFilter(req, it) }
         }
@@ -112,31 +111,37 @@ class UserService(
     }
 
     private fun modifyReqByRole(loginUser: UserPrincipal, req: UserInput): UserInput {
-        if (core.isAdminOrHigher(loginUser))
-            throw IllegalArgumentException("site 또는 compCd 가 비어있습니다. ")
-
-        return req.apply {
-            this.site = loginUser.getSite()
-            this.compCd = loginUser.compCd
-            if (core.isDeveloper(loginUser)) { site = req.site; compCd = req.compCd }
+        return if (core.isDeveloper(loginUser)) {
+            req.site ?: throw IllegalArgumentException("site 가 존재하지 않습니다. ")
+            req.compCd ?: throw IllegalArgumentException("compCd 가 존재하지 않습니다. ")
+            req
+        } else {
+            req.apply {
+                this.site = loginUser.getSite()
+                this.compCd = loginUser.compCd
+            }
         }
     }
 
-    private fun generateUser(req: UserInput): User {
+    private fun generateUser(req: UserInput, loginUser: UserPrincipal): User {
         val uuid =  UUID.randomUUID().toString()
         val today = LocalDate.now()
         val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
 
         val passwordEncoder = BCryptPasswordEncoder()
-        val pwd = uuid.substring(7, 14) +"!@"
 
         return User(
             site = req.site!!,
             compCd = req.compCd!!,
-            loginId = req.userId ?: (uuid.substring(0, 7) + formatter.format(today)),
-            userPwd = passwordEncoder.encode(pwd),
-            roleId = req.roleId!!
-        )
+            loginId = req.loginId ?: (uuid.substring(0, 7) + formatter.format(today)),
+            userPwd = passwordEncoder.encode(req.userPwd),
+            userName = req.userName,
+            userEmail = req.userEmail,
+            roleId = req.roleId!!,
+            phoneNum = req.phoneNum,
+            departmentId = req.departmentId!!,
+            positionId = req.positionId!!,
+        ).apply { createCommonCol(loginUser) }
     }
 
     private fun validateUser(matchedPWD: String?, target: User) {
@@ -161,4 +166,23 @@ class UserService(
         && (req?.userName?.let { un -> (un.isBlank() || it?.userName == un) } ?: true)
         && (req?.departmentId?.let { dp -> (dp.isBlank() || it?.departmentId == dp) } ?: true)
         && (req?.positionId?.let { p -> (p.isBlank() || it?.positionId == p) } ?: true)
+
+    private fun modifyUser(target: User, req: UserInput, loginUser: UserPrincipal): User {
+        return target.apply {
+            loginId = req.loginId ?: this.loginId
+            userPwd = req.userPwd?.let {
+                val passwordEncoder = BCryptPasswordEncoder()
+                passwordEncoder.encode(req.userPwd)
+            } ?: this.userPwd
+            userName = req.userName ?: this.userName
+            userEmail = req.userEmail ?: this.userEmail
+            //imagePath
+            roleId = req.roleId ?: this.roleId
+            phoneNum = req.phoneNum ?: this.phoneNum
+            departmentId = req.departmentId ?: this.departmentId
+            positionId = req.positionId ?: this.positionId
+            flagActive = req.flagActive ?: true
+            updateCommonCol(loginUser)
+        }
+    }
 }

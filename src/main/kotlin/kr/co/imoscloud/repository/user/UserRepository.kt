@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query
 import java.util.*
 
 interface UserRepository : JpaRepository<User, Long> {
-    fun findBySiteAndLoginIdAndFlagActiveIsTrue(site: String, userId: String): User?
+    fun findByLoginIdAndFlagActiveIsTrue(userId: String): User?
 
     @Query(
         """

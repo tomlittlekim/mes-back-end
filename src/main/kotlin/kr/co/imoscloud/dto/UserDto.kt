@@ -9,13 +9,15 @@ data class UserInput(
     val id: Long? = null,
     var site: String?=null,
     var compCd: String?=null,
-    var userId: String?=null,
-    var password: String?=null,
-    var userNm: String?=null,
-    var email: String?=null,
+    var loginId: String?=null,
+    var userPwd: String?=null,
+    var userName: String?=null,
+    var userEmail: String?=null,
     var roleId: Long?=null,
     var phoneNum: String?=null,
-    var departmentId: String?=null
+    var departmentId: String?=null,
+    var positionId: String?=null,
+    var flagActive: Boolean?=null
 )
 
 data class LoginOutput(

@@ -4,7 +4,7 @@ input UserInput {
     compCd: String
     userName: String!
     loginId: String!
-    userPwd: String!
+    userPwd: String
     imagePath: String
     roleId: Int!
     userEmail: String
@@ -64,6 +64,7 @@ input UserGroupRequest {
 extend type Mutation {
     upsertUser(req: UserInput!): String
     deleteUser(id: Int!): String
+    resetPwd(id: Int!): String
 }
 
 extend type Query {

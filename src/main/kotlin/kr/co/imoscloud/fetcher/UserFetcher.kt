@@ -35,4 +35,7 @@ class UserFetcher(
 
     @DgsMutation
     fun deleteUser(@InputArgument("id") id: Long) = userService.deleteUser(id)
+
+    @DgsMutation
+    fun resetPwd(@InputArgument("id")  id: Long) = userService.resetPassword(id)
 }

@@ -1,6 +1,7 @@
 package kr.co.imoscloud.dto
 
 import kr.co.imoscloud.iface.DtoAllInOneBase
+import kr.co.imoscloud.iface.DtoCompCdBase
 import kr.co.imoscloud.iface.DtoLoginIdBase
 import kr.co.imoscloud.iface.DtoRoleIdBase
 import kr.co.imoscloud.iface.ResponseVO.ResponseBase
@@ -88,9 +89,11 @@ data class RoleInput(
 ): DtoRoleIdBase
 
 data class RoleSummery(
+    override val roleId: Long,
+    override val compCd: String,
     val roleName: String,
-    val priorityLevel: Int?,
-)
+    val priorityLevel: Int,
+): DtoRoleIdBase, DtoCompCdBase
 
 data class RoleResponseForSelect(
     override val roleId: Long,

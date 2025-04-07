@@ -188,7 +188,7 @@ abstract class AbstractInitialSetting(
         )
     }
 
-    fun roleToSummery(it: UserRole): RoleSummery = RoleSummery(it.roleName, it.priorityLevel)
+    fun roleToSummery(it: UserRole): RoleSummery = RoleSummery(it.roleId, it.compCd, it.roleName, it.priorityLevel)
     fun userToSummery(u: User): UserSummery = UserSummery(
         u.id,u.site,u.compCd,u.userName,u.loginId,u.userPwd,u.imagePath,u.roleId,u.userEmail,u.phoneNum,u.departmentId,u.positionId,u.flagActive
     )

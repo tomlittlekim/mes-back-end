@@ -80,10 +80,7 @@ class UserService(
         return upsertUser.let { "${req.loginId} 로그인 성공" }
     }
 
-    fun existLoginId(req: ExistLoginIdRequest): Boolean {
-        val userMap = core.getAllUserMap(listOf(req))
-        return userMap[req.loginId] != null
-    }
+    fun existLoginId(req: ExistLoginIdRequest): Boolean = core.getUserFromInMemory(req) != null
 
     fun getUserGroupByCompany(req: UserGroupRequest?): List<UserSummery?> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()

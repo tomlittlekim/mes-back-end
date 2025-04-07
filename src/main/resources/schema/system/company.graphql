@@ -1,0 +1,22 @@
+type Company {
+    id: ID,
+    site: String,
+    compCd: String!,
+    businessRegistrationNumber: String,
+    corporateRegistrationNumber: String,
+    companyName: String!,
+    imagePath: String,
+    businessAddress: String,
+    businessType: String,
+    businessItem: String,
+    paymentDate: String,
+    expiredDate: String,
+    flagSubscription: String,
+    loginId: String,
+    phoneNumber: String,
+    flagActive: String
+}
+
+extend type Query {
+    getCompanySelect: [Company]
+}

@@ -47,14 +47,14 @@ class Core(
         return menuRoleRepo.findByRoleIdAndMenuId(roleId, menuId)
     }
 
-    fun <T> getUserFromInMemory(req: T): UserSummery {
+    fun <T> getUserFromInMemory(req: T): UserSummery? {
         val index: String
         val userMap: Map<String, UserSummery?> = when {
             req is String -> { index = req; getAllUserMap(listOf(ExistLoginIdRequest(req))) }
             req is DtoLoginIdBase -> { index = req.loginId; getAllUserMap(listOf(req)) }
             else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
         }
-        return userMap[index] ?: throw IllegalArgumentException("User not found with loginId: $index")
+        return userMap[index]
     }
 
     fun <T> getUserRoleFromInMemory(req: T): RoleSummery {

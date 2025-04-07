@@ -16,6 +16,7 @@ class UserPrincipal(
     override val loginId: String,
     private val password: String,
     override val roleId: Long,
+    val priorityLevel: Int,
     private val authorities: Collection<GrantedAuthority>
 ) : UserDetails, DtoAllInOneBase {
 
@@ -48,6 +49,7 @@ class UserPrincipal(
                 loginId = user.loginId,
                 password = user.userPwd,
                 roleId = user.roleId,
+                priorityLevel = role.priorityLevel!!,
                 authorities = authorities
             )
         }
@@ -63,6 +65,7 @@ class UserPrincipal(
                 loginId = user.loginId,
                 password = user.userPwd,
                 roleId = user.roleId,
+                priorityLevel = role.priorityLevel!!,
                 authorities = authorities
             )
         }

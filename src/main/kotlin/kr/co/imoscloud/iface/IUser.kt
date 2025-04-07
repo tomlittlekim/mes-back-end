@@ -32,6 +32,7 @@ interface IUser: ResponseVO {
                 email = user.userEmail,
                 roleId = user.roleId,
                 roleNm = role?.roleName,
+                priorityLevel = role?.priorityLevel,
                 status = 200,
                 message = "${user.loginId} 로그인 성공"
             )}

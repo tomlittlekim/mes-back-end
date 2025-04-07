@@ -27,6 +27,7 @@ data class LoginOutput(
     var email: String?=null,
     override var roleId: Long,
     var roleNm: String?=null,
+    var priorityLevel: Int?=null
 ): ResponseBase, DtoRoleIdBase
 
 data class LoginRequest(val userId: String, val userPwd: String)

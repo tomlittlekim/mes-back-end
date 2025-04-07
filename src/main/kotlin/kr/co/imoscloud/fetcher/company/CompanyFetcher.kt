@@ -6,7 +6,7 @@ import kr.co.imoscloud.entity.company.Company
 import kr.co.imoscloud.service.company.companyService
 
 @DgsComponent
-class companyFetcher(
+class CompanyFetcher(
     private val companyService: companyService
 ) {
 

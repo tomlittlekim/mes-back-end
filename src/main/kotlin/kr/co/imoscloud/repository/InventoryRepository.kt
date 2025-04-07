@@ -40,8 +40,14 @@ interface InventoryInManagementRep : JpaRepository<InventoryInManagement, Long>{
                     DATE_FORMAT(iim.CREATE_DATE, '%Y-%m-%d') as createDate
                 from INVENTORY_IN_MANAGEMENT iim
                          left join WAREHOUSE w on iim.WAREHOUSE_ID = w.WAREHOUSE_ID
+                         and w.COMP_CD = iim.COMP_CD
+                         and w.SITE = iim.SITE
                          left join FACTORY f on f.FACTORY_ID = iim.FACTORY_ID
+                         and f.COMP_CD = iim.COMP_CD
+                         and f.SITE = iim.SITE
                          left join USER u on u.LOGIN_ID = iim.CREATE_USER
+                         and u.COMP_CD = iim.COMP_CD
+                         and u.SITE = iim.SITE
                          left join material_info mi on mi.IN_MANAGEMENT_ID = iim.IN_MANAGEMENT_ID and mi.rn = 1
                 where 1=1
                   and iim.IN_MANAGEMENT_ID like concat('%', :inManagementId, '%')
@@ -180,8 +186,14 @@ interface InventoryOutManagementRep : JpaRepository<InventoryOutManagement, Long
                     DATE_FORMAT(iom.CREATE_DATE, '%Y-%m-%d') as createDate
                 from INVENTORY_OUT_MANAGEMENT iom
                          left join WAREHOUSE w on iom.WAREHOUSE_ID = w.WAREHOUSE_ID
+                         and w.COMP_CD = iom.COMP_CD
+                         and w.SITE = iom.SITE
                          left join FACTORY f on f.FACTORY_ID = iom.FACTORY_ID
+                         and f.COMP_CD = iom.COMP_CD
+                         and f.SITE = iom.SITE
                          left join USER u on u.LOGIN_ID = iom.CREATE_USER
+                         and u.COMP_CD = iom.COMP_CD
+                         and u.SITE = iom.SITE
                          left join material_info mi on mi.OUT_MANAGEMENT_ID = iom.OUT_MANAGEMENT_ID and mi.rn = 1
                 where 1=1
                   and iom.OUT_MANAGEMENT_ID like concat('%', :outManagementId, '%')
@@ -208,6 +220,15 @@ interface InventoryOutManagementRep : JpaRepository<InventoryOutManagement, Long
         @Param("compCd") compCd: String,
         @Param("flagActive") flagActive: Boolean,
     ): List<InventoryOutManagementResponseModel?>
+    
+    // 가장 최근의 OUT_MANAGEMENT_ID
+    fun findTopByOrderByOutManagementIdDesc(): InventoryOutManagement?
+
+    fun deleteByOutManagementIdAndSiteAndCompCd(
+        outManagementId: String,
+        site: String,
+        compCd: String
+    )
 }
 
 interface InventoryOutRep : JpaRepository<InventoryOut, Long> {
@@ -246,6 +267,36 @@ interface InventoryOutRep : JpaRepository<InventoryOut, Long> {
         @Param("site") site: String,
         @Param("compCd") compCd: String,
     ): List<InventoryOutResponseModel?>
+    
+    fun findTopByOrderByOutManagementIdDesc(): InventoryOut?
+
+    // 자식노드 cascade 시 사용
+    fun deleteByOutManagementIdAndSiteAndCompCd(
+        outManagementId: String,
+        site: String,
+        compCd: String
+    )
+
+    fun deleteByOutInventoryIdAndSiteAndCompCd(
+        outInventoryId: String,
+        site: String,
+        compCd: String
+    )
+
+    @Query(
+        value = """
+            select f
+            from InventoryOut f
+            where f.site = :site
+            and   f.compCd = :compCd
+            and   f.outInventoryId IN (:outInventoryId)
+        """
+    )
+    fun getDetailedInventoryOutListByIds(
+        site:String,
+        compCd:String,
+        outInventoryId:List<String?>
+    ):List<InventoryOut?>
 }
 
 

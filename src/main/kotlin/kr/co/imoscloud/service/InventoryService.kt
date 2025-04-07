@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.inventory.InventoryIn
 import kr.co.imoscloud.entity.inventory.InventoryInManagement
+import kr.co.imoscloud.entity.inventory.InventoryOut
+import kr.co.imoscloud.entity.inventory.InventoryOutManagement
 import kr.co.imoscloud.fetcher.inventory.*
 import kr.co.imoscloud.repository.InventoryInManagementRep
 import kr.co.imoscloud.repository.InventoryInRep
@@ -99,9 +101,9 @@ class InventoryService (
                     hasInvoice = it.hasInvoice
                     remarks = null
                     flagActive = true
-                    createUser = "admin"
+                    createUser = currentUser.loginId
                     createDate = now
-                    updateUser = "admin"
+                    updateUser = currentUser.loginId
                     updateDate = now
                     inManagementId = newInManagementId
                     inType = it.inType
@@ -168,9 +170,9 @@ class InventoryService (
                 unitVat = it?.unitVat?.toInt()
                 totalPrice = it?.totalPrice?.toInt()
                 flagActive = true
-                createUser = "admin"
+                createUser = currentUser.loginId
                 createDate = now
-                updateUser = "admin"
+                updateUser = currentUser.loginId
                 updateDate = now
                 inInventoryId = UUID.randomUUID().toString()
             }
@@ -211,8 +213,7 @@ class InventoryService (
         inventoryInRep.saveAll(factoryList)
     }
 
-    // 출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리출고관리
-
+    // 출고관리 기능
     fun getInventoryOutManagementListWithFactoryAndWarehouse(filter: InventoryOutManagementFilter): List<InventoryOutManagementResponseModel?> {
 
         val currentUser = getCurrentUserPrincipalOrNull()
@@ -242,6 +243,157 @@ class InventoryService (
             compCd = currentUser.compCd,
             outManagementId = filter.outManagementId ?: throw IllegalArgumentException("출고관리번호는 필수입니다.")
         )
+    }
+    
+    @Transactional
+    fun saveInventoryOut(
+        createdRows: List<InventoryOutSaveInput?>,
+        updatedRows:List<InventoryOutUpdateInput?>
+    ){
+        createDetailedOutInventory(createdRows)
+        updateDetailedOutInventory(updatedRows)
+    }
+
+    @Transactional
+    fun saveInventoryOutManagement(
+        createdRows: List<InventoryOutManagementSaveInput?>,
+    ){
+
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        val now = LocalDate.now()
+
+        // 1. 마지막 outManagementId 가져오기
+        val lastEntity = inventoryOutManagementRep.findTopByOrderByOutManagementIdDesc()
+        val lastIdNumber = lastEntity?.outManagementId
+            ?.removePrefix("OUT")
+            ?.toLongOrNull() ?: 0L
+
+        // 2. 생성할 엔티티 리스트 만들기
+        val inventoryList = createdRows.mapIndexedNotNull { index, input ->
+            input?.let {
+                val newIdNumber = lastIdNumber + 1
+                val newOutManagementId = "OUT$newIdNumber"
+
+                InventoryOutManagement().apply {
+                    site = currentUser.getSite()
+                    compCd = currentUser.compCd
+                    factoryId = it.factoryId
+                    warehouseId = it.warehouseId
+                    totalPrice = it.totalPrice?.toIntOrNull()
+                    remarks = null
+                    flagActive = true
+                    createUser = currentUser.loginId
+                    createDate = now
+                    updateUser = currentUser.loginId
+                    updateDate = now
+                    outManagementId = newOutManagementId
+                    outType = it.outType
+                }
+            }
+        }
+
+        inventoryOutManagementRep.saveAll(inventoryList)
+    }
+
+    @Transactional
+    fun deleteInventoryOutManagement(param: InventoryOutManagementDeleteInput){
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        inventoryOutManagementRep.deleteByOutManagementIdAndSiteAndCompCd(
+            param.outManagementId,
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,)
+        inventoryOutRep.deleteByOutManagementIdAndSiteAndCompCd(
+            param.outManagementId,
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+        )
+    }
+
+    @Transactional
+    fun deleteInventoryOut(param: InventoryOutDeleteInput){
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        inventoryOutRep.deleteByOutInventoryIdAndSiteAndCompCd(
+            param.outInventoryId,
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+        )
+    }
+
+    fun createDetailedOutInventory(createdRows: List<InventoryOutSaveInput?>){
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        // 1. 마지막 출고 번호 조회
+        val lastOutManagementId = inventoryOutRep.findTopByOrderByOutManagementIdDesc()?.outManagementId
+
+        // 2. 다음 출고 번호 생성
+        val nextOutManagementBase = if (lastOutManagementId == null) {
+            1
+        } else {
+            lastOutManagementId.removePrefix("OUT").toLongOrNull()?.plus(1) ?: 1
+        }
+
+        // 3. inventoryOutList 생성
+        val now = LocalDate.now()
+        val inventoryOutList = createdRows.mapIndexed { index, it ->
+            InventoryOut().apply {
+                site = currentUser.getSite()
+                compCd = currentUser.compCd
+                outManagementId = it?.outManagementId ?: "OUT${nextOutManagementBase + index}"
+                systemMaterialId = it?.systemMaterialId
+                outType = it?.outType
+                qty = it?.qty?.toInt()
+                unitPrice = it?.unitPrice?.toInt()
+                unitVat = it?.unitVat?.toInt()
+                totalPrice = it?.totalPrice?.toInt()
+                flagActive = true
+                createUser = currentUser.loginId
+                createDate = now
+                updateUser = currentUser.loginId
+                updateDate = now
+                outInventoryId = UUID.randomUUID().toString()
+            }
+        }
+
+        inventoryOutRep.saveAll(inventoryOutList)
+    }
+
+    fun updateDetailedOutInventory(updatedRows: List<InventoryOutUpdateInput?>){
+
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        val detailedOutInventoryListIds = updatedRows.map {
+            it?.outInventoryId
+        }
+
+        val factoryList = inventoryOutRep.getDetailedInventoryOutListByIds(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            outInventoryId = detailedOutInventoryListIds
+        )
+
+        val updateList = factoryList.associateBy { it?.outInventoryId }
+
+        updatedRows.forEach{ x ->
+            val outInventoryId = x?.outInventoryId
+            val outInventory = updateList[outInventoryId]
+
+            outInventory?.let{
+                it.qty = x?.qty?.toInt()
+                it.unitPrice = x?.unitPrice?.toInt()
+                it.unitVat = x?.unitVat?.toInt()
+                it.totalPrice = x?.totalPrice?.toInt()
+            }
+        }
+
+        inventoryOutRep.saveAll(factoryList)
     }
 }
 

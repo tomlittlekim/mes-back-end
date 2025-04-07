@@ -181,6 +181,16 @@ interface CodeRep: JpaRepository<Code,Long>{
     ):List<Code?>
 
     fun findAllByCodeClassIdIn(codeClassIds: List<String>): List<Code?>
+
+    @Query("""
+        select c
+        from CodeClass c
+        where c.site = 'default'
+            and c.compCd = 'default'
+            and c.codeClassId = :codeClassId
+            and c.flagActive = true 
+    """)
+    fun getInitialCodes(codeClassId:String):List<Code?>
 }
 
 interface VendorRep : JpaRepository<Vendor,Long>{

@@ -183,6 +183,9 @@ class CommonCodeService(
         return result
     }
 
+    fun getInitialCodes(codeClassId: String):List<CodeResponse> =
+        entityToResponse(codeRep.getInitialCodes(codeClassId))
+
     private fun entityToResponse(codeList:List<Code?>): List<CodeResponse> {
         return codeList.map{
             CodeResponse(

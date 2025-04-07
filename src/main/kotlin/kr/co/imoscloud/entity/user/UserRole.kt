@@ -19,8 +19,8 @@ class UserRole(
     @Column(name = "COMP_CD", length = 40, nullable = false)
     val compCd: String,
 
-    @Column(name = "PRIORITY_LEVEL", length = 20)
-    val priorityLevel: Int? = null,
+    @Column(name = "PRIORITY_LEVEL", nullable = false)
+    val priorityLevel: Int = 0,
 
     @Column(name = "ROLE_NAME", length = 100, nullable = false)
     val roleName: String,

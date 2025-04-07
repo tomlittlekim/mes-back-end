@@ -150,6 +150,27 @@ abstract class AbstractInitialSetting(
         else -> throw IllegalArgumentException("지원하지 않는 타입입니다. ")
     }
 
+    fun <T> deleteFromInMemory(req: T): Unit = when (req) {
+        is User -> {
+            if (isInspect) upsertUserQue[req.loginId] = null
+            else userMap[req.loginId] = null
+        }
+        is UserRole -> {
+            if (isInspect) upsertRoleQue[req.roleId] = null
+            else roleMap[req.roleId] = null
+        }
+        is Company -> {
+            if (isInspect) upsertCompanyQue[req.compCd] = null
+            else companyMap[req.compCd] = null
+        }
+        is MenuRole -> {
+            val index = "${req.roleId}-${req.menuId}"
+            if (isInspect) upsertMenuRoleQue[index] = null
+            else menuRoleMap[index] = null
+        }
+        else -> throw IllegalArgumentException("지원하지 않는 타입입니다. ")
+    }
+
     fun <T> extractAllFromRequest(req: List<T>): Map<String, List<Any>> {
         val userIdList = mutableListOf<String>()
         val roleIdList = mutableListOf<Long>()

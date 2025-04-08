@@ -52,8 +52,8 @@ class Core(
     fun <T> getUserFromInMemory(req: T): UserSummery? {
         val index: String
         val userMap: Map<String, UserSummery?> = when {
-            req is String -> { index = req; getAllUserMap(listOf(ExistLoginIdRequest(req))) }
-            req is DtoLoginIdBase -> { index = req.loginId; getAllUserMap(listOf(req)) }
+            req is String -> { index = req; getAllUserMap(ExistLoginIdRequest(req)) }
+            req is DtoLoginIdBase -> { index = req.loginId; getAllUserMap(req) }
             else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
         }
         return userMap[index]
@@ -62,8 +62,8 @@ class Core(
     fun <T> getUserRoleFromInMemory(req: T): RoleSummery {
         val index: Long
         val roleMap: Map<Long, RoleSummery?> = when  {
-            req is Long -> { index = req; getAllRoleMap(listOf(RoleInput(req))) }
-            req is DtoRoleIdBase -> { index = req.roleId; getAllRoleMap(listOf(req)) }
+            req is Long -> { index = req; getAllRoleMap(RoleInput(req)) }
+            req is DtoRoleIdBase -> { index = req.roleId; getAllRoleMap(req) }
             else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
         }
         return roleMap[index] ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
@@ -71,14 +71,21 @@ class Core(
 
     fun getUserGroupByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
         return if (getIsInspect()) {
-            userRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd)
+            userRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.compCd)
                 .map { userToSummery(it) }
         } else {
-            val userMap = getAllUserMap(listOf(loginUser))
+            val userMap = getAllUserMap(loginUser)
             return userMap.filterValues { it?.compCd == loginUser.compCd }.values.toList()
         }
     }
 
+//    fun getRoleGroupByCompCd(loginUser: UserPrincipal): List<RoleSummery?> {
+//        return if (getIsInspect()) {
+//            roleRepo.getRolesByCompany(loginUser.compCd).map { roleToSummery(it) }
+//        } else {
+//            val roleMap = getAllRoleMap()
+//        }
+//    }
 
     fun <T> extractReferenceDataMaps(req: List<T>): SummaryMaps {
         val indiesMap: Map<String, List<Any>> = extractAllFromRequest(req)
@@ -104,7 +111,7 @@ class Core(
     }
 
     fun validatePriorityIsHigherThan(target: User, loginUser: UserPrincipal): Boolean {
-        val roleMap = getAllRoleMap(listOf(target, loginUser))
+        val roleMap = getAllRoleMap(target, loginUser)
 
         return try {
             val targetRole = roleMap[target.roleId]!!

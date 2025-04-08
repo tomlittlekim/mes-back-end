@@ -86,7 +86,7 @@ class UserService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         return if (core.isDeveloper(loginUser)) {
-            core.getAllUserMap(listOf(loginUser)).filterValues { userGroupFilter(req, it) }.values.mapNotNull { it }
+            core.getAllUserMap(loginUser).filterValues { userGroupFilter(req, it) }.values.mapNotNull { it }
         } else {
             core.getUserGroupByCompCd(loginUser).filter { userGroupFilter(req, it) }
         }

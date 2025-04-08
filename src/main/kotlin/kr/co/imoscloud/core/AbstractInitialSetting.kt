@@ -65,7 +65,7 @@ abstract class AbstractInitialSetting(
     init {
         initialSettings()
     }
-
+    fun <T: DtoLoginIdBase> getAllUserMap(vararg req: T?): MutableMap<String, UserSummery?> = getAllUserMap(req.filterNotNull())
     fun <T: DtoLoginIdBase> getAllUserMap(req: List<T?>): MutableMap<String, UserSummery?> {
         return if (getIsInspect()) {
             val indies = extractUserIdFromRequest(req)
@@ -77,6 +77,7 @@ abstract class AbstractInitialSetting(
         else userMap
     }
 
+    fun <T: DtoRoleIdBase>  getAllRoleMap(vararg req: T?): MutableMap<Long, RoleSummery?> = getAllRoleMap(req.filterNotNull())
     fun <T: DtoRoleIdBase>  getAllRoleMap(req: List<T?>): MutableMap<Long, RoleSummery?> {
         return if (getIsInspect()) {
             val indies = extractRoleIdFromRequest(req)

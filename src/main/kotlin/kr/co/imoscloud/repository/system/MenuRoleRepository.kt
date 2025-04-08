@@ -1,4 +1,4 @@
-package kr.co.imoscloud.repository.user
+package kr.co.imoscloud.repository.system
 
 import kr.co.imoscloud.entity.user.MenuRole
 import org.springframework.data.jpa.repository.JpaRepository

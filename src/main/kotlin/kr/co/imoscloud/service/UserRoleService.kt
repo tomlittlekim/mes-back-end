@@ -4,7 +4,6 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserRoleRequest
 import kr.co.imoscloud.entity.user.UserRole
-import kr.co.imoscloud.repository.user.MenuRepository
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 

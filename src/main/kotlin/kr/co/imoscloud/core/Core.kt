@@ -5,10 +5,8 @@ import kr.co.imoscloud.entity.company.Company
 import kr.co.imoscloud.entity.user.MenuRole
 import kr.co.imoscloud.entity.user.User
 import kr.co.imoscloud.entity.user.UserRole
-import kr.co.imoscloud.iface.DtoLoginIdBase
-import kr.co.imoscloud.iface.DtoRoleIdBase
 import kr.co.imoscloud.repository.company.CompanyRepository
-import kr.co.imoscloud.repository.user.*
+import kr.co.imoscloud.repository.system.*
 import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.stereotype.Component
 

@@ -4,7 +4,7 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.MenuRequest
 import kr.co.imoscloud.dto.MenuRoleResponse
 import kr.co.imoscloud.entity.user.MenuRole
-import kr.co.imoscloud.repository.user.MenuRepository
+import kr.co.imoscloud.repository.system.MenuRepository
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 

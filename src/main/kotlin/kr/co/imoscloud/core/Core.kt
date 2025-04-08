@@ -71,13 +71,14 @@ class Core(
 
     fun getUserGroupByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
         return if (getIsInspect()) {
-            userRepo.findAllBySiteAndCompCdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd)
+            userRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd)
                 .map { userToSummery(it) }
         } else {
             val userMap = getAllUserMap(listOf(loginUser))
             return userMap.filterValues { it?.compCd == loginUser.compCd }.values.toList()
         }
     }
+
 
     fun <T> extractReferenceDataMaps(req: List<T>): SummaryMaps {
         val indiesMap: Map<String, List<Any>> = extractAllFromRequest(req)

@@ -11,13 +11,13 @@ class Menu(
     val id: Long = 0,
 
     @Column(name = "MENU_ID", length = 100, nullable = false)
-    val menuId: String,
+    var menuId: String,
 
     @Column(name = "MENU_NAME", length = 200, nullable = false)
-    val menuName: String,
+    var menuName: String,
 
     @Column(name = "ROLE_ID", nullable = false)
-    val roleId: Long,
+    var roleId: Long,
 
     @Column(name = "FLAG_SUBSCRIBE")
     var flagSubscribe: Boolean = false,

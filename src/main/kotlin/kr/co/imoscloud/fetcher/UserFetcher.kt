@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.dto.*
+import kr.co.imoscloud.entity.user.Menu
 import kr.co.imoscloud.entity.user.UserRole
 import kr.co.imoscloud.service.UserRoleService
 import kr.co.imoscloud.service.UserService
@@ -56,4 +57,13 @@ class UserFetcher(
 
     @DgsQuery
     fun getMenuRole(@InputArgument("menuId") menuId: String) = userRoleService.getMenuRole(menuId)
+
+
+
+
+    @DgsQuery
+    fun getMenus(): List<Menu> = userRoleService.getMenus()
+
+    @DgsMutation
+    fun upsertMenus(req: MenuRequest): String = userRoleService.upsertMenus(req)
 }

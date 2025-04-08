@@ -103,3 +103,13 @@ data class UserRoleRequest(
     val compCd: String?=null,
     val flagDeFault: Boolean?=null,
 )
+
+data class MenuRequest(
+    val id: Long?=null,
+    val menuId: String? = null,
+    val menuName: String? = null,
+    val roleId: Long? = null,
+    val flagSubscribe: Boolean?=null,
+    val flagVisible: Boolean?=null,
+    val sequence: Int? = null,
+)

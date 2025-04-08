@@ -13,8 +13,12 @@ class CustomUserDetailsService(
 
     @Transactional(readOnly = true)
     fun loadUserBySiteAndUserId(site: String, userId: String): UserDetails {
-        val loginUser = core.getUserFromInMemory(userId) ?: throw UsernameNotFoundException("User $userId not found")
-        val roleSummery = core.getUserRoleFromInMemory(loginUser)
+        val loginUser = core.getUserFromInMemory(userId)
+            ?: throw UsernameNotFoundException("로그인 유저의 정보가 메모리상에 존재하지 않습니다. ")
+
+        val roleSummery = core.getUserRoleFromInMemory(loginUser.roleId)
+            ?: throw UsernameNotFoundException("권한 정보가 메모리상에 존재하지 않습니다. ")
+
         return UserPrincipal.create(loginUser, roleSummery)
     }
 } 

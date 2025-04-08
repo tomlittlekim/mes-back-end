@@ -75,10 +75,20 @@ type MenuRole {
     isUpdate: Boolean
 }
 
+input UserRoleRequest {
+    site: String
+    roleId: Int
+    fixRoleId: Int!,
+    roleName: String
+    compCd: String
+    flagDeFault: Boolean
+}
+
 extend type Mutation {
     upsertUser(req: UserInput!): String
     deleteUser(id: Int!): String
     resetPwd(id: Int!): String
+    upsertUserRole(req: UserRoleRequest!): String
 }
 
 extend type Query {

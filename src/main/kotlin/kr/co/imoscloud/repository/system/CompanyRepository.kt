@@ -1,4 +1,4 @@
-package kr.co.imoscloud.repository.company
+package kr.co.imoscloud.repository.system
 
 import kr.co.imoscloud.entity.company.Company
 import org.springframework.data.jpa.repository.JpaRepository

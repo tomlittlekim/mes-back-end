@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query
 
 interface UserRoleRepository: JpaRepository<UserRole, Long> {
     fun findAllByRoleIdIn(idList: List<Long?>): List<UserRole>
+
     @Query("""
         select ur
         from UserRole ur
@@ -14,4 +15,5 @@ interface UserRoleRepository: JpaRepository<UserRole, Long> {
         order by ur.sequence desc
     """)
     fun getRolesByCompany(compCd: String): List<UserRole>
+    fun findAllByFlagActiveIsTrue(): List<UserRole>
 }

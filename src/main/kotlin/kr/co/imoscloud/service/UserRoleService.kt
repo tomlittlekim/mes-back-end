@@ -1,6 +1,7 @@
 package kr.co.imoscloud.service
 
 import kr.co.imoscloud.core.Core
+import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.entity.user.MenuRole
 import kr.co.imoscloud.entity.user.UserRole
 import kr.co.imoscloud.util.SecurityUtils
@@ -14,8 +15,12 @@ class UserRoleService(
 
     fun getUserRoleGroup(): List<UserRole> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        val result = core.roleRepo.getRolesByCompany(loginUser.compCd)
-        return result
+
+        return if (core.isDeveloper(loginUser)) {
+            core.roleRepo.findAllByFlagActiveIsTrue()
+        } else {
+            core.roleRepo.getRolesByCompany(loginUser.compCd)
+        }
     }
 
     fun getMenuRoleGroup(): List<MenuRole> {
@@ -27,5 +32,9 @@ class UserRoleService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         return core.getMenuRole(loginUser.roleId, menuId)
             ?: throw IllegalArgumentException("Menu에 대한 권한 정보가 존재하지 않습니다. ")
+    }
+
+    fun upsertUserRole(userRole: UserRole) {
+
     }
 }

@@ -13,6 +13,16 @@ class UserRoleService(
     val core: Core
 ) {
 
+    fun getUserRoleSelect(): List<RoleSummery?> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        return if (core.isDeveloper(loginUser)) {
+            core.getAllRoleMap(loginUser).values.toList()
+        } else {
+            core.getRoleGroupByCompCd(loginUser)
+        }
+    }
+
     fun getUserRoleGroup(): List<UserRole> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 

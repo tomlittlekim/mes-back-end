@@ -87,6 +87,7 @@ extend type Query {
     getUserGroup(req: UserGroupRequest!): [User]
     getUserDetail(id: Int): User
     getRoles: [Role]
+    getRolesForSelect: [Role]
     getMenuRoleGroup: [MenuRole]
     getMenuRole(menuId: String!): MenuRole
 }

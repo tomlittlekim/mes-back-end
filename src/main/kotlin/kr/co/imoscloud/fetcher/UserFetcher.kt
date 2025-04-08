@@ -30,14 +30,21 @@ class UserFetcher(
     @DgsQuery
     fun getUserDetail(@InputArgument("id") id: Long): UserDetail = userService.getUserDetail(id)
 
-    @DgsQuery
-    fun getRoles(): List<UserRole> = userRoleService.getUserRoleGroup()
-
     @DgsMutation
     fun deleteUser(@InputArgument("id") id: Long) = userService.deleteUser(id)
 
     @DgsMutation
     fun resetPwd(@InputArgument("id")  id: Long) = userService.resetPassword(id)
+
+
+
+
+
+    @DgsQuery
+    fun getRoles(): List<UserRole> = userRoleService.getUserRoleGroup()
+
+    @DgsQuery
+    fun getRolesForSelect(): List<RoleSummery?> = userRoleService.getUserRoleSelect()
 
     @DgsQuery
     fun getMenuRoleGroup() = userRoleService.getMenuRoleGroup()

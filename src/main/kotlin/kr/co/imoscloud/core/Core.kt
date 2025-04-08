@@ -74,18 +74,23 @@ class Core(
             userRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.compCd)
                 .map { userToSummery(it) }
         } else {
-            val userMap = getAllUserMap(loginUser)
-            return userMap.filterValues { it?.compCd == loginUser.compCd }.values.toList()
+            getAllUserMap(loginUser)
+                .filterValues { it?.compCd == loginUser.compCd }
+                .values.toList()
+                .sortedBy { it?.id }
         }
     }
 
-//    fun getRoleGroupByCompCd(loginUser: UserPrincipal): List<RoleSummery?> {
-//        return if (getIsInspect()) {
-//            roleRepo.getRolesByCompany(loginUser.compCd).map { roleToSummery(it) }
-//        } else {
-//            val roleMap = getAllRoleMap()
-//        }
-//    }
+    fun getRoleGroupByCompCd(loginUser: UserPrincipal): List<RoleSummery?> {
+        return if (getIsInspect()) {
+            roleRepo.getRolesByCompany(loginUser.compCd).map { roleToSummery(it) }
+        } else {
+            getAllRoleMap(loginUser)
+                .filterValues { v -> (v?.compCd == loginUser.compCd || v?.compCd == "default" ) }
+                .values.toList()
+                .sortedByDescending { it?.priorityLevel }
+        }
+    }
 
     fun <T> extractReferenceDataMaps(req: List<T>): SummaryMaps {
         val indiesMap: Map<String, List<Any>> = extractAllFromRequest(req)

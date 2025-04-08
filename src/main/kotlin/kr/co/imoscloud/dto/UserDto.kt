@@ -107,9 +107,23 @@ data class UserRoleRequest(
 data class MenuRequest(
     val id: Long?=null,
     val menuId: String? = null,
+    val upMenuId: String? = null,
     val menuName: String? = null,
-    val roleId: Long? = null,
     val flagSubscribe: Boolean?=null,
-    val flagVisible: Boolean?=null,
     val sequence: Int? = null,
+    val flagActive: Boolean = true
+)
+
+data class MenuRoleResponse(
+    var id: Long?=null,
+    var roleId: Long?=null,
+    var menuId: String,
+    var isOpen: Boolean?=null,
+    var isDelete: Boolean?=null,
+    var isInsert: Boolean?=null,
+    var isAdd: Boolean?=null,
+    var isPopup: Boolean?=null,
+    var isPrint: Boolean?=null,
+    var isSelect: Boolean?=null,
+    var isUpdate: Boolean?=null
 )

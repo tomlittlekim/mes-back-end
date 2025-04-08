@@ -5,15 +5,22 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.dto.*
+import kr.co.imoscloud.entity.company.Company
 import kr.co.imoscloud.entity.user.Menu
 import kr.co.imoscloud.entity.user.UserRole
 import kr.co.imoscloud.service.UserRoleService
 import kr.co.imoscloud.service.UserService
+import kr.co.imoscloud.service.company.companyService
+import kr.co.imoscloud.service.sysrtem.MenuRoleService
+import kr.co.imoscloud.service.sysrtem.MenuService
 
 @DgsComponent
-class UserFetcher(
+class SystemFetcher(
     private val userService: UserService,
-    private val userRoleService: UserRoleService
+    private val userRoleService: UserRoleService,
+    private val menuService: MenuService,
+    private val menuRoleService: MenuRoleService,
+    private val companyService: companyService
 ) {
 
     @DgsMutation
@@ -23,8 +30,7 @@ class UserFetcher(
     fun existLoginId(@InputArgument("req") req: ExistLoginIdRequest): Boolean = userService.existLoginId(req)
 
     @DgsQuery
-    fun getUserGroup(@InputArgument("req") req: UserGroupRequest?): List<UserSummery?> =
-        userService.getUserGroupByCompany(req)
+    fun getUserGroup(@InputArgument("req") req: UserGroupRequest?): List<UserSummery?> = userService.getUserGroupByCompany(req)
 
     @DgsQuery
     fun getUserDetail(@InputArgument("id") id: Long): UserDetail = userService.getUserDetail(id)
@@ -53,17 +59,25 @@ class UserFetcher(
 
 
     @DgsQuery
-    fun getMenuRoleGroup() = userRoleService.getMenuRoleGroup()
+    fun getMenuRoleGroup() = menuRoleService.getMenuRoleGroup()
 
     @DgsQuery
-    fun getMenuRole(@InputArgument("menuId") menuId: String) = userRoleService.getMenuRole(menuId)
+    fun getMenuRole(@InputArgument("menuId") menuId: String) = menuRoleService.getMenuRole(menuId)
+
 
 
 
 
     @DgsQuery
-    fun getMenus(): List<Menu> = userRoleService.getMenus()
+    fun getMenus(): List<Menu> = menuService.getMenus()
 
     @DgsMutation
-    fun upsertMenus(req: MenuRequest): String = userRoleService.upsertMenus(req)
+    fun upsertMenus(req: MenuRequest): String = menuService.upsertMenus(req)
+
+
+
+
+
+    @DgsQuery
+    fun getCompanySelect(): List<Company> = companyService.getCompanySelect()
 }

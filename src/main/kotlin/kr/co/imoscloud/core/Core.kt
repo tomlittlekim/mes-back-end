@@ -51,22 +51,22 @@ class Core(
 
     fun <T> getUserFromInMemory(req: T): UserSummery? {
         val index: String
-        val userMap: Map<String, UserSummery?> = when {
-            req is String -> { index = req; getAllUserMap(ExistLoginIdRequest(req)) }
-            req is DtoLoginIdBase -> { index = req.loginId; getAllUserMap(req) }
+        val userMap: Map<String, UserSummery?> = when (req) {
+            is String -> { index = req; getAllUserMap(ExistLoginIdRequest(req)) }
+            is DtoLoginIdBase -> { index = req.loginId; getAllUserMap(req) }
             else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
         }
         return userMap[index]
     }
 
-    fun <T> getUserRoleFromInMemory(req: T): RoleSummery {
+    fun <T> getUserRoleFromInMemory(req: T): RoleSummery? {
         val index: Long
-        val roleMap: Map<Long, RoleSummery?> = when  {
-            req is Long -> { index = req; getAllRoleMap(RoleInput(req)) }
-            req is DtoRoleIdBase -> { index = req.roleId; getAllRoleMap(req) }
+        val roleMap: Map<Long, RoleSummery?> = when (req) {
+            is Long -> { index = req; getAllRoleMap(RoleInput(req)) }
+            is DtoRoleIdBase -> { index = req.roleId; getAllRoleMap(req) }
             else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
         }
-        return roleMap[index] ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
+        return roleMap[index]
     }
 
     fun getUserGroupByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
@@ -106,12 +106,12 @@ class Core(
     }
 
     fun isDeveloper(loginUser: UserPrincipal): Boolean {
-        val roleSummery = getUserRoleFromInMemory(loginUser)
+        val roleSummery = getUserRoleFromInMemory(loginUser) ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
         return roleSummery.priorityLevel == 5
     }
 
     fun isAdminOrHigher(loginUser: UserPrincipal): Boolean {
-        val roleSummery = getUserRoleFromInMemory(loginUser)
+        val roleSummery = getUserRoleFromInMemory(loginUser) ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
         return roleSummery.priorityLevel >= 3
     }
 

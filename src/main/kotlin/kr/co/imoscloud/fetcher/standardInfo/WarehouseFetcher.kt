@@ -36,14 +36,14 @@ data class WareHouseInput(
     val factoryId:String,
     val warehouseName:String,
     val warehouseType:String,
-    val flagActive:String
+//    val flagActive:String
 )
 data class WarehouseUpdate(
     val warehouseId:String,
     val factoryId:String,
     val warehouseName:String,
     val warehouseType:String,
-    val flagActive:String
+//    val flagActive:String
 )
 
 data class WarehouseFilter(
@@ -51,5 +51,5 @@ data class WarehouseFilter(
     val factoryName:String,
     val warehouseId: String,
     val warehouseName: String,
-    val flagActive:String ?= null
+//    val flagActive:String ?= null
 )

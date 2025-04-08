@@ -31,7 +31,6 @@ class EquipmentService(
             equipmentName = filter.equipmentName,
             equipmentSn = filter.equipmentSn,
             equipmentType = filter.equipmentType,
-            flagActive = filter.flagActive?.let{ it == "Y" }
         )
     }
 
@@ -61,7 +60,6 @@ class EquipmentService(
                 equipmentName = it.equipmentName,
                 equipmentStatus = it.equipmentStatus,
             ).apply {
-                flagActive = it.flagActive.equals("Y" )
                 createCommonCol(userPrincipal)
             }
         }
@@ -95,7 +93,6 @@ class EquipmentService(
                 it.equipmentType = x.equipmentType
                 it.equipmentName = x.equipmentName
                 it.equipmentStatus = x.equipmentStatus
-                it.flagActive = x.flagActive.equals("Y" )
                 it.updateCommonCol(userPrincipal)
             }
         }
@@ -109,7 +106,8 @@ class EquipmentService(
         return equipmentRep.deleteByEquipmentId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            equipmentId = equipmentId
+            equipmentId = equipmentId,
+            updateUser = userPrincipal.loginId
         ) > 0
     }
 
@@ -127,7 +125,7 @@ data class EquipmentResponseModel(
     val equipmentType: String?,
     val equipmentName: String?,
     val equipmentStatus: String?,
-    val flagActive: String? = null,
+//    val flagActive: String? = null,
     val createUser: String?,
     val createDate: LocalDateTime?,
     val updateUser: String?,

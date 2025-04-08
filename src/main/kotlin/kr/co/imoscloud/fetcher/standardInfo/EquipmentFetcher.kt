@@ -41,7 +41,7 @@ data class EquipmentFilter(
     val equipmentName: String,
     val equipmentSn: String,
     val equipmentType: String,
-    val flagActive: String ?= null
+//    val flagActive: String ?= null
 )
 
 data class EquipmentInput(
@@ -53,7 +53,7 @@ data class EquipmentInput(
     val equipmentType: String,
     val equipmentName: String,
     val equipmentStatus: String,
-    val flagActive: String ?= null
+//    val flagActive: String ?= null
 )
 
 data class EquipmentUpdate(
@@ -66,5 +66,5 @@ data class EquipmentUpdate(
     val equipmentType: String,
     val equipmentName: String,
     val equipmentStatus: String,
-    val flagActive: String ?= null
+//    val flagActive: String ?= null
 )

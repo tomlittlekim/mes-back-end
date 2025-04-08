@@ -8,6 +8,7 @@ import kr.co.imoscloud.service.standardInfo.WarehouseResponse
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import java.time.LocalDateTime
 
 interface FactoryRep: JpaRepository<Factory,Long>{
     @Query(
@@ -19,7 +20,7 @@ interface FactoryRep: JpaRepository<Factory,Long>{
             and   (f.factoryId like concat ('%',:factoryId,'%'))
             and   (f.factoryName like concat ('%',:factoryName,'%'))
             and   (f.factoryCode like concat ('%',:factoryCode,'%'))
-            and   (:flagActive is null or f.flagActive = :flagActive)
+            and   f.flagActive = true
         """
     )
     fun getFactoryList(
@@ -28,7 +29,7 @@ interface FactoryRep: JpaRepository<Factory,Long>{
         factoryId:String,
         factoryName:String,
         factoryCode:String,
-        flagActive:Boolean?
+//        flagActive:Boolean?
     ):List<Factory?>
 
     @Query(
@@ -64,8 +65,10 @@ interface FactoryRep: JpaRepository<Factory,Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Factory f 
+        update Factory f
+        set f.flagActive = false,
+        f.updateUser = :updateUser,
+        f.updateDate = :updateDate
         where f.factoryId = :factoryId
         and   f.site = :site
         and   f.compCd = :compCd
@@ -74,7 +77,9 @@ interface FactoryRep: JpaRepository<Factory,Long>{
     fun deleteByFactoryId(
         site:String,
         compCd:String,
-        factoryId: String
+        factoryId: String,
+        updateUser: String,
+        updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
 }
 
@@ -87,6 +92,7 @@ interface CodeClassRep : JpaRepository<CodeClass,Long>{
             and   cc.compCd = :compCd
             and   (cc.codeClassId like concat ('%',:codeClassId,'%'))
             and   (cc.codeClassName like concat ('%',:codeClassName,'%'))
+            and   cc.flagActive = true
         """
     )
     fun getCodeClassList(
@@ -121,6 +127,7 @@ interface CodeRep: JpaRepository<Code,Long>{
             where c.site = :site
             and   c.compCd = :compCd
             and   c.codeClassId = :codeClassId
+            and   c.flagActive = true
         """
     )
     fun getCodeList(
@@ -150,8 +157,10 @@ interface CodeRep: JpaRepository<Code,Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Code c 
+        update Code c 
+        set c.flagActive = false,
+            c.updateUser = :updateUser,
+            c.updateDate = :updateDate
         where c.site = :site
         and   c.compCd = :compCd
         and   c.codeId = :codeId
@@ -160,7 +169,9 @@ interface CodeRep: JpaRepository<Code,Long>{
     fun deleteByCodeId(
         site:String,
         compCd:String,
-        codeId: String
+        codeId: String,
+        updateUser: String,
+        updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
 
     @Query(
@@ -206,7 +217,7 @@ interface VendorRep : JpaRepository<Vendor,Long>{
             and   (v.vendorName like concat ('%',:vendorName,'%'))
             and   (v.ceoName like concat ('%',:ceoName,'%'))
             and   (v.businessType like concat ('%',:businessType,'%'))
-            and   (:flagActive is null or v.flagActive = :flagActive)
+            and   v.flagActive = true
         """
     )
     fun getVendorList(
@@ -215,8 +226,7 @@ interface VendorRep : JpaRepository<Vendor,Long>{
         vendorId:String,
         vendorName:String,
         ceoName:String,
-        businessType:String,
-        flagActive:Boolean?
+        businessType:String
     ):List<Vendor?>
 
     @Query(
@@ -238,8 +248,10 @@ interface VendorRep : JpaRepository<Vendor,Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Vendor v 
+        update Vendor v
+        set v.flagActive = false,
+            v.updateUser = :updateUser,
+            v.updateDate = :updateDate
         where v.site = :site
         and   v.compCd = :compCd
         and   v.vendorId = :vendorId
@@ -248,7 +260,9 @@ interface VendorRep : JpaRepository<Vendor,Long>{
     fun deleteByVendorId(
         site:String,
         compCd:String,
-        vendorId: String
+        vendorId: String,
+        updateUser: String,
+        updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
 
 }
@@ -264,7 +278,6 @@ interface LineRep : JpaRepository<Line,Long>{
                 l.lineId,
                 l.lineName,
                 l.lineDesc,
-                case when l.flagActive = true then 'Y' else 'N' end,
                 l.createUser,
                 l.createDate,
                 l.updateUser,
@@ -282,7 +295,7 @@ interface LineRep : JpaRepository<Line,Long>{
             and   (f.factoryCode like concat ('%',:factoryCode,'%'))
             and   (l.lineId like concat ('%',:lineId,'%'))
             and   (l.lineName like concat ('%',:lineName,'%'))
-            and   (:flagActive is null or  l.flagActive = :flagActive)
+            and   l.flagActive = true
         """
     )
     fun getLines(
@@ -293,7 +306,7 @@ interface LineRep : JpaRepository<Line,Long>{
         factoryCode:String,
         lineId:String,
         lineName:String,
-        flagActive:Boolean?
+//        flagActive:Boolean?
     ):List<LineResponseModel?>
 
     @Query(
@@ -314,8 +327,10 @@ interface LineRep : JpaRepository<Line,Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Line l 
+        update Line l
+        set   l.flagActive = false,
+              l.updateDate = :updateDate,
+              l.updateUser = :updateUser
         where l.site = :site
         and   l.compCd = :compCd
         and   l.lineId = :lineId
@@ -324,7 +339,9 @@ interface LineRep : JpaRepository<Line,Long>{
     fun deleteByLineId(
         site:String,
         compCd:String,
-        lineId: String
+        lineId: String,
+        updateDate: LocalDateTime = LocalDateTime.now(),
+        updateUser: String
     ): Int
 
 
@@ -353,7 +370,6 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
                 w.warehouseId,
                 w.warehouseName,
                 w.warehouseType,
-                case when w.flagActive = true then 'Y' else 'N' end,
                 w.createUser,
                 w.createDate,
                 w.updateUser,
@@ -370,7 +386,7 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
             and   (f.factoryName like concat ('%',:factoryName,'%'))
             and   (w.warehouseId like concat ('%',:warehouseId,'%'))
             and   (w.warehouseName like concat ('%',:warehouseName,'%'))
-            and   (:flagActive is null or  w.flagActive = :flagActive)
+            and   w.flagActive = true
         """
     )
     fun getWarehouses(
@@ -379,8 +395,7 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
         factoryId:String,
         factoryName:String,
         warehouseId:String,
-        warehouseName:String,
-        flagActive:Boolean?
+        warehouseName:String
     ):List<WarehouseResponse?>
 
     @Query(
@@ -401,8 +416,10 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Warehouse w 
+        update Warehouse w
+        set w.flagActive = false,
+            w.updateUser = :updateUser,
+            w.updateDate = :updateDate
         where w.site = :site
         and   w.compCd = :compCd
         and   w.warehouseId = :warehouseId
@@ -411,7 +428,9 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
     fun deleteByWarehouseId(
         site:String,
         compCd:String,
-        warehouseId: String
+        warehouseId: String,
+        updateUser: String,
+        updateDate: LocalDateTime = LocalDateTime.now(),
     ): Int
 }
 
@@ -430,7 +449,6 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
                 e.equipmentType,
                 e.equipmentName,
                 e.equipmentStatus,
-                case when e.flagActive = true then 'Y' else 'N' end,
                 e.createUser,
                 e.createDate,
                 e.updateUser,
@@ -456,7 +474,7 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
             and   (e.equipmentName like concat ('%',:equipmentName,'%'))
             and   (e.equipmentSn like concat ('%',:equipmentSn,'%'))
             and   (e.equipmentType like concat ('%',:equipmentType,'%'))
-            and   (:flagActive is null or  e.flagActive = :flagActive)
+            and   e.flagActive = true
         """
     )
     fun getEquipments(
@@ -469,8 +487,7 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
         equipmentId:String,
         equipmentName:String,
         equipmentSn:String,
-        equipmentType:String,
-        flagActive:Boolean?
+        equipmentType:String
     ):List<EquipmentResponseModel?>
 
     @Query(
@@ -491,8 +508,10 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Equipment e 
+        update Equipment e
+        set e.flagActive = false,
+            e.updateUser = :updateUser,
+            e.updateDate = :updateDate
         where e.site = :site
         and   e.compCd = :compCd
         and   e.equipmentId = :equipmentId
@@ -501,7 +520,9 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
     fun deleteByEquipmentId(
         site:String,
         compCd:String,
-        equipmentId: String
+        equipmentId: String,
+        updateUser: String,
+        updateDate:LocalDateTime = LocalDateTime.now()
     ): Int
 
 }

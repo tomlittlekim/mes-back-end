@@ -41,7 +41,7 @@ data class FactoryFilter(
     val factoryId: String,
     val factoryName: String,
     val factoryCode: String,
-    val flagActive: String? = null,
+//    val flagActive: String? = null,
 )
 
 data class FactoryInput(
@@ -50,7 +50,7 @@ data class FactoryInput(
     val address: String? = null,
     val telNo: String? = null,
     val remark: String? = null,
-    val flagActive: String? = null,
+//    val flagActive: String? = null,
 )
 
 data class FactoryUpdate(
@@ -60,6 +60,6 @@ data class FactoryUpdate(
     val address: String? = null,
     val telNo: String? = null,
     val remark: String? = null,
-    val flagActive: String? = null,
+//    val flagActive: String? = null,
 )
 

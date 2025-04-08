@@ -123,7 +123,6 @@ class CommonCodeService(
                 codeDesc = it?.codeDesc,
                 sortOrder = it?.sortOrder,
             ).apply {
-                flagActive = it?.flagActive.equals("Y" )
                 createCommonCol(userPrincipal)
             }
         }
@@ -153,7 +152,6 @@ class CommonCodeService(
                 it.codeName = x.codeName
                 it.codeDesc = x.codeDesc
                 it.sortOrder = x.sortOrder
-                it.flagActive = x.flagActive.equals("Y")
                 it.updateCommonCol(userPrincipal)
             }
         }
@@ -167,14 +165,17 @@ class CommonCodeService(
         return codeRep.deleteByCodeId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            codeId
+            codeId = codeId,
+            updateUser = userPrincipal.loginId
         ) > 0
     }
 
     fun getGridCodes(codeClassId: String):List<CodeResponse>{
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         val codeList = codeRep.getGridCodes(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             codeClassId = codeClassId
         )
 

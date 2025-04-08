@@ -4,7 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kr.co.imoscloud.service.*
+import kr.co.imoscloud.service.inventory.*
 
 @DgsComponent
 class InventoryDataFetcher(
@@ -73,6 +73,11 @@ class InventoryDataFetcher(
     ): Boolean { inventoryService.deleteInventoryOut(outInventoryId)
         return true
     }
+    //재고 현황
+    @DgsQuery
+    fun getInventoryStatusList(@InputArgument("filter") filter: InventoryStatusFilter?): List<InventoryStatusResponseModel?> {
+        return inventoryService.getInventoryStatusWithJoinInfo(filter ?: InventoryStatusFilter())
+    }
 }
 
 // 입고관리 DTO
@@ -88,6 +93,12 @@ data class InventoryInManagementFilter(
     var hasInvoice: String? = null,
     var startDate: String? = null,
     var endDate: String? = null,
+)
+data class InventoryStatusFilter(
+    val warehouseName: String? = null,
+    val supplierName: String? = null,
+    val manufactureName: String? = null,
+    val materialName: String? = null,
 )
 data class InventoryInManagementSaveInput(
     var inType: String,

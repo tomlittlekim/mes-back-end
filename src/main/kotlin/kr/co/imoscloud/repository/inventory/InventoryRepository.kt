@@ -1,13 +1,7 @@
-package kr.co.imoscloud.repository
+package kr.co.imoscloud.repository.inventory
 
-import kr.co.imoscloud.entity.inventory.InventoryIn
-import kr.co.imoscloud.entity.inventory.InventoryInManagement
-import kr.co.imoscloud.entity.inventory.InventoryOut
-import kr.co.imoscloud.entity.inventory.InventoryOutManagement
-import kr.co.imoscloud.service.InventoryInManagementResponseModel
-import kr.co.imoscloud.service.InventoryInResponseModel
-import kr.co.imoscloud.service.InventoryOutManagementResponseModel
-import kr.co.imoscloud.service.InventoryOutResponseModel
+import kr.co.imoscloud.entity.inventory.*
+import kr.co.imoscloud.service.inventory.*
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -87,6 +81,13 @@ interface InventoryInManagementRep : JpaRepository<InventoryInManagement, Long>{
         site: String,
         compCd: String
     )
+
+    fun findByCompCdAndSiteAndInManagementId(
+        compCd: String?,
+        site: String?,
+        inManagementId: String?
+    ): InventoryInManagement?
+
 }
 
 interface InventoryInRep : JpaRepository<InventoryIn, Long> {
@@ -98,7 +99,7 @@ interface InventoryInRep : JpaRepository<InventoryIn, Long> {
             ii.IN_INVENTORY_ID as inInventoryId,
             mm.SUPPLIER_NAME as supplierName,
             mm.MANUFACTURER_NAME as manufacturerName,
-            mm.USER_MATERIAL_ID as userMaterialId,
+            mm.SYSTEM_MATERIAL_ID as systemMaterialId,
             mm.MATERIAL_NAME as materialName,
             mm.MATERIAL_CATEGORY as materialCategory,
             mm.MATERIAL_STANDARD as materialStandard,
@@ -157,6 +158,24 @@ interface InventoryInRep : JpaRepository<InventoryIn, Long> {
         compCd:String,
         inInventoryId:List<String?>
     ):List<InventoryIn?>
+
+    fun findTopByCompCdAndSiteAndSystemMaterialId(
+        compCd: String?,
+        site: String?,
+        systemMaterialId: String?
+    ): InventoryIn?
+
+    fun findByInManagementIdAndSiteAndCompCd(
+        inManagementId: String,
+        site: String,
+        compCd: String
+    ): List<InventoryIn>
+
+    fun findByInInventoryIdAndSiteAndCompCd(
+        inInventoryId: String,
+        site: String,
+        compCd: String
+    ): InventoryIn?
 }
 
 interface InventoryOutManagementRep : JpaRepository<InventoryOutManagement, Long> {
@@ -229,6 +248,12 @@ interface InventoryOutManagementRep : JpaRepository<InventoryOutManagement, Long
         site: String,
         compCd: String
     )
+
+    fun findByOutManagementIdAndSiteAndCompCd(
+        outManagementId: String,
+        site: String,
+        compCd: String
+    ): InventoryOutManagement?
 }
 
 interface InventoryOutRep : JpaRepository<InventoryOut, Long> {
@@ -240,7 +265,7 @@ interface InventoryOutRep : JpaRepository<InventoryOut, Long> {
             io.OUT_INVENTORY_ID as outInventoryId,
             mm.SUPPLIER_NAME as supplierName,
             mm.MANUFACTURER_NAME as manufacturerName,
-            mm.USER_MATERIAL_ID as userMaterialId,
+            mm.SYSTEM_MATERIAL_ID as systemMaterialId,
             mm.MATERIAL_NAME as materialName,
             mm.MATERIAL_CATEGORY as materialCategory,
             mm.MATERIAL_STANDARD as materialStandard,
@@ -297,6 +322,85 @@ interface InventoryOutRep : JpaRepository<InventoryOut, Long> {
         compCd:String,
         outInventoryId:List<String?>
     ):List<InventoryOut?>
+
+    @Query(
+        value = """
+            SELECT f.FACTORY_ID
+            FROM INVENTORY_OUT_MANAGEMENT o
+            JOIN FACTORY f ON f.FACTORY_ID = o.FACTORY_ID
+            WHERE o.OUT_MANAGEMENT_ID = :outManagementId
+            AND o.SITE = :site
+            AND o.COMP_CD = :compCd
+            LIMIT 1
+        """, nativeQuery = true
+    )
+
+    fun findByOutManagementIdAndSiteAndCompCd(
+        outManagementId: String,
+        site: String,
+        compCd: String
+    ): List<InventoryOut>
+
+    fun findByOutInventoryIdAndSiteAndCompCd(
+        outInventoryId: String,
+        site: String,
+        compCd: String
+    ): InventoryOut?
+}
+
+interface InventoryStatusRep : JpaRepository<InventoryStatus, Long> {
+
+    @Query("""
+            with
+            filtered_warehouse as (
+                select * from WAREHOUSE where COMP_CD = :compCd and SITE = :site
+            ),
+            filtered_material_master as (
+                select * from MATERIAL_MASTER where COMP_CD = :compCd and SITE = :site
+            )
+            select 
+                fw.WAREHOUSE_NAME as warehouseName,
+                fmm.SUPPLIER_NAME as supplierName,
+                fmm.MANUFACTURER_NAME as manufacturerName,
+                fmm.SYSTEM_MATERIAL_ID as systemMaterialId,
+                fmm.MATERIAL_NAME as materialName,
+                fmm.UNIT as unit,
+                invs.QTY as qty
+            from INVENTORY_STATUS invs
+            left join filtered_material_master fmm on invs.SYSTEM_MATERIAL_ID = fmm.SYSTEM_MATERIAL_ID
+            left join filtered_warehouse fw on invs.WAREHOUSE_ID = fw.WAREHOUSE_ID
+            where 1=1
+              and invs.SITE = :site
+              and invs.COMP_CD = :compCd
+              and fw.WAREHOUSE_NAME like concat('%', :warehouseName, '%')
+              and fmm.SUPPLIER_NAME like concat('%', :supplierName, '%')
+              and fmm.MANUFACTURER_NAME like concat('%', :manufacturerName, '%')
+              and fmm.MATERIAL_NAME like concat('%', :materialName, '%')
+        """, nativeQuery = true)
+    fun findInventoryStatusFiltered(
+        @Param("site") site: String?,
+        @Param("compCd") compCd: String?,
+        @Param("warehouseName") warehouseName: String?,
+        @Param("supplierName") supplierName: String?,
+        @Param("manufacturerName") manufacturerName: String?,
+        @Param("materialName") materialName: String?
+    ): List<InventoryStatusResponseModel?>
+
+    fun findByCompCdAndSiteAndSystemMaterialIdIn(
+        compCd: String,
+        site: String,
+        systemMaterialIds: List<String>
+    ): List<InventoryStatus>
+
+    fun findByCompCdAndSiteAndSystemMaterialId(
+        compCd: String,
+        site: String,
+        systemMaterialId: String
+    ): InventoryStatus?
+}
+
+interface InventoryLogRep : JpaRepository<InventoryLog, Long> {
+
 }
 
 

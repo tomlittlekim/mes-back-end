@@ -1,6 +1,6 @@
-package kr.co.imoscloud.service.company
+package kr.co.imoscloud.service.sysrtem
 
-import kr.co.imoscloud.entity.company.Company
+import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.repository.system.CompanyRepository
 import kr.co.imoscloud.util.AuthLevel
 import org.springframework.stereotype.Service

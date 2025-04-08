@@ -1,10 +1,10 @@
-package kr.co.imoscloud.service
+package kr.co.imoscloud.service.sysrtem
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.*
-import kr.co.imoscloud.entity.user.User
+import kr.co.imoscloud.entity.system.User
 import kr.co.imoscloud.iface.IUser
 import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.security.JwtTokenProvider

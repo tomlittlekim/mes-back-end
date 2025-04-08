@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.dto.LoginOutput
 import kr.co.imoscloud.dto.LoginRequest
-import kr.co.imoscloud.service.UserService
+import kr.co.imoscloud.service.sysrtem.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PostMapping

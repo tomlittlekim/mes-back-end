@@ -1,9 +1,9 @@
-package kr.co.imoscloud.service
+package kr.co.imoscloud.service.sysrtem
 
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserRoleRequest
-import kr.co.imoscloud.entity.user.UserRole
+import kr.co.imoscloud.entity.system.UserRole
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 

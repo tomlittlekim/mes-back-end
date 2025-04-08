@@ -1,10 +1,10 @@
 package kr.co.imoscloud.core
 
 import kr.co.imoscloud.dto.*
-import kr.co.imoscloud.entity.company.Company
-import kr.co.imoscloud.entity.user.MenuRole
-import kr.co.imoscloud.entity.user.User
-import kr.co.imoscloud.entity.user.UserRole
+import kr.co.imoscloud.entity.system.Company
+import kr.co.imoscloud.entity.system.MenuRole
+import kr.co.imoscloud.entity.system.User
+import kr.co.imoscloud.entity.system.UserRole
 import kr.co.imoscloud.repository.system.CompanyRepository
 import kr.co.imoscloud.repository.system.*
 import kr.co.imoscloud.security.UserPrincipal

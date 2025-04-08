@@ -3,10 +3,10 @@ package kr.co.imoscloud.core
 import kr.co.imoscloud.dto.CompanySummery
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserSummery
-import kr.co.imoscloud.entity.company.Company
-import kr.co.imoscloud.entity.user.MenuRole
-import kr.co.imoscloud.entity.user.User
-import kr.co.imoscloud.entity.user.UserRole
+import kr.co.imoscloud.entity.system.Company
+import kr.co.imoscloud.entity.system.MenuRole
+import kr.co.imoscloud.entity.system.User
+import kr.co.imoscloud.entity.system.UserRole
 import kr.co.imoscloud.iface.DtoCompCdBase
 import kr.co.imoscloud.iface.DtoLoginIdBase
 import kr.co.imoscloud.iface.DtoRoleIdBase

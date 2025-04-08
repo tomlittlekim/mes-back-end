@@ -5,12 +5,12 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.dto.*
-import kr.co.imoscloud.entity.company.Company
-import kr.co.imoscloud.entity.user.Menu
-import kr.co.imoscloud.entity.user.UserRole
-import kr.co.imoscloud.service.UserRoleService
-import kr.co.imoscloud.service.UserService
-import kr.co.imoscloud.service.company.companyService
+import kr.co.imoscloud.entity.system.Company
+import kr.co.imoscloud.entity.system.Menu
+import kr.co.imoscloud.entity.system.UserRole
+import kr.co.imoscloud.service.sysrtem.UserRoleService
+import kr.co.imoscloud.service.sysrtem.UserService
+import kr.co.imoscloud.service.sysrtem.companyService
 import kr.co.imoscloud.service.sysrtem.MenuRoleService
 import kr.co.imoscloud.service.sysrtem.MenuService
 

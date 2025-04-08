@@ -1,6 +1,6 @@
 package kr.co.imoscloud.repository.system
 
-import kr.co.imoscloud.entity.company.Company
+import kr.co.imoscloud.entity.system.Company
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 

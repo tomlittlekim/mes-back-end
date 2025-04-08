@@ -1,6 +1,6 @@
 package kr.co.imoscloud.repository.system
 
-import kr.co.imoscloud.entity.user.UserRole
+import kr.co.imoscloud.entity.system.UserRole
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query

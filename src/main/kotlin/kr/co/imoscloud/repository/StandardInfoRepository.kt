@@ -8,6 +8,7 @@ import kr.co.imoscloud.service.standardInfo.WarehouseResponse
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import java.time.LocalDateTime
 
 interface FactoryRep: JpaRepository<Factory,Long>{
     @Query(
@@ -19,7 +20,7 @@ interface FactoryRep: JpaRepository<Factory,Long>{
             and   (f.factoryId like concat ('%',:factoryId,'%'))
             and   (f.factoryName like concat ('%',:factoryName,'%'))
             and   (f.factoryCode like concat ('%',:factoryCode,'%'))
-            and   (:flagActive is null or f.flagActive = :flagActive)
+            and   f.flagActive = true
         """
     )
     fun getFactoryList(
@@ -28,7 +29,7 @@ interface FactoryRep: JpaRepository<Factory,Long>{
         factoryId:String,
         factoryName:String,
         factoryCode:String,
-        flagActive:Boolean?
+//        flagActive:Boolean?
     ):List<Factory?>
 
     @Query(
@@ -64,8 +65,10 @@ interface FactoryRep: JpaRepository<Factory,Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Factory f 
+        update Factory f
+        set f.flagActive = false,
+        f.updateUser = :updateUser,
+        f.updateDate = :updateDate
         where f.factoryId = :factoryId
         and   f.site = :site
         and   f.compCd = :compCd
@@ -74,7 +77,9 @@ interface FactoryRep: JpaRepository<Factory,Long>{
     fun deleteByFactoryId(
         site:String,
         compCd:String,
-        factoryId: String
+        factoryId: String,
+        updateUser: String,
+        updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
 }
 
@@ -153,7 +158,9 @@ interface CodeRep: JpaRepository<Code,Long>{
     @Modifying
     @Query("""
         update Code c 
-        set c.flagActive = false
+        set c.flagActive = false,
+            c.updateUser = :updateUser,
+            c.updateDate = :updateDate
         where c.site = :site
         and   c.compCd = :compCd
         and   c.codeId = :codeId
@@ -162,7 +169,9 @@ interface CodeRep: JpaRepository<Code,Long>{
     fun deleteByCodeId(
         site:String,
         compCd:String,
-        codeId: String
+        codeId: String,
+        updateUser: String,
+        updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
 
     @Query(

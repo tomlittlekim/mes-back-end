@@ -6,7 +6,7 @@ input FactoryFilter {
     factoryId: String!,
     factoryName: String!,
     factoryCode: String!,
-    flagActive: String,
+#    flagActive: String,
 }
 
 input FactoryInput {
@@ -15,7 +15,7 @@ input FactoryInput {
     address: String
     telNo: String
     remark: String
-    flagActive: String
+#    flagActive: String
 }
 
 input FactoryUpdate {
@@ -25,7 +25,7 @@ input FactoryUpdate {
     address: String
     telNo: String
     remark: String
-    flagActive: String
+#    flagActive: String
 }
 
 type Factory {
@@ -35,7 +35,7 @@ type Factory {
     address: String
     telNo: String
     remark: String
-    flagActive:String
+#    flagActive:String
     createUser:String
     createDate:String
     updateUser:String

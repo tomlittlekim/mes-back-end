@@ -165,7 +165,8 @@ class CommonCodeService(
         return codeRep.deleteByCodeId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            codeId
+            codeId = codeId,
+            updateUser = userPrincipal.loginId
         ) > 0
     }
 

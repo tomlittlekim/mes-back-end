@@ -75,6 +75,20 @@ type MenuRole {
     isUpdate: Boolean
 }
 
+input MenuRoleRequest {
+    id: Int
+    roleId: Int
+    menuId: String
+    isOpen: Boolean
+    isDelete: Boolean
+    isInsert: Boolean
+    isAdd: Boolean
+    isPopup: Boolean
+    isPrint: Boolean
+    isSelect: Boolean
+    isUpdate: Boolean
+}
+
 input UserRoleRequest {
     site: String
     roleId: Int
@@ -115,6 +129,7 @@ extend type Mutation {
     resetPwd(id: Int!): String
     upsertUserRole(req: UserRoleRequest!): String
     upsertMenus(req: MenuRequest!): String
+    upsertMenuRole(list: [MenuRoleRequest]): String
 }
 
 extend type Query {
@@ -125,6 +140,7 @@ extend type Query {
     getRoles: [Role]
     getRolesForSelect: [Role]
     getMenuRoleGroup: [MenuRole]
+    getInitialMenuRole(roleId: Int): [MenuRole]
     getMenuRole(menuId: String!): MenuRole
     getMenus: [Menu]
 }

@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.sysrtem
 
+import jakarta.transaction.Transactional
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserRoleRequest
@@ -32,6 +33,7 @@ class UserRoleService(
         }
     }
 
+    @Transactional
     fun upsertUserRole(req: UserRoleRequest): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val roleSummery = core.getAllRoleMap(loginUser)[req.roleId]

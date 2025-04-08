@@ -114,7 +114,7 @@ data class MenuRequest(
     val flagActive: Boolean = true
 )
 
-data class MenuRoleResponse(
+data class MenuRoleDto(
     var id: Long?=null,
     var roleId: Long?=null,
     var menuId: String,

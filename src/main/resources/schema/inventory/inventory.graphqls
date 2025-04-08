@@ -16,7 +16,7 @@ type InventoryIn {
     inInventoryId: String
     supplierName: String
     manufacturerName: String
-    userMaterialId: String
+    systemMaterialId: String
     materialName: String
     materialCategory: String
     materialStandard: String
@@ -28,6 +28,15 @@ type InventoryIn {
     createDate: String
     updateUser: String
     updateDate: String
+}
+type InventoryStatus {
+    warehouseName: String
+    supplierName: String
+    manufacturerName: String
+    systemMaterialId: String
+    materialName: String
+    unit: String
+    qty: Int
 }
 input InventoryInManagementFilter {
     inManagementId: String
@@ -42,6 +51,12 @@ input InventoryInManagementFilter {
 input InventoryInFilter {
     inManagementId: String
 }
+input InventoryStatusFilter{
+    warehouseName: String
+    supplierName: String
+    manufacturerName: String
+    materialName: String
+}
 input InventoryInManagementSaveInput {
     inType: String
     factoryId: String
@@ -49,12 +64,10 @@ input InventoryInManagementSaveInput {
     totalPrice: String
     hasInvoice: String
 }
-
 input InventoryInSaveInput {
     inManagementId: String!
     supplierName: String
     manufactureName: String
-    userMaterialId: String
     inType: String
     systemMaterialId: String
     materialName: String
@@ -75,7 +88,7 @@ input InventoryInUpdateInput {
     inInventoryId: String!
     supplierName: String
     manufactureName: String
-    userMaterialId: String
+    systemMaterialId: String
     materialName: String
     materialCategory: String
     materialStandard: String
@@ -111,7 +124,7 @@ type InventoryOut {
     outInventoryId: String
     supplierName: String
     manufacturerName: String
-    userMaterialId: String
+    systemMaterialId: String
     materialName: String
     materialCategory: String
     materialStandard: String
@@ -148,7 +161,6 @@ input InventoryOutSaveInput {
     outManagementId: String!
     supplierName: String
     manufactureName: String
-    userMaterialId: String
     outType: String
     systemMaterialId: String
     materialName: String
@@ -168,7 +180,7 @@ input InventoryOutUpdateInput {
     outInventoryId: String!
     supplierName: String
     manufactureName: String
-    userMaterialId: String
+    systemMaterialId: String
     materialName: String
     materialCategory: String
     materialStandard: String
@@ -197,6 +209,9 @@ extend type Query {
     #출고관리
     getInventoryOutManagementList(filter: InventoryOutManagementFilter): [InventoryOutManagement]
     getInventoryOutList(filter: InventoryOutFilter): [InventoryOut]
+
+    #재고현황
+    getInventoryStatusList(filter: InventoryStatusFilter): [InventoryStatus]
 }
 
 # 뮤테이션 정의

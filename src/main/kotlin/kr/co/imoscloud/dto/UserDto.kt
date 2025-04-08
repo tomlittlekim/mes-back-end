@@ -84,7 +84,7 @@ data class UserGroupRequest(
     var roleId: Long? = null
 )
 
-data class RoleInput(
+data class OnlyRoleIdReq(
     override val roleId: Long,
 ): DtoRoleIdBase
 
@@ -95,7 +95,11 @@ data class RoleSummery(
     val priorityLevel: Int,
 ): DtoRoleIdBase, DtoCompCdBase
 
-data class RoleResponseForSelect(
-    override val roleId: Long,
-    val roleName: String,
-): DtoRoleIdBase
+data class UserRoleRequest(
+    val site: String?=null,
+    val roleId: Long?=null,
+    val fixRoleId: Long,
+    val roleName: String?=null,
+    val compCd: String?=null,
+    val flagDeFault: Boolean?=null,
+)

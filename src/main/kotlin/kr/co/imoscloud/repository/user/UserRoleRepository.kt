@@ -2,6 +2,7 @@ package kr.co.imoscloud.repository.user
 
 import kr.co.imoscloud.entity.user.UserRole
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 interface UserRoleRepository: JpaRepository<UserRole, Long> {
@@ -16,4 +17,15 @@ interface UserRoleRepository: JpaRepository<UserRole, Long> {
     """)
     fun getRolesByCompany(compCd: String): List<UserRole>
     fun findAllByFlagActiveIsTrue(): List<UserRole>
+    fun findByRoleIdAndFlagActiveIsTrue(roleId: Long): UserRole?
+
+    @Modifying
+    @Query("""
+        update UserRole ur
+        set ur.flagDefault = false 
+        where ur.compCd = :compCd
+            and ur.flagActive is true
+            and ur.flagDefault is true
+    """)
+    fun resetDefaultByCompCd(compCd: String)
 }

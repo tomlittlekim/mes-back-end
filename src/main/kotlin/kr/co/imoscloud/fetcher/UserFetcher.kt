@@ -19,9 +19,7 @@ class UserFetcher(
     fun upsertUser(@InputArgument("req") req: UserInput) { userService.upsertUser(req) }
 
     @DgsQuery
-    fun existLoginId(@InputArgument("req") req: ExistLoginIdRequest): Boolean {
-        return userService.existLoginId(req)
-    }
+    fun existLoginId(@InputArgument("req") req: ExistLoginIdRequest): Boolean = userService.existLoginId(req)
 
     @DgsQuery
     fun getUserGroup(@InputArgument("req") req: UserGroupRequest?): List<UserSummery?> =
@@ -45,6 +43,13 @@ class UserFetcher(
 
     @DgsQuery
     fun getRolesForSelect(): List<RoleSummery?> = userRoleService.getUserRoleSelect()
+
+    @DgsMutation
+    fun upsertUserRole(req: UserRoleRequest): String = userRoleService.upsertUserRole(req)
+
+
+
+
 
     @DgsQuery
     fun getMenuRoleGroup() = userRoleService.getMenuRoleGroup()

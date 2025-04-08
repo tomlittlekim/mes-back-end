@@ -72,7 +72,6 @@ data class CodeInput(
     val codeName: String,
     val codeDesc: String,
     val sortOrder: Int,
-    val flagActive:String
 )
 
 data class CodeUpdate(
@@ -81,7 +80,6 @@ data class CodeUpdate(
     val codeName: String,
     val codeDesc: String,
     val sortOrder: Int,
-    val flagActive:String
 )
 
 data class CodeClassUpdate(

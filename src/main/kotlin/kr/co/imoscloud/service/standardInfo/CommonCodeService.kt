@@ -123,7 +123,6 @@ class CommonCodeService(
                 codeDesc = it?.codeDesc,
                 sortOrder = it?.sortOrder,
             ).apply {
-                flagActive = it?.flagActive.equals("Y" )
                 createCommonCol(userPrincipal)
             }
         }
@@ -153,7 +152,6 @@ class CommonCodeService(
                 it.codeName = x.codeName
                 it.codeDesc = x.codeDesc
                 it.sortOrder = x.sortOrder
-                it.flagActive = x.flagActive.equals("Y")
                 it.updateCommonCol(userPrincipal)
             }
         }

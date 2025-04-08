@@ -19,7 +19,6 @@ input CodeInput {
     codeName:String,
     codeDesc:String,
     sortOrder:Int,
-    flagActive:String
 }
 
 input CodeUpdate{
@@ -28,7 +27,6 @@ input CodeUpdate{
     codeName:String,
     codeDesc:String,
     sortOrder:Int,
-    flagActive:String,
 }
 
 type CodeClass {

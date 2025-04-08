@@ -87,6 +87,7 @@ interface CodeClassRep : JpaRepository<CodeClass,Long>{
             and   cc.compCd = :compCd
             and   (cc.codeClassId like concat ('%',:codeClassId,'%'))
             and   (cc.codeClassName like concat ('%',:codeClassName,'%'))
+            and   cc.flagActive = true
         """
     )
     fun getCodeClassList(
@@ -121,6 +122,7 @@ interface CodeRep: JpaRepository<Code,Long>{
             where c.site = :site
             and   c.compCd = :compCd
             and   c.codeClassId = :codeClassId
+            and   c.flagActive = true
         """
     )
     fun getCodeList(
@@ -150,8 +152,8 @@ interface CodeRep: JpaRepository<Code,Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Code c 
+        update Code c 
+        set c.flagActive = false
         where c.site = :site
         and   c.compCd = :compCd
         and   c.codeId = :codeId

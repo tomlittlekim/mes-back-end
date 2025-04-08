@@ -217,7 +217,7 @@ interface VendorRep : JpaRepository<Vendor,Long>{
             and   (v.vendorName like concat ('%',:vendorName,'%'))
             and   (v.ceoName like concat ('%',:ceoName,'%'))
             and   (v.businessType like concat ('%',:businessType,'%'))
-            and   (:flagActive is null or v.flagActive = :flagActive)
+            and   v.flagActive = true
         """
     )
     fun getVendorList(
@@ -226,8 +226,7 @@ interface VendorRep : JpaRepository<Vendor,Long>{
         vendorId:String,
         vendorName:String,
         ceoName:String,
-        businessType:String,
-        flagActive:Boolean?
+        businessType:String
     ):List<Vendor?>
 
     @Query(
@@ -249,8 +248,10 @@ interface VendorRep : JpaRepository<Vendor,Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Vendor v 
+        update Vendor v
+        set v.flagActive = false,
+            v.updateUser = :updateUser,
+            v.updateDate = :updateDate
         where v.site = :site
         and   v.compCd = :compCd
         and   v.vendorId = :vendorId
@@ -259,7 +260,9 @@ interface VendorRep : JpaRepository<Vendor,Long>{
     fun deleteByVendorId(
         site:String,
         compCd:String,
-        vendorId: String
+        vendorId: String,
+        updateUser: String,
+        updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
 
 }

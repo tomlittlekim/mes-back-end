@@ -3,7 +3,7 @@ input VendorFilter {
     vendorName: String!,
     ceoName: String!,
     businessType: String!,
-    flagActive: String,
+#    flagActive: String,
 }
 
 input VendorInput {
@@ -14,7 +14,7 @@ input VendorInput {
     businessType: String
     address: String
     telNo: String
-    flagActive: String
+#    flagActive: String
 }
 
 input VendorUpdate {
@@ -26,7 +26,7 @@ input VendorUpdate {
     businessType: String
     address: String
     telNo: String
-    flagActive: String
+#    flagActive: String
 }
 
 type Vendor {
@@ -38,7 +38,7 @@ type Vendor {
     businessType: String
     address: String
     telNo: String
-    flagActive:String
+#    flagActive:String
     createUser:String
     createDate:String
     updateUser:String

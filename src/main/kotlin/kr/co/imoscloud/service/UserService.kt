@@ -38,7 +38,8 @@ class UserService(
             ?.let { user ->
                 try {
                     validateUser(loginReq.userPwd, user)
-                    val roleSummery = core.getUserRoleFromInMemory(user)
+                    val roleSummery = core.getUserRoleFromInMemory(user.roleId)
+                        ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
                     val userDetails = UserPrincipal.create(user, roleSummery)
                     val userPrincipal = UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
@@ -66,8 +67,9 @@ class UserService(
     fun upsertUser(req: UserInput): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val modifyReq = modifyReqByRole(loginUser, req)
+        val loginId = req.loginId ?: throw IllegalArgumentException("id is null")
 
-        val upsertUser = core.getUserFromInMemory(req.loginId)
+        val upsertUser = core.getUserFromInMemory(loginId)
             ?.let { user ->
                 val site = modifyReq.site ?: throw IllegalArgumentException("site is null")
                 val target = core.userRepo.findBySiteAndLoginIdForSignUp(site, user.loginId)!!
@@ -80,7 +82,7 @@ class UserService(
         return upsertUser.let { "${req.loginId} 로그인 성공" }
     }
 
-    fun existLoginId(req: ExistLoginIdRequest): Boolean = core.getUserFromInMemory(req) != null
+    fun existLoginId(req: ExistLoginIdRequest): Boolean = core.getUserFromInMemory(req.loginId) != null
 
     fun getUserGroupByCompany(req: UserGroupRequest?): List<UserSummery?> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
@@ -100,7 +102,8 @@ class UserService(
 
         val codeMap = codeRep.findAllByCodeClassIdIn(listOf("DEPARTMENT","POSITION"))
             .associate { it?.codeId to it?.codeName }
-        val roleSummery = core.getUserRoleFromInMemory(loginUser)
+        val roleSummery = core.getUserRoleFromInMemory(loginUser.roleId)
+            ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
         return target
             ?.let{ UserDetail(it.id,it.loginId,it.userName?:"",codeMap[it.departmentId],codeMap[it.positionId],roleSummery.roleName,it.userEmail,it.phoneNum,if(it.flagActive)"Y" else "N") }
@@ -179,7 +182,7 @@ class UserService(
 
     private fun userToUserDetail(us: UserSummery?, codeMap: Map<String?, String?>): UserDetail? {
         us ?: return null
-        val r = core.getUserRoleFromInMemory(us.roleId)
+        val r = core.getUserRoleFromInMemory(us.roleId) ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
         val departmentNm = codeMap[us.departmentId]
         val positionNm = codeMap[us.positionId]
         val isActive = if(us.flagActive) "Y" else "N"

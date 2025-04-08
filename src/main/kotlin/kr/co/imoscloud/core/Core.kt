@@ -49,25 +49,9 @@ class Core(
             ?:run { menuRoleRepo.findAllByRoleId(roleId) }
     }
 
-    fun <T> getUserFromInMemory(req: T): UserSummery? {
-        val index: String
-        val userMap: Map<String, UserSummery?> = when (req) {
-            is String -> { index = req; getAllUserMap(ExistLoginIdRequest(req)) }
-            is DtoLoginIdBase -> { index = req.loginId; getAllUserMap(req) }
-            else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
-        }
-        return userMap[index]
-    }
+    fun getUserFromInMemory(loginId: String): UserSummery? = getAllUserMap(ExistLoginIdRequest(loginId))[loginId]
 
-    fun <T> getUserRoleFromInMemory(req: T): RoleSummery? {
-        val index: Long
-        val roleMap: Map<Long, RoleSummery?> = when (req) {
-            is Long -> { index = req; getAllRoleMap(RoleInput(req)) }
-            is DtoRoleIdBase -> { index = req.roleId; getAllRoleMap(req) }
-            else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
-        }
-        return roleMap[index]
-    }
+    fun getUserRoleFromInMemory(roleId: Long): RoleSummery? = getAllRoleMap(OnlyRoleIdReq(roleId))[roleId]
 
     fun getUserGroupByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
         return if (getIsInspect()) {
@@ -105,15 +89,15 @@ class Core(
         )
     }
 
-    fun isDeveloper(loginUser: UserPrincipal): Boolean {
-        val roleSummery = getUserRoleFromInMemory(loginUser) ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
-        return roleSummery.priorityLevel == 5
-    }
+    fun isDeveloper(loginUser: UserPrincipal): Boolean =
+        getUserRoleFromInMemory(loginUser.roleId)
+            ?.let { it.priorityLevel == 5 }
+            ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
-    fun isAdminOrHigher(loginUser: UserPrincipal): Boolean {
-        val roleSummery = getUserRoleFromInMemory(loginUser) ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
-        return roleSummery.priorityLevel >= 3
-    }
+    fun isAdminOrHigher(loginUser: UserPrincipal): Boolean =
+        getUserRoleFromInMemory(loginUser.roleId)
+            ?.let { it.priorityLevel >= 3 }
+            ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
     fun validatePriorityIsHigherThan(target: User, loginUser: UserPrincipal): Boolean {
         val roleMap = getAllRoleMap(target, loginUser)

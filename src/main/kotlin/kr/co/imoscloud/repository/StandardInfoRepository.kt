@@ -370,7 +370,6 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
                 w.warehouseId,
                 w.warehouseName,
                 w.warehouseType,
-                case when w.flagActive = true then 'Y' else 'N' end,
                 w.createUser,
                 w.createDate,
                 w.updateUser,
@@ -387,7 +386,7 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
             and   (f.factoryName like concat ('%',:factoryName,'%'))
             and   (w.warehouseId like concat ('%',:warehouseId,'%'))
             and   (w.warehouseName like concat ('%',:warehouseName,'%'))
-            and   (:flagActive is null or  w.flagActive = :flagActive)
+            and   w.flagActive = true
         """
     )
     fun getWarehouses(
@@ -396,8 +395,7 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
         factoryId:String,
         factoryName:String,
         warehouseId:String,
-        warehouseName:String,
-        flagActive:Boolean?
+        warehouseName:String
     ):List<WarehouseResponse?>
 
     @Query(
@@ -418,8 +416,10 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Warehouse w 
+        update Warehouse w
+        set w.flagActive = false,
+            w.updateUser = :updateUser,
+            w.updateDate = :updateDate
         where w.site = :site
         and   w.compCd = :compCd
         and   w.warehouseId = :warehouseId
@@ -428,7 +428,9 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
     fun deleteByWarehouseId(
         site:String,
         compCd:String,
-        warehouseId: String
+        warehouseId: String,
+        updateUser: String,
+        updateDate: LocalDateTime = LocalDateTime.now(),
     ): Int
 }
 

@@ -171,9 +171,11 @@ class CommonCodeService(
     }
 
     fun getGridCodes(codeClassId: String):List<CodeResponse>{
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         val codeList = codeRep.getGridCodes(
-            site = "imos",
-            compCd = "eightPin",
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             codeClassId = codeClassId
         )
 

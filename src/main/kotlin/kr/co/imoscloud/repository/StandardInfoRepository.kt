@@ -444,7 +444,6 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
                 e.equipmentType,
                 e.equipmentName,
                 e.equipmentStatus,
-                case when e.flagActive = true then 'Y' else 'N' end,
                 e.createUser,
                 e.createDate,
                 e.updateUser,
@@ -470,7 +469,7 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
             and   (e.equipmentName like concat ('%',:equipmentName,'%'))
             and   (e.equipmentSn like concat ('%',:equipmentSn,'%'))
             and   (e.equipmentType like concat ('%',:equipmentType,'%'))
-            and   (:flagActive is null or  e.flagActive = :flagActive)
+            and   e.flagActive = true
         """
     )
     fun getEquipments(
@@ -483,8 +482,7 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
         equipmentId:String,
         equipmentName:String,
         equipmentSn:String,
-        equipmentType:String,
-        flagActive:Boolean?
+        equipmentType:String
     ):List<EquipmentResponseModel?>
 
     @Query(
@@ -505,8 +503,10 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Equipment e 
+        update Equipment e
+        set e.flagActive = false,
+            e.updateUser = :updateUser,
+            e.updateDate = :updateDate
         where e.site = :site
         and   e.compCd = :compCd
         and   e.equipmentId = :equipmentId
@@ -515,7 +515,9 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
     fun deleteByEquipmentId(
         site:String,
         compCd:String,
-        equipmentId: String
+        equipmentId: String,
+        updateUser: String,
+        updateDate:LocalDateTime = LocalDateTime.now()
     ): Int
 
 }

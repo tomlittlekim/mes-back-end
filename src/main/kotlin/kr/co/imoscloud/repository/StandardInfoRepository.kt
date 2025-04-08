@@ -275,7 +275,6 @@ interface LineRep : JpaRepository<Line,Long>{
                 l.lineId,
                 l.lineName,
                 l.lineDesc,
-                case when l.flagActive = true then 'Y' else 'N' end,
                 l.createUser,
                 l.createDate,
                 l.updateUser,
@@ -293,7 +292,7 @@ interface LineRep : JpaRepository<Line,Long>{
             and   (f.factoryCode like concat ('%',:factoryCode,'%'))
             and   (l.lineId like concat ('%',:lineId,'%'))
             and   (l.lineName like concat ('%',:lineName,'%'))
-            and   (:flagActive is null or  l.flagActive = :flagActive)
+            and   l.flagActive = true
         """
     )
     fun getLines(
@@ -304,7 +303,7 @@ interface LineRep : JpaRepository<Line,Long>{
         factoryCode:String,
         lineId:String,
         lineName:String,
-        flagActive:Boolean?
+//        flagActive:Boolean?
     ):List<LineResponseModel?>
 
     @Query(
@@ -325,8 +324,10 @@ interface LineRep : JpaRepository<Line,Long>{
     @Transactional
     @Modifying
     @Query("""
-        delete 
-        from Line l 
+        update Line l
+        set   l.flagActive = false,
+              l.updateDate = :updateDate,
+              l.updateUser = :updateUser
         where l.site = :site
         and   l.compCd = :compCd
         and   l.lineId = :lineId
@@ -335,7 +336,9 @@ interface LineRep : JpaRepository<Line,Long>{
     fun deleteByLineId(
         site:String,
         compCd:String,
-        lineId: String
+        lineId: String,
+        updateDate: LocalDateTime = LocalDateTime.now(),
+        updateUser: String
     ): Int
 
 

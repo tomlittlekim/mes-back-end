@@ -28,7 +28,6 @@ class LineService(
             factoryCode = filter.factoryCode,
             lineId = filter.lineId,
             lineName = filter.lineName,
-            flagActive = filter.flagActive?.let { it == "Y" }
         )
     }
 
@@ -53,7 +52,6 @@ class LineService(
                 lineName = it.lineName,
                 lineDesc = it.lineDesc,
             ).apply {
-                flagActive = it.flagActive.equals("Y" )
                 createCommonCol(userPrincipal)
             }
         }
@@ -82,7 +80,6 @@ class LineService(
                 it.factoryId = x.factoryId
                 it.lineName = x.lineName
                 it.lineDesc = x.lineDesc
-                it.flagActive = x.flagActive.equals("Y" )
                 it.updateCommonCol(userPrincipal)
             }
         }
@@ -92,10 +89,12 @@ class LineService(
 
     fun deleteLine(lineId:String):Boolean {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
         return lineRep.deleteByLineId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            lineId = lineId
+            lineId = lineId,
+            updateUser = userPrincipal.loginId
         ) > 0
     }
 
@@ -117,7 +116,7 @@ data class LineResponseModel(
     val lineId: String?,
     val lineName: String?,
     val lineDesc: String?,
-    val flagActive: String? = null,
+//    val flagActive: String? = null,
     val createUser: String?,
     val createDate: LocalDateTime?,
     val updateUser: String?,

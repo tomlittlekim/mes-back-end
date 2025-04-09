@@ -1,25 +1,29 @@
 input MenuRequest {
     id: Int
     menuId: String
+    upMenuId: String
     menuName: String
-    roleId: Int
     flagSubscribe: Boolean
-    flagVisible: Boolean
+    flagActive: Boolean
     sequence: Int
+
+    isOpen: Boolean
+    isDelete: Boolean
+    isInsert: Boolean
+    isAdd: Boolean
+    isPopup: Boolean
+    isPrint: Boolean
+    isSelect: Boolean
+    isUpdate: Boolean
 }
 
 type Menu {
-    id: ID!
-    menuId: String!
-    menuName: String!
-    roleId: Int!
+    id: Int
+    menuId: String
+    upMenuId: String
+    menuName: String
     flagSubscribe: Boolean
-    flagVisible: Boolean
     sequence: Int
-    createUser: String
-    createDate: String
-    updateUser: String
-    updateDate: String
     flagActive: Boolean
 }
 
@@ -29,5 +33,5 @@ extend type Mutation {
 }
 
 extend type Query {
-    getMenus: [Menu]
+    getMenus(menuId: String, menuName: String): [Menu]
 }

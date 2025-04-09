@@ -19,7 +19,10 @@ class MenuService(
 ) {
 
     @AuthLevel(minLevel = 5)
-    fun getMenus(): List<Menu> = menuRepo.findAll()
+    fun getMenus(menuId: String?, menuName: String?): List<Menu> {
+        return if (menuId==null&&menuName==null) menuRepo.findAll()
+        else menuRepo.findAllByParms(menuId, "%${menuName}%")
+    }
 
     @AuthLevel(minLevel = 5)
     @Transactional

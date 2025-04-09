@@ -11,6 +11,7 @@ data class CompanyDto(
     val id: Long? = null,
     val site: String? = null,
     val compCd: String? = null,
+    val compName: String? = null,
     val businessRegistrationNumber: String? = null,
     val corporateRegistrationNumber: String? = null,
     val companyStatus: String? = null,

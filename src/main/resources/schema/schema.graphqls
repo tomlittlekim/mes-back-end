@@ -123,6 +123,25 @@ type Menu {
     flagActive: Boolean
 }
 
+input CompanyInput {
+    id: Int
+    site: String
+    compCd: String
+    compName: String
+    businessRegistrationNumber: String
+    corporateRegistrationNumber: String
+    companyStatus: String
+    imagePath: String
+    businessAddress: String
+    businessType: String
+    businessItem: String
+    paymentDate: String
+    expiredDate: String
+    flagSubscription: Boolean
+    loginId: String
+    phoneNumber: String
+}
+
 extend type Mutation {
     upsertUser(req: UserInput!): String
     deleteUser(id: Int!): String
@@ -130,6 +149,7 @@ extend type Mutation {
     upsertUserRole(req: UserRoleRequest!): String
     upsertMenus(req: MenuRequest!): String
     upsertMenuRole(list: [MenuRoleRequest]): String
+    upsertCompany(req: CompanyInput): String
 }
 
 extend type Query {

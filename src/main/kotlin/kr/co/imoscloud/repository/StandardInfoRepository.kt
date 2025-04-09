@@ -1,6 +1,7 @@
 package kr.co.imoscloud.repository
 
 import jakarta.transaction.Transactional
+import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.entity.standardInfo.*
 import kr.co.imoscloud.service.standardInfo.EquipmentResponseModel
 import kr.co.imoscloud.service.standardInfo.LineResponseModel
@@ -81,6 +82,11 @@ interface FactoryRep: JpaRepository<Factory,Long>{
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
+
+    //단순 조회용 메서드 추가
+    fun findByFactoryId(
+        factoryId: String?
+    ): Factory?
 }
 
 interface CodeClassRep : JpaRepository<CodeClass,Long>{
@@ -432,6 +438,11 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now(),
     ): Int
+
+    //단순 조회용 메서드 추가
+    fun findByWarehouseId(
+        warehouseId: String?
+    ): Warehouse?
 }
 
 interface EquipmentRep:JpaRepository<Equipment,Long>{

@@ -1,13 +1,13 @@
 extend type Query {
     workOrders(filter: WorkOrderFilter): [WorkOrder]!
     workOrdersByProdPlanId(prodPlanId: String!): [WorkOrder]!
-    productionPlansWithWorkOrders(filter: ProductionPlanFilter): [ProductionPlan]!
 }
 
 extend type Mutation {
     saveWorkOrder(createdRows: [WorkOrderInput], updatedRows: [WorkOrderUpdate]): Boolean
     deleteWorkOrder(workOrderId: String!): Boolean
-    createWorkOrderFromProductionPlan(prodPlanId: String!, shiftType: String, initialState: String): Boolean
+    startWorkOrder(workOrderId: String!): Boolean
+    completeWorkOrder(workOrderId: String!): Boolean
 }
 
 input WorkOrderFilter {
@@ -35,6 +35,8 @@ type WorkOrder {
     updateUser: String
     flagActive: Boolean
     productionPlan: ProductionPlan
+    productionResults: [ProductionResult]
+    defectInfos: [DefectInfo]
 }
 
 input WorkOrderInput {

@@ -31,6 +31,7 @@ class ProductionPlanDataFetcher(
                 filter.prodPlanId = input["prodPlanId"] as? String
                 filter.orderId = input["orderId"] as? String
                 filter.productId = input["productId"] as? String
+                filter.shiftType = input["shiftType"] as? String  // 주/야간 유형 필드 설정
 
                 // 날짜 필드 변환
                 if (input.containsKey("planStartDateFrom")) {
@@ -44,7 +45,7 @@ class ProductionPlanDataFetcher(
                 }
 
                 // Boolean 필드 설정
-                filter.flagActive = input["flagActive"] as? Boolean
+                filter.flagActive = input["flagActive"] as? Boolean ?: true
             }
 
             return productionPlanService.getProductionPlans(filter)
@@ -77,13 +78,13 @@ class ProductionPlanDataFetcher(
         }
     }
 
-    // 생산계획 삭제
+    // 생산계획 삭제 (소프트 삭제로 변경)
     @DgsData(parentType = "Mutation", field = "deleteProductionPlan")
     fun deleteProductionPlan(
         @InputArgument("prodPlanId") prodPlanId: String
     ): Boolean {
         try {
-            return productionPlanService.deleteProductionPlan(prodPlanId)
+            return productionPlanService.softDeleteProductionPlan(prodPlanId)
         } catch (e: SecurityException) {
             log.error("인증 오류: {}", e.message)
             return false

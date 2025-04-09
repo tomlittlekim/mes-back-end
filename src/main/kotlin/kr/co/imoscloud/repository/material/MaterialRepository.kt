@@ -2,6 +2,7 @@ package kr.co.imoscloud.repository.Material
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.entity.standardInfo.Factory
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -90,4 +91,9 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         compCd: String,
         systemMaterialIds: List<String?>
     ): Int
+
+    //단순 조회용 메서드 추가
+    fun findBySystemMaterialId(
+        systemMaterialId: String?
+    ): MaterialMaster?
 }

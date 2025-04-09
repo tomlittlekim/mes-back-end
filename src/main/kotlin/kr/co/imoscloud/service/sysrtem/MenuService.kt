@@ -79,8 +79,13 @@ class MenuService(
         }
 
     @AuthLevel(minLevel = 5)
+    @Transactional
     fun deleteMenu(id: Long): String {
+        val menu = menuRepo.findByIdAndFlagActiveIsTrue(id)
+            ?.let { menu -> menuRoleRepo.deleteAllByMenuId(menu.menuId); menu }
+            ?: throw IllegalArgumentException("삭제하려는 메뉴가 존재하지 않습니다. ")
 
-        return ""
+        menuRepo.delete(menu)
+        return "${menu.menuName} 및 해당 메뉴에 대한 권한들 삭제 성공"
     }
 }

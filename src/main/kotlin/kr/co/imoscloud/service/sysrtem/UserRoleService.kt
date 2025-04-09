@@ -5,6 +5,7 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserRoleRequest
 import kr.co.imoscloud.entity.system.UserRole
+import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 
@@ -73,5 +74,11 @@ class UserRoleService(
         core.roleRepo.save(modifyRole)
         core.upsertFromInMemory(modifyRole)
         return "${modifyRole.roleName} 권한 생성 완료"
+    }
+
+    @AuthLevel(minLevel = 3)
+    fun deleteUserRole(roleId: Long): String {
+
+        return ""
     }
 }

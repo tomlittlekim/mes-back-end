@@ -27,6 +27,11 @@ class MaterialDataFetcher(
         return materialService.getHalfMaterials(filter)
     }
 
+    @DgsQuery
+    fun getMaterialsByType(@InputArgument materialType: String): List<MaterialResponseModel?> {
+        return materialService.getMaterialsByType(materialType)
+    }
+
     @DgsMutation
     fun saveMaterials(
         @InputArgument("createdRows") createdRows: List<MaterialInput?>,

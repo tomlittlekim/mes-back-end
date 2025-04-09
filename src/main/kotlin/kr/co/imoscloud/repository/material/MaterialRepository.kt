@@ -1,4 +1,4 @@
-package kr.co.imoscloud.repository.Material
+package kr.co.imoscloud.repository.material
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.material.MaterialMaster
@@ -96,4 +96,21 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
     fun findBySystemMaterialId(
         systemMaterialId: String?
     ): MaterialMaster?
+
+    @Query(
+        """
+        SELECT m
+        FROM MaterialMaster m
+        WHERE m.site = :site
+        AND m.compCd = :compCd
+        AND m.materialType = :materialType
+        AND m.flagActive = true
+        ORDER BY m.createDate DESC
+        """
+    )
+    fun getMaterialsByType(
+        site: String,
+        compCd: String,
+        materialType: String
+    ): List<MaterialMaster>
 }

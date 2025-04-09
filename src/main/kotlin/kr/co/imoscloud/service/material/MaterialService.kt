@@ -6,7 +6,7 @@ import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.fetcher.material.MaterialFilter
 import kr.co.imoscloud.fetcher.material.MaterialInput
 import kr.co.imoscloud.fetcher.material.MaterialUpdate
-import kr.co.imoscloud.repository.Material.MaterialRepository
+import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
@@ -18,7 +18,7 @@ class MaterialService(
     private val materialRep: MaterialRepository,
 ) {
     private val DEFAULT_SITE = "imos"
-    private val DEFAULT_COMP_CD = "eightPin"
+    private val DEFAULT_COMP_CD = "8Pin"
 
     private fun getCurrentUser() = try {
         SecurityUtils.getCurrentUserPrincipalOrNull()
@@ -69,6 +69,17 @@ class MaterialService(
             fromDate = DateUtils.parseDateTime(filter.fromDate),
             toDate = DateUtils.parseDateTime(filter.toDate)
         )
+        return entityToResponse(materialList)
+    }
+
+    fun getMaterialsByType(materialType: String): List<MaterialResponseModel?> {
+        val userPrincipal = getCurrentUser()
+        val materialList = materialRep.getMaterialsByType(
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+            materialType = materialType
+        )
+
         return entityToResponse(materialList)
     }
 

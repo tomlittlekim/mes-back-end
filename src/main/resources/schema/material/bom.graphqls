@@ -1,0 +1,109 @@
+# BOM 타입 정의
+type Bom {
+    bomId: String! # BOM ID (hide)
+    bomLevel: Int! # BOM 레벨
+    bomName: String # BOM 명
+    materialType: String # 종류
+    materialCategory: String # 제품유형
+    systemMaterialId: String! # 제품ID(시스템생성, hide)
+    userMaterialId: String # 제품ID(사용자생성)
+    materialName: String # 제품명
+    materialStandard: String # 규격
+    unit: String # 단위
+    remark: String # 비고
+    flagActive: String! # 사용여부
+    createUser: String # 등록자
+    createDate: String # 등록일
+    updateUser: String # 수정자
+    updateDate: String # 수정일
+}
+
+# BOM 입력 타입 정의 (검색 조건)
+input BomFilter {
+    materialType: String
+    materialName: String
+    bomName: String
+}
+
+# BOM 입력 타입 정의 (insert 조건)
+input BomInput {
+    bomLevel: Int
+    materialType: String!
+    bomId: String
+    bomName: String!
+    systemMaterialId: String!
+    remark: String
+}
+
+# BOM 입력 타입 정의 (행 update 조건)
+input BomUpdate {
+    bomLevel: Int
+    materialType: String!
+    bomId: String!
+    bomName: String!
+    systemMaterialId: String!
+    remark: String
+}
+
+#--------
+
+# BOM Detail 타입 정의
+type BomDetail {
+    bomId: String! # BOM ID (hide)
+    bomDetailId: String! # BOM Detail ID (hide)
+    bomLevel: Int! # BOM 레벨
+    materialType: String # 제품 타
+    systemMaterialId: String! # 제품ID(시스템생성, hide)
+    userMaterialId: String # 제품ID(사용자생성)
+    parentItemCd: String # 상위품목ID(시스템생성, hide)
+    userParentItemCd: String # 상위품목ID(사용자생성)
+    materialName: String # 제품명
+    parentMaterialName: String # 상위제품명
+    materialStandard: String # 규격
+    unit: String # 단위
+    itemQty: Float # 필요수량
+    remark: String # 비고
+    flagActive: String! # 사용여부
+    createUser: String # 등록자
+    createDate: String # 등록일
+    updateUser: String # 수정자
+    updateDate: String # 수정일
+}
+
+# BOM Detail 은 검색 없음
+
+# BOM Detail 입력 타입 정의 (행 insert 조건)
+input BomDetailInput {
+    bomId: String!
+    bomDetailId: String # 자동생성
+    bomLevel: Int!
+    systemMaterialId: String!
+    parentItemCd: String!
+    itemQty: Float!
+    remark: String
+}
+
+# BOM Detail 입력 타입 정의 (행 update 조건)
+input BomDetailUpdate {
+    bomId: String!
+    bomDetailId: String!
+    bomLevel: Int!
+    systemMaterialId: String!
+    parentItemCd: String!
+    itemQty: Float!
+    remark: String
+}
+
+# 쿼리 정의(데이터 정보 호출)
+extend type Query {
+    getBomList(filter: BomFilter): [Bom]
+    getBomDetails(bomId: String!): [BomDetail]
+}
+
+# 뮤테이션 정의(데이터 CUD)
+extend type Mutation {
+    saveBom(createdRows: [BomInput], updatedRows: [BomUpdate]): Boolean
+    deleteBom(bomId: String!): Boolean
+    saveBomDetails(createdRows: [BomDetailInput], updatedRows: [BomDetailUpdate]): Boolean
+    deleteBomDetails(bomDetailIds: [String!]!): Boolean
+}

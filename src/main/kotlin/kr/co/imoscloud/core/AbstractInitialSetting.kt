@@ -150,6 +150,8 @@ abstract class AbstractInitialSetting(
         else -> throw IllegalArgumentException("지원하지 않는 타입입니다. ")
     }
 
+    fun upsertMenuRoleFromInMemory(list: List<MenuRole>) = list.forEach { upsertFromInMemory(it) }
+
     fun <T> deleteFromInMemory(req: T): Unit = when (req) {
         is User -> {
             if (isInspect) upsertUserQue[req.loginId] = null

@@ -30,26 +30,28 @@ class MenuRoleService(
 
     @Transactional
     fun upsertMenuRole(list: List<MenuRoleDto>): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        val indies = list.mapNotNull { it.id }
+        val menuRoleMap = if (indies.isEmpty()) emptyMap() else menuRoleRepo.findByIdIn(indies).associateBy { it.id }
+
         var upsertStr: String?=null
-        val modifyMenuRole: List<MenuRole> = try {
+        val menuRoleList: List<MenuRole> = try {
             list.map { req ->
-                req.id
-                    ?.let { id ->
-                        upsertStr = "생성"
-                        menuRoleRepo.findById(id).map { mr ->
-                            mr.apply {
-                                roleId = req.roleId ?: this.roleId
-                                menuId = req.menuId
-                                isOpen = req.isOpen ?: this.isOpen
-                                isDelete = req.isDelete ?: this.isDelete
-                                isInsert = req.isInsert ?: this.isInsert
-                                isAdd = req.isAdd ?: this.isAdd
-                                isPopup = req.isPopup ?: this.isPopup
-                                isPrint = req.isPrint ?: this.isPrint
-                                isSelect = req.isSelect ?: this.isSelect
-                                isUpdate = req.isUpdate ?: this.isUpdate
-                            }
-                        }.orElseThrow { throw IllegalArgumentException("메뉴에 대한 권한이 존재하지 않습니다. ") }
+                req.roleId?.let { roleId -> core.validatePriorityIsHigherThan(roleId, loginUser) }
+                menuRoleMap[req.id]
+                    ?.let { mr ->
+                        mr.apply {
+                            roleId = req.roleId ?: this.roleId
+                            menuId = req.menuId
+                            isOpen = req.isOpen ?: this.isOpen
+                            isDelete = req.isDelete ?: this.isDelete
+                            isInsert = req.isInsert ?: this.isInsert
+                            isAdd = req.isAdd ?: this.isAdd
+                            isPopup = req.isPopup ?: this.isPopup
+                            isPrint = req.isPrint ?: this.isPrint
+                            isSelect = req.isSelect ?: this.isSelect
+                            isUpdate = req.isUpdate ?: this.isUpdate
+                        }
                     }
                     ?:run {
                         upsertStr = "수정"
@@ -71,7 +73,7 @@ class MenuRoleService(
             throw IllegalArgumentException("메뉴 권한 생성 시 필요한 정보가 부족합니다. ")
         }
 
-        menuRoleRepo.saveAll(modifyMenuRole)
+        menuRoleRepo.saveAll(menuRoleList)
         return "메뉴 권한 ${upsertStr} 성공"
     }
 }

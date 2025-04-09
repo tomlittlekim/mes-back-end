@@ -5,13 +5,15 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserRoleRequest
 import kr.co.imoscloud.entity.system.UserRole
+import kr.co.imoscloud.repository.system.MenuRoleRepository
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 
 @Service
 class UserRoleService(
-    private val core: Core
+    private val core: Core,
+    private val menuRoleRepo: MenuRoleRepository,
 ) {
 
     fun getUserRoleSelect(): List<RoleSummery?> {
@@ -77,8 +79,17 @@ class UserRoleService(
     }
 
     @AuthLevel(minLevel = 3)
+    @Transactional
     fun deleteUserRole(roleId: Long): String {
+        val role = core.roleRepo.findByRoleIdAndFlagActiveIsTrue(roleId)
+            ?.let { role ->
+                core.validatePriorityIsHigherThan(role.roleId, SecurityUtils.getCurrentUserPrincipal())
+                menuRoleRepo.deleteAllByRoleId(role.roleId)
+                role
+            }
+            ?: throw IllegalArgumentException("삭제하려는 권한이 존재하지 않습니다. ")
 
-        return ""
+        core.roleRepo.delete(role)
+        return "${role.roleName} 권한 삭제 및 메뉴 권한들 삭제 성공"
     }
 }

@@ -16,6 +16,7 @@ interface UserRoleRepository: JpaRepository<UserRole, Long> {
         order by ur.sequence desc
     """)
     fun getRolesByCompany(compCd: String): List<UserRole>
+
     fun findAllByFlagActiveIsTrue(): List<UserRole>
     fun findByRoleIdAndFlagActiveIsTrue(roleId: Long): UserRole?
 

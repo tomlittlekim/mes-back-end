@@ -16,4 +16,11 @@ interface MenuRoleRepository: JpaRepository<MenuRole, Long> {
         where mr.menuId= :menuId
     """)
     fun deleteAllByMenuId(menuId: String)
+
+    @Modifying
+    @Query("""
+        delete from MenuRole mr
+        where mr.roleId= :roleId
+    """)
+    fun deleteAllByRoleId(roleId: Long)
 }

@@ -52,7 +52,10 @@ class SystemFetcher(
     fun getRolesForSelect(): List<RoleSummery?> = userRoleService.getUserRoleSelect()
 
     @DgsMutation
-    fun upsertUserRole(req: UserRoleRequest): String = userRoleService.upsertUserRole(req)
+    fun upsertUserRole(@InputArgument("req") req: UserRoleRequest): String = userRoleService.upsertUserRole(req)
+
+    @DgsMutation
+    fun deleteUserRole(@InputArgument("roleId") roleId: Long) = userRoleService.deleteUserRole(roleId)
 
 
 
@@ -73,14 +76,16 @@ class SystemFetcher(
 
 
 
+
     @DgsQuery
     fun getMenus(): List<Menu> = menuService.getMenus()
 
     @DgsMutation
-    fun upsertMenus(req: MenuRequest): String = menuService.upsertMenus(req)
+    fun upsertMenus(@InputArgument("req") req: MenuRequest): String = menuService.upsertMenus(req)
 
     @DgsMutation
-    fun deleteMenu(id: Long): String = menuService.deleteMenu(id)
+    fun deleteMenu(@InputArgument("id") id: Long): String = menuService.deleteMenu(id)
+
 
 
 
@@ -89,7 +94,7 @@ class SystemFetcher(
     fun getCompanySelect(): List<Company> = companyService.getCompanySelect()
 
     @DgsMutation
-    fun upsertCompany(req: CompanyDto) = companyService.upsertCompany(req)
+    fun upsertCompany(@InputArgument("req") req: CompanyDto) = companyService.upsertCompany(req)
 
     @DgsMutation
     fun deleteCompany(@InputArgument("id") id: Long) = companyService.deleteCompany(id)

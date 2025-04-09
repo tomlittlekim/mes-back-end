@@ -19,6 +19,7 @@ input UserRoleRequest {
 
 extend type Mutation {
     upsertUserRole(req: UserRoleRequest!): String
+    deleteUserRole(roleId: Int!): String
 }
 
 extend type Query {

@@ -88,4 +88,7 @@ class SystemFetcher(
 
     @DgsMutation
     fun upsertCompany(req: CompanyDto) = companyService.upsertCompany(req)
+
+    @DgsMutation
+    fun deleteCompany(@InputArgument("id") id: Long) = companyService.deleteCompany(id)
 }

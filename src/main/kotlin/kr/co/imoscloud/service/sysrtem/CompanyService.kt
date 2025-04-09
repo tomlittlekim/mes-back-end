@@ -69,4 +69,16 @@ class CompanyService(
         core.upsertFromInMemory(company)
         return "${company.companyName} 회사 $upsertStr 성공"
     }
+
+    @AuthLevel(minLevel = 5)
+    fun deleteCompany(id: Long): Unit {
+        val target = core.companyRepo.findByIdAndFlagActiveIsTrue(id)
+            ?.apply {
+                flagActive = false
+                updateCommonCol(SecurityUtils.getCurrentUserPrincipal())
+            }
+            ?: throw IllegalArgumentException("삭제할 객체가 존재하지 않습니다. ")
+
+        core.companyRepo.save(target)
+    }
 }

@@ -1,0 +1,89 @@
+extend type Query {
+    # 통합 생산관리 쿼리
+    productionSummary(fromDate: String!, toDate: String!): ProductionSummaryResponse!
+    productsWithHighDefectRate(threshold: Float!, fromDate: String!, toDate: String!): HighDefectProductResponse!
+}
+
+extend type Mutation {
+    # 통합 생산관리 뮤테이션
+    createWorkOrdersFromPlan(prodPlanId: String!): WorkOrderCreationResponse!
+    createProductionResultWithDefects(
+        workOrderId: String!,
+        goodQty: Float!,
+        defectQty: Float!,
+        equipmentId: String!,
+        resultInfo: String,
+        defectCause: String,
+        defectInfos: [DefectInfoInputType]
+    ): ProductionResultCreationResponse!
+}
+
+# 생산 요약 응답
+type ProductionSummaryResponse {
+    success: Boolean!
+    message: String!
+    data: ProductionSummary
+    timestamp: String!
+}
+
+# 생산 요약 데이터
+type ProductionSummary {
+    fromDate: String!
+    toDate: String!
+    totalPlanQty: Float!
+    totalGoodQty: Float!
+    totalDefectQty: Float!
+    achievementRate: String!
+    defectRate: String!
+    dailyStats: [ProductionDailyStat]!
+    productStats: [ProductionProductStat]!
+    equipmentStats: [ProductionEquipmentStat]!
+    defectsByProduct: [DefectStatsByProduct]!
+}
+
+# 불량률 임계치 초과 제품 응답
+type HighDefectProductResponse {
+    success: Boolean!
+    message: String!
+    data: [HighDefectProduct]!
+    threshold: Float!
+    timestamp: String!
+}
+
+# 불량률 임계치 초과 제품 데이터
+type HighDefectProduct {
+    productId: String!
+    productName: String!
+    totalDefectQty: Float!
+    defectRate: String!
+    mainCauses: [String]!
+}
+
+# 작업지시 생성 응답
+type WorkOrderCreationResponse {
+    success: Boolean!
+    message: String!
+    workOrderIds: [String]!
+    timestamp: String!
+}
+
+# 생산실적 생성 응답
+type ProductionResultCreationResponse {
+    success: Boolean!
+    message: String!
+    prodResultId: String!
+    timestamp: String!
+}
+
+# 불량정보 입력 타입 (별도 타입으로 정의하여 충돌 방지)
+input DefectInfoInputType {
+    workOrderId: String!
+    prodResultId: String
+    productId: String
+    defectQty: Float!
+    defectType: String
+    defectReason: String
+    resultInfo: String
+    state: String
+    defectCause: String
+}

@@ -1,8 +1,6 @@
 package kr.co.imoscloud.dto
 
-import kr.co.imoscloud.iface.DtoAllInOneBase
-import kr.co.imoscloud.iface.DtoLoginIdBase
-import kr.co.imoscloud.iface.DtoRoleIdBase
+import kr.co.imoscloud.iface.*
 import kr.co.imoscloud.iface.ResponseVO.ResponseBase
 
 data class UserInput(
@@ -83,16 +81,56 @@ data class UserGroupRequest(
     var roleId: Long? = null
 )
 
-data class RoleInput(
+data class OnlyRoleIdReq(
     override val roleId: Long,
 ): DtoRoleIdBase
 
 data class RoleSummery(
+    override val roleId: Long,
+    override val compCd: String,
     val roleName: String,
-    val priorityLevel: Int?,
+    val priorityLevel: Int,
+): DtoRoleIdBase, DtoCompCdBase
+
+data class UserRoleRequest(
+    val site: String?=null,
+    val roleId: Long?=null,
+    val fixRoleId: Long,
+    val roleName: String?=null,
+    val compCd: String?=null,
+    val flagDeFault: Boolean?=null,
 )
 
-data class RoleResponseForSelect(
-    override val roleId: Long,
-    val roleName: String,
-): DtoRoleIdBase
+data class MenuRequest(
+    val id: Long?=null,
+    val menuId: String? = null,
+    val upMenuId: String? = null,
+    val menuName: String? = null,
+    val flagSubscribe: Boolean?=null,
+    val sequence: Int? = null,
+    val flagActive: Boolean = true,
+
+    // 신규 메뉴 생성 시 default 값을 위함 필드들
+    var isOpen: Boolean?=null,
+    var isDelete: Boolean?=null,
+    var isInsert: Boolean?=null,
+    var isAdd: Boolean?=null,
+    var isPopup: Boolean?=null,
+    var isPrint: Boolean?=null,
+    var isSelect: Boolean?=null,
+    var isUpdate: Boolean?=null
+)
+
+data class MenuRoleDto(
+    var id: Long?=null,
+    var roleId: Long?=null,
+    var menuId: String,
+    var isOpen: Boolean?=null,
+    var isDelete: Boolean?=null,
+    var isInsert: Boolean?=null,
+    var isAdd: Boolean?=null,
+    var isPopup: Boolean?=null,
+    var isPrint: Boolean?=null,
+    var isSelect: Boolean?=null,
+    var isUpdate: Boolean?=null
+)

@@ -1,5 +1,6 @@
 extend type Query {
     productionPlans(filter: ProductionPlanFilter): [ProductionPlan]!
+    productionPlansWithWorkOrders(filter: ProductionPlanFilter): [ProductionPlan]!
 }
 
 extend type Mutation {

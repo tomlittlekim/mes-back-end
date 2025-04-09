@@ -3,17 +3,17 @@ package kr.co.imoscloud.core
 import kr.co.imoscloud.dto.CompanySummery
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserSummery
-import kr.co.imoscloud.entity.company.Company
-import kr.co.imoscloud.entity.user.MenuRole
-import kr.co.imoscloud.entity.user.User
-import kr.co.imoscloud.entity.user.UserRole
+import kr.co.imoscloud.entity.system.Company
+import kr.co.imoscloud.entity.system.MenuRole
+import kr.co.imoscloud.entity.system.User
+import kr.co.imoscloud.entity.system.UserRole
 import kr.co.imoscloud.iface.DtoCompCdBase
 import kr.co.imoscloud.iface.DtoLoginIdBase
 import kr.co.imoscloud.iface.DtoRoleIdBase
-import kr.co.imoscloud.repository.company.CompanyRepository
-import kr.co.imoscloud.repository.user.MenuRoleRepository
-import kr.co.imoscloud.repository.user.UserRepository
-import kr.co.imoscloud.repository.user.UserRoleRepository
+import kr.co.imoscloud.repository.system.CompanyRepository
+import kr.co.imoscloud.repository.system.MenuRoleRepository
+import kr.co.imoscloud.repository.system.UserRepository
+import kr.co.imoscloud.repository.system.UserRoleRepository
 import org.springframework.scheduling.annotation.Scheduled
 import java.util.concurrent.ConcurrentHashMap
 
@@ -65,7 +65,7 @@ abstract class AbstractInitialSetting(
     init {
         initialSettings()
     }
-
+    fun <T: DtoLoginIdBase> getAllUserMap(vararg req: T?): MutableMap<String, UserSummery?> = getAllUserMap(req.filterNotNull())
     fun <T: DtoLoginIdBase> getAllUserMap(req: List<T?>): MutableMap<String, UserSummery?> {
         return if (getIsInspect()) {
             val indies = extractUserIdFromRequest(req)
@@ -77,6 +77,7 @@ abstract class AbstractInitialSetting(
         else userMap
     }
 
+    fun <T: DtoRoleIdBase>  getAllRoleMap(vararg req: T?): MutableMap<Long, RoleSummery?> = getAllRoleMap(req.filterNotNull())
     fun <T: DtoRoleIdBase>  getAllRoleMap(req: List<T?>): MutableMap<Long, RoleSummery?> {
         return if (getIsInspect()) {
             val indies = extractRoleIdFromRequest(req)
@@ -188,7 +189,7 @@ abstract class AbstractInitialSetting(
         )
     }
 
-    fun roleToSummery(it: UserRole): RoleSummery = RoleSummery(it.roleName, it.priorityLevel)
+    fun roleToSummery(it: UserRole): RoleSummery = RoleSummery(it.roleId, it.compCd, it.roleName, it.priorityLevel)
     fun userToSummery(u: User): UserSummery = UserSummery(
         u.id,u.site,u.compCd,u.userName,u.loginId,u.userPwd,u.imagePath,u.roleId,u.userEmail,u.phoneNum,u.departmentId,u.positionId,u.flagActive
     )

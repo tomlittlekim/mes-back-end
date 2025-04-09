@@ -1,10 +1,10 @@
-package kr.co.imoscloud.service
+package kr.co.imoscloud.service.sysrtem
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.*
-import kr.co.imoscloud.entity.user.User
+import kr.co.imoscloud.entity.system.User
 import kr.co.imoscloud.iface.IUser
 import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.security.JwtTokenProvider
@@ -38,7 +38,8 @@ class UserService(
             ?.let { user ->
                 try {
                     validateUser(loginReq.userPwd, user)
-                    val roleSummery = core.getUserRoleFromInMemory(user)
+                    val roleSummery = core.getUserRoleFromInMemory(user.roleId)
+                        ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
                     val userDetails = UserPrincipal.create(user, roleSummery)
                     val userPrincipal = UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
@@ -66,8 +67,9 @@ class UserService(
     fun upsertUser(req: UserInput): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val modifyReq = modifyReqByRole(loginUser, req)
+        val loginId = req.loginId ?: throw IllegalArgumentException("id is null")
 
-        val upsertUser = core.getUserFromInMemory(req.loginId)
+        val upsertUser = core.getUserFromInMemory(loginId)
             ?.let { user ->
                 val site = modifyReq.site ?: throw IllegalArgumentException("site is null")
                 val target = core.userRepo.findBySiteAndLoginIdForSignUp(site, user.loginId)!!
@@ -80,16 +82,13 @@ class UserService(
         return upsertUser.let { "${req.loginId} 로그인 성공" }
     }
 
-    fun existLoginId(req: ExistLoginIdRequest): Boolean {
-        val userMap = core.getAllUserMap(listOf(req))
-        return userMap[req.loginId] != null
-    }
+    fun existLoginId(req: ExistLoginIdRequest): Boolean = core.getUserFromInMemory(req.loginId) != null
 
     fun getUserGroupByCompany(req: UserGroupRequest?): List<UserSummery?> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         return if (core.isDeveloper(loginUser)) {
-            core.getAllUserMap(listOf(loginUser)).filterValues { userGroupFilter(req, it) }.values.mapNotNull { it }
+            core.getAllUserMap(loginUser).filterValues { userGroupFilter(req, it) }.values.mapNotNull { it }
         } else {
             core.getUserGroupByCompCd(loginUser).filter { userGroupFilter(req, it) }
         }
@@ -103,7 +102,8 @@ class UserService(
 
         val codeMap = codeRep.findAllByCodeClassIdIn(listOf("DEPARTMENT","POSITION"))
             .associate { it?.codeId to it?.codeName }
-        val roleSummery = core.getUserRoleFromInMemory(loginUser)
+        val roleSummery = core.getUserRoleFromInMemory(loginUser.roleId)
+            ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
         return target
             ?.let{ UserDetail(it.id,it.loginId,it.userName?:"",codeMap[it.departmentId],codeMap[it.positionId],roleSummery.roleName,it.userEmail,it.phoneNum,if(it.flagActive)"Y" else "N") }
@@ -113,7 +113,8 @@ class UserService(
     @AuthLevel(minLevel = 3)
     fun deleteUser(id: Long): String {
         return core.userRepo.findById(id).map { u ->
-            validatePriorityIsHigherThan(u)
+            val loginUser = SecurityUtils.getCurrentUserPrincipal()
+            core.validatePriorityIsHigherThan(u.roleId, loginUser)
             core.userRepo.delete(u)
             core.deleteFromInMemory(u)
             "${u.loginId} 의 계정 삭제 완료"
@@ -126,7 +127,7 @@ class UserService(
 
         return core.userRepo.findById(id)
             .map { user ->
-                validatePriorityIsHigherThan(user)
+                core.validatePriorityIsHigherThan(user.roleId, loginUser)
                 // company 객체 내부에 초기화 비밀번호 값을 가지고 있거나 \\ 사용자가 입력 하는 방식으로 진행해야함
                 val encoder = BCryptPasswordEncoder()
                 user.apply { userPwd = encoder.encode("1234"); updateCommonCol(loginUser) }
@@ -181,7 +182,7 @@ class UserService(
 
     private fun userToUserDetail(us: UserSummery?, codeMap: Map<String?, String?>): UserDetail? {
         us ?: return null
-        val r = core.getUserRoleFromInMemory(us.roleId)
+        val r = core.getUserRoleFromInMemory(us.roleId) ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
         val departmentNm = codeMap[us.departmentId]
         val positionNm = codeMap[us.positionId]
         val isActive = if(us.flagActive) "Y" else "N"
@@ -211,16 +212,5 @@ class UserService(
             flagActive = req.flagActive ?: true
             updateCommonCol(loginUser)
         }
-    }
-
-    private fun validatePriorityIsHigherThan(u: User) {
-        val loginUser = SecurityUtils.getCurrentUserPrincipal()
-
-        val roleMap = core.getAllRoleMap(listOf(u, loginUser))
-        val targetRole = roleMap[u.roleId]!!
-        val loginUserRole = roleMap[loginUser.roleId]!!
-
-        if (targetRole.priorityLevel!! >= loginUserRole.priorityLevel!!)
-            throw IllegalArgumentException("접속 유저의 권한 레벨이 부족합니다. ")
     }
 }

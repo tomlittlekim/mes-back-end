@@ -18,6 +18,13 @@ input ExistLoginRequest {
     loginId: String!
 }
 
+input UserGroupRequest {
+    departmentId: String
+    positionId: String
+    roleId: Int
+    userName: String
+}
+
 type UserOutput {
     userId: String
     userNm: String
@@ -44,37 +51,6 @@ type User {
     flagActive: Boolean
 }
 
-type Role {
-    roleId: Int!              # 권한 ID (PK)
-    site: String             # 사이트
-    compCd: String           # 회사 코드
-    priorityLevel: Int       # 우선순위 레벨 (선택)
-    roleName: String!        # 권한 이름
-    flagDefault: Boolean     # 기본 권한 여부
-    sequence: Int            # 정렬 순서
-}
-
-input UserGroupRequest {
-    departmentId: String
-    positionId: String
-    roleId: Int
-    userName: String
-}
-
-type MenuRole {
-    id: Int
-    roleId: Int
-    menuId: String
-    isOpen: Boolean
-    isDelete: Boolean
-    isInsert: Boolean
-    isAdd: Boolean
-    isPopup: Boolean
-    isPrint: Boolean
-    isSelect: Boolean
-    isUpdate: Boolean
-}
-
 extend type Mutation {
     upsertUser(req: UserInput!): String
     deleteUser(id: Int!): String
@@ -86,7 +62,4 @@ extend type Query {
     existLoginId(req: ExistLoginRequest!): Boolean!
     getUserGroup(req: UserGroupRequest!): [User]
     getUserDetail(id: Int): User
-    getRoles: [Role]
-    getMenuRoleGroup: [MenuRole]
-    getMenuRole(menuId: String!): MenuRole
 }

@@ -1,27 +1,27 @@
 extend type Query {
     # 불량 정보 조회 관련 쿼리
     defectInfoList(filter: DefectInfoFilter): [DefectInfo]!
-    defectInfoByProdResultId(prodResultId: String!): [DefectInfo]!
+    defectInfosByProdResultId(prodResultId: String!): [DefectInfo]!
     defectStatsByProduct(fromDate: String!, toDate: String!): [DefectStatsByProduct]!
     defectStatsByCause(fromDate: String!, toDate: String!): [DefectStatsByCause]!
 }
 
 extend type Mutation {
     saveDefectInfo(createdRows: [DefectInfoInput], updatedRows: [DefectInfoUpdate]): Boolean
-    deleteDefectInfo(defectId: String!): Boolean
+    deleteDefectInfo(defectId: String!, isSoftDelete: Boolean = true): Boolean
 }
 
 # 불량 정보 조회용 필터
 input DefectInfoFilter {
+    defectId: String
     workOrderId: String
     prodResultId: String
-    defectId: String
     productId: String
     productName: String
+    state: String
     defectType: String
     fromDate: String
     toDate: String
-    state: String
     flagActive: Boolean
 }
 
@@ -47,7 +47,6 @@ type DefectInfo {
     updateDate: String
     updateUser: String
     flagActive: Boolean
-    # 관계형 필드
     workOrder: WorkOrder
     productionResult: ProductionResult
 }
@@ -55,15 +54,16 @@ type DefectInfo {
 # 불량 정보 등록 입력
 input DefectInfoInput {
     workOrderId: String!
-    prodResultId: String!
+    prodResultId: String
     productId: String
     productName: String
-    defectQty: Float
+    defectName: String
+    defectQty: Float!
+    defectCause: String
+    state: String
+    resultInfo: String
     defectType: String
     defectReason: String
-    resultInfo: String
-    state: String
-    defectCause: String
     equipmentId: String
     flagActive: Boolean
 }
@@ -75,12 +75,13 @@ input DefectInfoUpdate {
     prodResultId: String
     productId: String
     productName: String
+    defectName: String
     defectQty: Float
+    defectCause: String
+    state: String
+    resultInfo: String
     defectType: String
     defectReason: String
-    resultInfo: String
-    state: String
-    defectCause: String
     equipmentId: String
     flagActive: Boolean
 }
@@ -126,13 +127,4 @@ type ProductDefectCount {
     qty: Float
     count: Int
     percentage: Float
-}
-
-# 생산실적과 작업지시에도 불량 정보 관계 추가
-extend type ProductionResult {
-    defectInfos: [DefectInfo]
-}
-
-extend type WorkOrder {
-    defectInfos: [DefectInfo]
 }

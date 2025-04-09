@@ -1,7 +1,8 @@
-package kr.co.imoscloud.entity.user
+package kr.co.imoscloud.entity.system
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
+import kr.co.imoscloud.iface.DtoCompCdBase
 import kr.co.imoscloud.iface.DtoRoleIdBase
 
 @Entity
@@ -17,18 +18,18 @@ class UserRole(
     val site: String,
 
     @Column(name = "COMP_CD", length = 40, nullable = false)
-    val compCd: String,
+    override val compCd: String,
 
-    @Column(name = "PRIORITY_LEVEL", length = 20)
-    val priorityLevel: Int? = null,
+    @Column(name = "PRIORITY_LEVEL", nullable = false)
+    var priorityLevel: Int = 0,
 
     @Column(name = "ROLE_NAME", length = 100, nullable = false)
-    val roleName: String,
+    var roleName: String,
 
     @Column(name = "FLAG_DEFAULT")
-    val flagDefault: Boolean = false,
+    var flagDefault: Boolean = false,
 
     @Column(name = "SEQUENCE")
     val sequence: Int? = null
 
-): CommonCol(), DtoRoleIdBase
+): CommonCol(), DtoRoleIdBase, DtoCompCdBase

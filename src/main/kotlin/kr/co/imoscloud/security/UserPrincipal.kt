@@ -2,7 +2,7 @@ package kr.co.imoscloud.security
 
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserSummery
-import kr.co.imoscloud.entity.user.User
+import kr.co.imoscloud.entity.system.User
 import kr.co.imoscloud.iface.DtoAllInOneBase
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority

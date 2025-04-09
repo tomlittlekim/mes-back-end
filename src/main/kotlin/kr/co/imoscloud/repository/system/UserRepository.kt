@@ -1,6 +1,6 @@
-package kr.co.imoscloud.repository.user
+package kr.co.imoscloud.repository.system
 
-import kr.co.imoscloud.entity.user.User
+import kr.co.imoscloud.entity.system.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.util.*
@@ -20,6 +20,6 @@ interface UserRepository : JpaRepository<User, Long> {
     fun findBySiteAndIdAndFlagActiveIsTrue(site: String, id: Long): User?
     fun findAllByLoginIdIn(idList: List<String?>): List<User>
     fun findByLoginId(loginId: String?): Optional<User>
-    fun findAllBySiteAndCompCdAndFlagActiveIsTrue(site: String, userId: String): List<User>
+    fun findAllByCompCdAndFlagActiveIsTrue(compCd: String): List<User>
     fun findByIdAndFlagActiveIsTrue(id: Long): User?
 } 

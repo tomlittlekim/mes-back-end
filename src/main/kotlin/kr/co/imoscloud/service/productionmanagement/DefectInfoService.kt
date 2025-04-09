@@ -7,9 +7,11 @@ import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepositor
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 /**
  * 불량 정보 서비스
@@ -17,9 +19,9 @@ import java.time.LocalTime
  */
 @Service
 class DefectInfoService(
-    val defectInfoRepository: DefectInfoRepository,
-    val workOrderRepository: WorkOrderRepository,
-    val productionResultRepository: ProductionResultRepository
+    private val defectInfoRepository: DefectInfoRepository,
+    private val workOrderRepository: WorkOrderRepository,
+    private val productionResultRepository: ProductionResultRepository
 ) {
     /**
      * 생산 실적 ID로 불량 정보 조회
@@ -31,6 +33,29 @@ class DefectInfoService(
             compCd = currentUser.compCd,
             prodResultId = prodResultId
         )
+    }
+
+    /**
+     * DefectInfo 엔티티를 DefectInfoDto로 변환하는 유틸리티 메소드
+     */
+    fun convertToDefectInfoDtos(defectInfos: List<DefectInfo>): List<DefectInfoDto> {
+        return defectInfos.map { defect ->
+            DefectInfoDto(
+                defectId = defect.defectId,
+                workOrderId = defect.workOrderId,
+                prodResultId = defect.prodResultId,
+                productId = defect.productId,
+                defectName = defect.resultInfo, // 불량명 정보가 resultInfo에 저장됨
+                defectQty = defect.defectQty,
+                defectCause = defect.defectCause,
+                state = defect.state,
+                resultInfo = defect.resultInfo,
+                createDate = defect.createDate?.format(DateTimeFormatter.ISO_DATE_TIME),
+                updateDate = defect.updateDate?.format(DateTimeFormatter.ISO_DATE_TIME),
+                createUser = defect.createUser,
+                updateUser = defect.updateUser
+            )
+        }
     }
 
     /**
@@ -57,7 +82,7 @@ class DefectInfoService(
             productId = filter.productId,
             state = filter.state,
             defectType = filter.defectType,
-            equipmentId = null, // 설비 ID 필터링은 비활성화
+            equipmentId = null, // 설비 ID 필터링은 선택적으로 활성화
             fromDate = fromDateTime,
             toDate = toDateTime,
             flagActive = filter.flagActive ?: true
@@ -67,6 +92,7 @@ class DefectInfoService(
     /**
      * 불량 정보 저장(등록 또는 수정)
      */
+    @Transactional
     fun saveDefectInfo(
         createdRows: List<DefectInfoInput>? = null,
         updatedRows: List<DefectInfoUpdate>? = null
@@ -87,11 +113,14 @@ class DefectInfoService(
                     resultInfo = input.resultInfo ?: input.defectType
                     state = input.state ?: "NEW" // 기본 상태
                     defectCause = input.defectCause ?: input.defectReason
-                    flagActive = input.flagActive ?: true
+                    flagActive = true
                     createCommonCol(currentUser)
                 }
 
                 defectInfoRepository.save(newDefectInfo)
+
+                // 생산실적 불량 수량 업데이트 (선택적)
+                updateProductionResultDefectQty(input.prodResultId)
             }
 
             // 기존 불량 정보 수정
@@ -99,9 +128,13 @@ class DefectInfoService(
                 val existingDefectInfo = defectInfoRepository.findByDefectId(update.defectId)
 
                 existingDefectInfo?.let { defectInfo ->
+                    // 기존 불량 수량 저장
+                    val originalQty = defectInfo.defectQty ?: 0.0
+
                     defectInfo.apply {
                         update.workOrderId?.let { workOrderId = it }
                         update.prodResultId?.let { prodResultId = it }
+                        update.defectName?.let { resultInfo = it }
                         update.productId?.let { productId = it }
                         update.defectQty?.let { defectQty = it }
                         update.resultInfo?.let { resultInfo = it }
@@ -112,12 +145,16 @@ class DefectInfoService(
                     }
 
                     defectInfoRepository.save(defectInfo)
+
+                    // 불량 수량이 변경된 경우 생산실적 불량 수량 업데이트
+                    if (originalQty != (update.defectQty ?: originalQty)) {
+                        updateProductionResultDefectQty(defectInfo.prodResultId!!)
+                    }
                 }
             }
 
             return true
         } catch (e: Exception) {
-            // 로깅 추가
             println("Error in saveDefectInfo: ${e.message}")
             e.printStackTrace()
             return false
@@ -125,21 +162,61 @@ class DefectInfoService(
     }
 
     /**
-     * 불량 정보 삭제
+     * 불량 정보 삭제 (물리적 삭제)
      */
+    @Transactional
     fun deleteDefectInfo(defectId: String): Boolean {
         try {
             val existingDefectInfo = defectInfoRepository.findByDefectId(defectId)
 
             existingDefectInfo?.let {
+                val prodResultId = it.prodResultId
                 defectInfoRepository.delete(it)
+
+                // 생산실적 불량 수량 업데이트
+                if (prodResultId != null) {
+                    updateProductionResultDefectQty(prodResultId)
+                }
+
                 return true
             }
 
             return false
         } catch (e: Exception) {
-            // 로깅 추가
             println("Error in deleteDefectInfo: ${e.message}")
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    /**
+     * 불량 정보 소프트 삭제 (flagActive = false로 설정)
+     */
+    @Transactional
+    fun softDeleteDefectInfo(defectId: String): Boolean {
+        try {
+            val currentUser = getCurrentUserPrincipal()
+            val existingDefectInfo = defectInfoRepository.findByDefectId(defectId)
+
+            existingDefectInfo?.let {
+                val prodResultId = it.prodResultId
+
+                // flagActive를 false로 설정
+                it.flagActive = false
+                it.updateCommonCol(currentUser)
+                defectInfoRepository.save(it)
+
+                // 생산실적 불량 수량 업데이트
+                if (prodResultId != null) {
+                    updateProductionResultDefectQty(prodResultId)
+                }
+
+                return true
+            }
+
+            return false
+        } catch (e: Exception) {
+            println("Error in softDeleteDefectInfo: ${e.message}")
             e.printStackTrace()
             return false
         }
@@ -149,6 +226,7 @@ class DefectInfoService(
      * 생산 실적 등록 시 불량 정보 일괄 등록
      * ProductionResultService에서 호출하는 메소드
      */
+    @Transactional
     fun saveDefectInfoForProductionResult(
         prodResultId: String,
         workOrderId: String,
@@ -156,6 +234,7 @@ class DefectInfoService(
     ): Boolean {
         try {
             val currentUser = getCurrentUserPrincipal()
+            var totalDefectQty = 0.0
 
             defectInputs.forEach { input ->
                 val newDefectInfo = DefectInfo().apply {
@@ -163,10 +242,10 @@ class DefectInfoService(
                     compCd = currentUser.compCd
                     this.workOrderId = workOrderId
                     this.prodResultId = prodResultId
-                    defectId = "DF" + System.currentTimeMillis() + "-" + (input.productId ?: "") // 임시 ID 생성 방식
+                    defectId = "DF" + System.currentTimeMillis() + "-" + (Math.random() * 1000).toInt() // 고유 ID 생성
                     productId = input.productId
-                    defectQty = input.defectQty
-                    resultInfo = input.resultInfo ?: input.defectType
+                    defectQty = input.defectQty ?: 0.0
+                    resultInfo = input.resultInfo ?: input.defectType ?: input.defectName
                     state = input.state ?: "NEW" // 기본 상태
                     defectCause = input.defectCause ?: input.defectReason
                     flagActive = true
@@ -174,11 +253,16 @@ class DefectInfoService(
                 }
 
                 defectInfoRepository.save(newDefectInfo)
+                totalDefectQty += newDefectInfo.defectQty ?: 0.0
+            }
+
+            // 생산실적 불량 수량 업데이트 (필요시)
+            if (defectInputs.isNotEmpty()) {
+                updateProductionResultDefectQty(prodResultId)
             }
 
             return true
         } catch (e: Exception) {
-            // 로깅 추가
             println("Error in saveDefectInfoForProductionResult: ${e.message}")
             e.printStackTrace()
             return false
@@ -375,6 +459,74 @@ class DefectInfoService(
                 defectCount = stats["defectCount"] as Int,
                 products = productStats
             )
+        }
+    }
+
+    /**
+     * 생산실적의 불량 수량을 업데이트하는 내부 메소드
+     * - 불량정보 추가/수정/삭제 시 호출하여 생산실적의 불량 수량을 동기화
+     */
+    @Transactional
+    private fun updateProductionResultDefectQty(prodResultId: String?) {
+        if (prodResultId == null) return
+
+        try {
+            val currentUser = getCurrentUserPrincipal()
+
+            // 생산실적 조회
+            val productionResult = productionResultRepository.findBySiteAndCompCdAndProdResultId(
+                currentUser.getSite(),
+                currentUser.compCd,
+                prodResultId
+            ) ?: return
+
+            // 활성화된 불량정보만 조회하여 합계 계산
+            val defectInfos = defectInfoRepository.getDefectInfoByProdResultId(
+                currentUser.getSite(),
+                currentUser.compCd,
+                prodResultId
+            ).filter { it.flagActive == true }
+
+            // 불량 수량 합산
+            val totalDefectQty = defectInfos.sumOf { it.defectQty ?: 0.0 }
+
+            // 생산실적 업데이트
+            val goodQty = productionResult.goodQty ?: 0.0
+            val totalQty = goodQty + totalDefectQty
+
+            // 작업지시 조회하여 계획수량 확인
+            val workOrder = productionResult.workOrderId?.let {
+                workOrderRepository.findBySiteAndCompCdAndWorkOrderId(
+                    currentUser.getSite(),
+                    currentUser.compCd,
+                    it
+                )
+            }
+
+            val orderQty = workOrder?.orderQty ?: 0.0
+
+            // 진척률 및 불량률 재계산
+            val progressRate = if (orderQty > 0) {
+                String.format("%.1f", (totalQty / orderQty) * 100.0)
+            } else "0.0"
+
+            val defectRate = if (totalQty > 0) {
+                String.format("%.1f", (totalDefectQty / totalQty) * 100.0)
+            } else "0.0"
+
+            // 생산실적 업데이트
+            productionResult.apply {
+                this.defectQty = totalDefectQty
+                this.progressRate = progressRate
+                this.defectRate = defectRate
+                updateCommonCol(currentUser)
+            }
+
+            productionResultRepository.save(productionResult)
+
+        } catch (e: Exception) {
+            println("Error in updateProductionResultDefectQty: ${e.message}")
+            // 로그만 기록하고 예외는 던지지 않음
         }
     }
 

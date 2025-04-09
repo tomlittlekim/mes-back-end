@@ -20,16 +20,19 @@ class ProductionPlanService(
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
+        // flagActive가 null인 경우 true로 설정하여 활성화된 데이터만 조회
+        val activeFilter = filter.copy(flagActive = filter.flagActive ?: true)
+
         return productionPlanRepository.getProductionPlanList(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
-            prodPlanId = filter.prodPlanId,
-            orderId = filter.orderId,
-            productId = filter.productId,
-            shiftType = filter.shiftType,
-            planStartDateFrom = filter.planStartDateFrom,  // 변경된 필드명
-            planStartDateTo = filter.planStartDateTo,      // 변경된 필드명
-            flagActive = filter.flagActive
+            prodPlanId = activeFilter.prodPlanId,
+            orderId = activeFilter.orderId,
+            productId = activeFilter.productId,
+            shiftType = activeFilter.shiftType,
+            planStartDateFrom = activeFilter.planStartDateFrom,
+            planStartDateTo = activeFilter.planStartDateTo,
+            flagActive = activeFilter.flagActive
         )
     }
 
@@ -57,7 +60,7 @@ class ProductionPlanService(
                     planQty = input.planQty
                     planStartDate = startDate
                     planEndDate = endDate
-                    flagActive = input.flagActive ?: true
+                    flagActive = true // 항상 활성 상태로 생성
 
                     createCommonCol(currentUser)
                 }
@@ -68,7 +71,12 @@ class ProductionPlanService(
 
             // 수정 요청 처리
             updatedRows?.forEach { update ->
-                val existingPlan = productionPlanRepository.findByProdPlanId(update.prodPlanId)
+                // UK 필드를 활용하여 정확한 레코드 조회
+                val existingPlan = productionPlanRepository.findBySiteAndCompCdAndProdPlanId(
+                    currentUser.getSite(),
+                    currentUser.compCd,
+                    update.prodPlanId
+                )
 
                 existingPlan?.let { plan ->
                     val (startDate, endDate) = update.toLocalDateTimes()
@@ -81,14 +89,14 @@ class ProductionPlanService(
                         update.planQty?.let { planQty = it }
                         startDate?.let { planStartDate = it }
                         endDate?.let { planEndDate = it }
-                        update.flagActive?.let { flagActive = it }
+                        // flagActive는 업데이트하지 않음 (사용자가 수정할 수 없음)
 
                         updateCommonCol(currentUser)
                     }
 
                     // 저장
                     productionPlanRepository.save(plan)
-                }
+                } ?: log.warn("업데이트할 생산계획을 찾을 수 없습니다: {}", update.prodPlanId)
             }
 
             return true
@@ -97,23 +105,37 @@ class ProductionPlanService(
             throw e  // 오류를 상위로 전파하도록 변경
         }
     }
-    fun deleteProductionPlan(prodPlanId: String): Boolean {
+
+    /**
+     * 생산계획을 소프트 삭제하는 메서드 (flagActive = false로 설정)
+     */
+    fun softDeleteProductionPlan(prodPlanId: String): Boolean {
         try {
             // 사용자 정보 획득
             val currentUser = getCurrentUserPrincipalOrNull()
                 ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-            val existingPlan = productionPlanRepository.findByProdPlanId(prodPlanId)
+            // UK 필드를 활용하여 정확한 레코드 조회
+            val existingPlan = productionPlanRepository.findBySiteAndCompCdAndProdPlanId(
+                currentUser.getSite(),
+                currentUser.compCd,
+                prodPlanId
+            )
 
             existingPlan?.let {
-                productionPlanRepository.delete(it)
+                // flagActive를 false로 설정
+                it.flagActive = false
+                it.updateCommonCol(currentUser)
+
+                productionPlanRepository.save(it)
                 return true
             }
 
-            log.warn("삭제할 생산계획 없음: {}", prodPlanId)
+            log.warn("삭제(비활성화)할 생산계획 없음: {}", prodPlanId)
             return false
         } catch (e: Exception) {
-            log.error("생산계획 삭제 중 오류 발생", e)
+            log.error("생산계획 소프트 삭제 중 오류 발생", e)
             throw e  // 오류를 상위로 전파하도록 변경
         }
-    }}
+    }
+}

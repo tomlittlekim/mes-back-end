@@ -34,10 +34,9 @@ class DefectInfoDataFetcher(
      * 생산 실적 ID로 불량 정보 조회
      */
     @DgsQuery
-    fun defectInfoByProdResultId(@InputArgument("prodResultId") prodResultId: String): List<DefectInfo> {
+    fun defectInfosByProdResultId(@InputArgument("prodResultId") prodResultId: String): List<DefectInfo> {
         return defectInfoService.getDefectInfoByProdResultId(prodResultId)
     }
-
     /**
      * 제품별 불량 통계 조회
      */

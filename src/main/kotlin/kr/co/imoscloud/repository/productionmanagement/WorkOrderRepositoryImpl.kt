@@ -22,7 +22,7 @@ class WorkOrderRepositoryImpl(
                 workOrder.site.eq(site),
                 workOrder.compCd.eq(compCd),
                 workOrder.prodPlanId.eq(prodPlanId),
-                workOrder.flagActive.eq(true)
+                workOrder.flagActive.eq(true) // 활성화된 데이터만 조회
             )
             .orderBy(workOrder.createDate.desc())
 
@@ -83,10 +83,8 @@ class WorkOrderRepositoryImpl(
             }
         }
 
-        // flagActive 필터링
-        flagActive?.let {
-            query.where(workOrder.flagActive.eq(it))
-        }
+        // flagActive 필터링 (기본값은 true)
+        query.where(workOrder.flagActive.eq(flagActive ?: true))
 
         return query.fetch()
     }

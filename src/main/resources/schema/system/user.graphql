@@ -1,0 +1,65 @@
+input UserInput {
+    id: Int,
+    site: String
+    compCd: String
+    userName: String!
+    loginId: String!
+    userPwd: String
+    imagePath: String
+    roleId: Int!
+    userEmail: String
+    phoneNum: String
+    departmentId: String
+    positionId: String
+    flagActive: Boolean
+}
+
+input ExistLoginRequest {
+    loginId: String!
+}
+
+input UserGroupRequest {
+    departmentId: String
+    positionId: String
+    roleId: Int
+    userName: String
+}
+
+type UserOutput {
+    userId: String
+    userNm: String
+    email: String
+    roleId: String
+    status: String!
+    message: String!
+}
+
+type User {
+    id: Int                      # Primary Key
+    site: String                # 사이트 식별자
+    compCd: String             # 회사 코드
+    userName: String             # 사용자 이름
+    loginId: String!             # 로그인 ID
+    userPwd: String             # 사용자 비밀번호 (노출 주의)
+    imagePath: String            # 프로필 이미지 경로
+    roleId: Int!                # 권한 ID
+    userEmail: String            # 이메일
+    phoneNum: String             # 전화번호
+    departmentId: String         # 부서 ID
+    positionId: String           # 직급 ID
+    flagLock: Boolean           # 잠금 여부
+    flagActive: Boolean
+}
+
+extend type Mutation {
+    upsertUser(req: UserInput!): String
+    deleteUser(id: Int!): String
+    resetPwd(id: Int!): String
+}
+
+extend type Query {
+    signIn(req: UserInput!): UserOutput!
+    existLoginId(req: ExistLoginRequest!): Boolean!
+    getUserGroup(req: UserGroupRequest!): [User]
+    getUserDetail(id: Int): User
+}

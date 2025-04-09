@@ -1,0 +1,32 @@
+input MenuRequest {
+    id: Int
+    menuId: String
+    menuName: String
+    roleId: Int
+    flagSubscribe: Boolean
+    flagVisible: Boolean
+    sequence: Int
+}
+
+type Menu {
+    id: ID!
+    menuId: String!
+    menuName: String!
+    roleId: Int!
+    flagSubscribe: Boolean
+    flagVisible: Boolean
+    sequence: Int
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+    flagActive: Boolean
+}
+
+extend type Mutation {
+    upsertMenus(req: MenuRequest!): String
+}
+
+extend type Query {
+    getMenus: [Menu]
+}

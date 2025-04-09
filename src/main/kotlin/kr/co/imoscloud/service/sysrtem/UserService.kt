@@ -114,7 +114,7 @@ class UserService(
     fun deleteUser(id: Long): String {
         return core.userRepo.findById(id).map { u ->
             val loginUser = SecurityUtils.getCurrentUserPrincipal()
-            core.validatePriorityIsHigherThan(u, loginUser)
+            core.validatePriorityIsHigherThan(u.roleId, loginUser)
             core.userRepo.delete(u)
             core.deleteFromInMemory(u)
             "${u.loginId} 의 계정 삭제 완료"
@@ -127,7 +127,7 @@ class UserService(
 
         return core.userRepo.findById(id)
             .map { user ->
-                core.validatePriorityIsHigherThan(user, loginUser)
+                core.validatePriorityIsHigherThan(user.roleId, loginUser)
                 // company 객체 내부에 초기화 비밀번호 값을 가지고 있거나 \\ 사용자가 입력 하는 방식으로 진행해야함
                 val encoder = BCryptPasswordEncoder()
                 user.apply { userPwd = encoder.encode("1234"); updateCommonCol(loginUser) }

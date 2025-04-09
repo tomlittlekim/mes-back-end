@@ -97,15 +97,18 @@ class Core(
             ?.let { it.priorityLevel >= 3 }
             ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
-    fun validatePriorityIsHigherThan(target: User, loginUser: UserPrincipal): Boolean {
-        val roleMap = getAllRoleMap(target, loginUser)
+    fun validatePriorityIsHigherThan(roleId: Long, loginUser: UserPrincipal): Unit {
+        val roleMap = getAllRoleMap(OnlyRoleIdReq(roleId), loginUser)
 
-        return try {
-            val targetRole = roleMap[target.roleId]!!
+        try {
+            val targetRole = roleMap[roleId]!!
             val loginUserRole = roleMap[loginUser.roleId]!!
-            targetRole.priorityLevel >= loginUserRole.priorityLevel
+            if (targetRole.priorityLevel > loginUserRole.priorityLevel) {
+                val msg = "권한 레벨이 부족합니다. ${targetRole.roleName} 또는 그에 준하거나 이상의 권한이 필요합니다."
+                throw IllegalArgumentException(msg)
+            }
         } catch (e: NullPointerException) {
-            throw IllegalArgumentException("대상: ${target.roleId} 또는 로그인 유저: ${loginUser.roleId} 의 권한 정보가 존재하지 않습니다. ")
+            throw IllegalArgumentException("대상: $roleId 또는 로그인 유저: ${loginUser.roleId} 의 권한 정보가 존재하지 않습니다. ")
         }
     }
 }

@@ -1,6 +1,5 @@
 input MaterialFilter {
     materialType: String
-    systemMaterialId: String
     userMaterialId: String
     materialName: String
     flagActive: String
@@ -67,6 +66,7 @@ extend type Query {
     getRawSubMaterials(filter: MaterialFilter): [Material]
     getCompleteMaterials(filter: MaterialFilter): [Material]
     getHalfMaterials(filter: MaterialFilter): [Material]
+    getMaterialsByType(materialType: String!): [Material]
 }
 
 extend type Mutation {

@@ -28,4 +28,11 @@ interface UserRoleRepository: JpaRepository<UserRole, Long> {
             and ur.flagDefault is true
     """)
     fun resetDefaultByCompCd(compCd: String)
+
+    @Query("""
+        select ur.roleId
+        from UserRole ur
+        where ur.flagActive is true
+    """)
+    fun getAllRoleIds(): List<Long>
 }

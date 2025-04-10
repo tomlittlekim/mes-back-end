@@ -7,8 +7,6 @@ extend type Query {
     # 생산실적 조회 관련 쿼리
     productionResultList(filter: ProductionResultInquiryFilter): [ProductionResultSummary]!
     productionResultDetail(prodResultId: String!): ProductionResultDetail
-    productionResultStatistics(fromDate: String!, toDate: String!): ProductionStatistics
-    productionResultByEquipment(fromDate: String!, toDate: String!): [ProductionEquipmentStat]!
 }
 
 extend type Mutation {
@@ -121,46 +119,6 @@ type ProductionResultDetail {
     updateDate: String
     createUser: String
     updateUser: String
-}
-
-# 생산실적 통계 정보
-type ProductionStatistics {
-    fromDate: String
-    toDate: String
-    totalPlanQty: Float
-    totalGoodQty: Float
-    totalDefectQty: Float
-    achievementRate: String
-    defectRate: String
-    dailyStats: [ProductionDailyStat]
-    productStats: [ProductionProductStat]
-}
-
-# 일별 생산 통계
-type ProductionDailyStat {
-    date: String
-    planQty: Float
-    goodQty: Float
-    defectQty: Float
-}
-
-# 제품별 생산 통계
-type ProductionProductStat {
-    productId: String
-    productName: String
-    planQty: Float
-    goodQty: Float
-    defectQty: Float
-}
-
-# 설비별 생산 통계
-type ProductionEquipmentStat {
-    equipmentId: String
-    equipmentName: String
-    goodQty: Float
-    defectQty: Float
-    totalQty: Float
-    defectRate: String
 }
 
 # 생산실적 입력 타입

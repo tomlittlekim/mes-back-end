@@ -194,6 +194,9 @@ class BomService(
             val bomDetail = updateList[bomDetailId]
 
             bomDetail?.let {
+                it.bomDetail.bomLevel = x?.bomLevel
+                it.bomDetail.itemCd = x?.systemMaterialId
+                it.bomDetail.parentItemCd = x?.parentItemCd
                 it.bomDetail.itemQty = x?.itemQty
                 it.bomDetail.remark = x?.remark
                 it.bomDetail.updateCommonCol(userPrincipal!!)
@@ -204,26 +207,23 @@ class BomService(
     }
 
     // 우측 그리드 삭제 - 기존과 동일하게 행 삭제
+    @Transactional
     fun deleteBomDetails(bomDetailIds: List<String>): Boolean {
         val userPrincipal = getCurrentUser() ?: return false
 
-        // 먼저 flagActive를 false로 업데이트
-        bomDetailRepository.updateBomDetailsFlagActiveByBomDetailIds(
-            site = userPrincipal.getSite(),
-            compCd = userPrincipal.compCd,
-            bomDetailIds = bomDetailIds
-        )
-
-        // 업데이트된 엔티티들을 조회하여 updateCommonCol 적용
         val bomDetails = bomDetailRepository.getBomDetailListByBomDetailIds(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
             bomDetailIds = bomDetailIds
         ).map { it.bomDetail }
 
+        if (bomDetails.isEmpty()) return false
+
         bomDetails.forEach { detail ->
+            detail.flagActive = false
             detail.updateCommonCol(userPrincipal)
         }
+
         bomDetailRepository.saveAll(bomDetails)
 
         return true
@@ -259,11 +259,13 @@ class BomService(
                 bomDetailId = dto.bomDetail.bomDetailId!!,
                 bomLevel = dto.bomDetail.bomLevel!!,
                 materialType = dto.materialType,
+                materialCategory = dto.materialCategory,
                 systemMaterialId = dto.bomDetail.itemCd!!,
                 userMaterialId = dto.userMaterialId,
                 materialName = dto.materialName,
                 parentItemCd = dto.bomDetail.parentItemCd,
                 userParentItemCd = dto.userParentItemCd,
+                parentMaterialType = dto.parentMaterialType,
                 parentMaterialName = dto.parentMaterialName,
                 materialStandard = dto.materialStandard,
                 unit = dto.unit,
@@ -303,11 +305,13 @@ data class BomDetailResponseModel(
     val bomDetailId: String,
     val bomLevel: Int,
     val materialType: String?,
+    val materialCategory: String?,
     val systemMaterialId: String,
     val userMaterialId: String?,
     val materialName: String?,
     val parentItemCd: String?,
     val userParentItemCd: String?,
+    val parentMaterialType: String?,
     val parentMaterialName: String?,
     val materialStandard: String?,
     val unit: String?,

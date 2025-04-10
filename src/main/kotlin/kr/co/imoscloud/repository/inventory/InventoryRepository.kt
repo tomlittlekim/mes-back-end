@@ -5,59 +5,59 @@ import kr.co.imoscloud.service.inventory.*
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
+import java.time.LocalDate
+
 
 interface InventoryInManagementRep : JpaRepository<InventoryInManagement, Long>{
     @Query(
         nativeQuery = true,
         value = """
-                with material_info as (
-                    select
-                        in2.IN_MANAGEMENT_ID,
-                        mm2.MATERIAL_NAME,
-                        count(*) over (partition by in2.IN_MANAGEMENT_ID) as material_count,
-                        row_number() over (partition by in2.IN_MANAGEMENT_ID order by in2.SEQ) as rn
-                    from INVENTORY_IN in2
-                             join MATERIAL_MASTER mm2 on mm2.SYSTEM_MATERIAL_ID = in2.SYSTEM_MATERIAL_ID
-                )
-                select
-                    iim.IN_MANAGEMENT_ID as inManagementId,
-                    iim.IN_TYPE as inType,
-                    f.FACTORY_NAME as factoryName,
-                    w.WAREHOUSE_NAME as warehouseName,
-                    case
-                        when mi.material_count > 1 then concat(mi.MATERIAL_NAME, ' 외 ', mi.material_count - 1, '건')
-                        else mi.MATERIAL_NAME
-                    end as materialInfo,
-                    iim.TOTAL_PRICE as totalPrice,
-                    iim.HAS_INVOICE as hasInvoice,
-                    u.USER_NAME as userName,
-                    DATE_FORMAT(iim.CREATE_DATE, '%Y-%m-%d') as createDate
-                from INVENTORY_IN_MANAGEMENT iim
-                         left join WAREHOUSE w on iim.WAREHOUSE_ID = w.WAREHOUSE_ID
-                         and w.COMP_CD = iim.COMP_CD
-                         and w.SITE = iim.SITE
-                         left join FACTORY f on f.FACTORY_ID = iim.FACTORY_ID
-                         and f.COMP_CD = iim.COMP_CD
-                         and f.SITE = iim.SITE
-                         left join USER u on u.LOGIN_ID = iim.CREATE_USER
-                         and u.COMP_CD = iim.COMP_CD
-                         and u.SITE = iim.SITE
-                         left join material_info mi on mi.IN_MANAGEMENT_ID = iim.IN_MANAGEMENT_ID and mi.rn = 1
-                where 1=1
-                  and iim.IN_MANAGEMENT_ID like concat('%', :inManagementId, '%')
-                  and iim.IN_TYPE like concat('%', :inType, '%')
-                  and f.FACTORY_NAME like concat('%', :factoryName, '%')
-                  and w.WAREHOUSE_NAME like concat('%', :warehouseName, '%')
-                  and iim.CREATE_USER like concat('%', :createUser, '%')
-                  and (:hasInvoice IS NULL OR :hasInvoice = '' 
-                       OR (:hasInvoice = 'Y' AND iim.HAS_INVOICE IS NOT NULL AND iim.HAS_INVOICE <> '')
-                       OR (:hasInvoice = 'N' AND iim.HAS_INVOICE IS NULL))
-                  and (:startDate IS NULL OR :startDate = '' OR iim.CREATE_DATE >= STR_TO_DATE(:startDate, '%Y-%m-%d'))
-                  and (:endDate IS NULL OR :endDate = '' OR iim.CREATE_DATE <= STR_TO_DATE(:endDate, '%Y-%m-%d'))
-                  and iim.SITE = :site
-                  and iim.COMP_CD = :compCd
-                  and iim.FLAG_ACTIVE = :flagActive
-            """
+        with material_info as (
+            select
+                in2.IN_MANAGEMENT_ID,
+                mm2.MATERIAL_NAME,
+                count(*) over (partition by in2.IN_MANAGEMENT_ID) as material_count,
+                row_number() over (partition by in2.IN_MANAGEMENT_ID order by in2.SEQ) as rn
+            from INVENTORY_IN in2
+            join MATERIAL_MASTER mm2 on mm2.SYSTEM_MATERIAL_ID = in2.SYSTEM_MATERIAL_ID
+        )
+        select
+            iim.IN_MANAGEMENT_ID as inManagementId,
+            iim.IN_TYPE as inType,
+            iim.FACTORY_ID as factoryId,
+            iim.WAREHOUSE_ID as warehouseId,
+            case
+                when mi.material_count > 1 then concat(mi.MATERIAL_NAME, ' 외 ', mi.material_count - 1, '건')
+                else mi.MATERIAL_NAME
+            end as materialInfo,
+            iim.TOTAL_PRICE as totalPrice,
+            iim.HAS_INVOICE as hasInvoice,
+            u.USER_NAME as userName,
+            DATE_FORMAT(iim.CREATE_DATE, '%Y-%m-%d %H:%i:%s') as createDate
+        from INVENTORY_IN_MANAGEMENT iim
+        left join WAREHOUSE w on w.WAREHOUSE_ID = iim.WAREHOUSE_ID
+            and w.COMP_CD = iim.COMP_CD and w.SITE = iim.SITE
+        left join FACTORY f on f.FACTORY_ID = iim.FACTORY_ID
+            and f.COMP_CD = iim.COMP_CD and f.SITE = iim.SITE
+        left join USER u on u.LOGIN_ID = iim.CREATE_USER
+            and u.COMP_CD = iim.COMP_CD and u.SITE = iim.SITE
+        left join material_info mi on mi.IN_MANAGEMENT_ID = iim.IN_MANAGEMENT_ID and mi.rn = 1
+        where iim.SITE = :site
+          and iim.COMP_CD = :compCd
+          and iim.FLAG_ACTIVE = :flagActive
+          and (:inManagementId IS NULL OR :inManagementId = '' OR iim.IN_MANAGEMENT_ID like concat('%', :inManagementId, '%'))
+          and (:inType IS NULL OR :inType = '' OR iim.IN_TYPE like concat('%', :inType, '%'))
+          and (:factoryName IS NULL OR :factoryName = '' OR f.FACTORY_NAME like concat('%', :factoryName, '%'))
+          and (:warehouseName IS NULL OR :warehouseName = '' OR w.WAREHOUSE_NAME like concat('%', :warehouseName, '%'))
+          and (:createUser IS NULL OR :createUser = '' OR iim.CREATE_USER like concat('%', :createUser, '%'))
+          and (
+            :hasInvoice is null or :hasInvoice = '' or
+            (:hasInvoice = 'Y' and iim.HAS_INVOICE is not null and iim.HAS_INVOICE <> '') or
+            (:hasInvoice = 'N' and (iim.HAS_INVOICE is null or iim.HAS_INVOICE = ''))
+          )
+          and (:startDate is null or :startDate = '' or iim.CREATE_DATE >= STR_TO_DATE(:startDate, '%Y-%m-%d'))
+          and (:endDate is null or :endDate = '' or iim.CREATE_DATE <= STR_TO_DATE(:endDate, '%Y-%m-%d 23:59:59'))
+    """
     )
     fun findInventoryInManagementWithMaterialInfo(
         @Param("inManagementId") inManagementId: String?,
@@ -108,9 +108,9 @@ interface InventoryInRep : JpaRepository<InventoryIn, Long> {
             CAST(ii.UNIT_VAT AS CHAR) as unitVat,
             CAST(ii.TOTAL_PRICE AS CHAR) as totalPrice,
             u1.USER_NAME as createUser,
-            DATE_FORMAT(ii.CREATE_DATE, '%Y-%m-%d') as createDate,
+            DATE_FORMAT(ii.CREATE_DATE, '%Y-%m-%d %H:%i:%s') as createDate,
             u2.USER_NAME as updateUser,
-            DATE_FORMAT(ii.UPDATE_DATE, '%Y-%m-%d') as updateDate
+            DATE_FORMAT(ii.UPDATE_DATE, '%Y-%m-%d %H:%i:%s') as updateDate
         from INVENTORY_IN ii
         left join MATERIAL_MASTER mm on ii.SYSTEM_MATERIAL_ID = mm.SYSTEM_MATERIAL_ID
         left join USER u1 on u1.LOGIN_ID = ii.CREATE_USER
@@ -194,15 +194,15 @@ interface InventoryOutManagementRep : JpaRepository<InventoryOutManagement, Long
                 select
                     iom.OUT_MANAGEMENT_ID as outManagementId,
                     iom.OUT_TYPE as outType,
-                    f.FACTORY_NAME as factoryName,
-                    w.WAREHOUSE_NAME as warehouseName,
+                    iom.FACTORY_ID as factoryId,
+                    iom.WAREHOUSE_ID as WAREHOUSE_ID,
                     case
                         when mi.material_count > 1 then concat(mi.MATERIAL_NAME, ' 외 ', mi.material_count - 1, '건')
                         else mi.MATERIAL_NAME
                     end as materialInfo,
                     iom.TOTAL_PRICE as totalPrice,
                     u.USER_NAME as userName,
-                    DATE_FORMAT(iom.CREATE_DATE, '%Y-%m-%d') as createDate
+                    DATE_FORMAT(iom.CREATE_DATE, '%Y-%m-%d %H:%i:%s') as createDate
                 from INVENTORY_OUT_MANAGEMENT iom
                          left join WAREHOUSE w on iom.WAREHOUSE_ID = w.WAREHOUSE_ID
                          and w.COMP_CD = iom.COMP_CD
@@ -215,13 +215,13 @@ interface InventoryOutManagementRep : JpaRepository<InventoryOutManagement, Long
                          and u.SITE = iom.SITE
                          left join material_info mi on mi.OUT_MANAGEMENT_ID = iom.OUT_MANAGEMENT_ID and mi.rn = 1
                 where 1=1
-                  and iom.OUT_MANAGEMENT_ID like concat('%', :outManagementId, '%')
-                  and iom.OUT_TYPE like concat('%', :outType, '%')
-                  and f.FACTORY_NAME like concat('%', :factoryName, '%')
-                  and w.WAREHOUSE_NAME like concat('%', :warehouseName, '%')
-                  and iom.CREATE_USER like concat('%', :createUser, '%')
+                  and (:outManagementId IS NULL OR :outManagementId = '' OR iom.OUT_MANAGEMENT_ID like concat('%', :outManagementId, '%'))
+                  and (:outType IS NULL OR :outType = '' OR iom.OUT_TYPE like concat('%', :outType, '%'))
+                  and (:factoryName IS NULL OR :factoryName = '' OR f.FACTORY_NAME like concat('%', :factoryName, '%'))
+                  and (:warehouseName IS NULL OR :warehouseName = '' OR w.WAREHOUSE_NAME like concat('%', :warehouseName, '%'))
+                  and (:createUser IS NULL OR :createUser = '' OR iom.CREATE_USER like concat('%', :createUser, '%'))
                   and (:startDate IS NULL OR :startDate = '' OR iom.CREATE_DATE >= STR_TO_DATE(:startDate, '%Y-%m-%d'))
-                  and (:endDate IS NULL OR :endDate = '' OR iom.CREATE_DATE <= STR_TO_DATE(:endDate, '%Y-%m-%d'))
+                  and (:endDate IS NULL OR :endDate = '' OR iom.CREATE_DATE <= STR_TO_DATE(:endDate, '%Y-%m-%d 23:59:59'))
                   and iom.SITE = :site
                   and iom.COMP_CD = :compCd
                   and iom.FLAG_ACTIVE = :flagActive
@@ -274,9 +274,9 @@ interface InventoryOutRep : JpaRepository<InventoryOut, Long> {
             CAST(io.UNIT_VAT AS CHAR) as unitVat,
             CAST(io.TOTAL_PRICE AS CHAR) as totalPrice,
             u1.USER_NAME as createUser,
-            DATE_FORMAT(io.CREATE_DATE, '%Y-%m-%d') as createDate,
+            DATE_FORMAT(io.CREATE_DATE, '%Y-%m-%d %H:%i:%s') as createDate,
             u2.USER_NAME as updateUser,
-            DATE_FORMAT(io.UPDATE_DATE, '%Y-%m-%d') as updateDate
+            DATE_FORMAT(io.UPDATE_DATE, '%Y-%m-%d %H:%i:%s') as updateDate
         from INVENTORY_OUT io
         left join MATERIAL_MASTER mm on io.SYSTEM_MATERIAL_ID = mm.SYSTEM_MATERIAL_ID
         left join USER u1 on u1.LOGIN_ID = io.CREATE_USER
@@ -372,10 +372,10 @@ interface InventoryStatusRep : JpaRepository<InventoryStatus, Long> {
             where 1=1
               and invs.SITE = :site
               and invs.COMP_CD = :compCd
-              and fw.WAREHOUSE_NAME like concat('%', :warehouseName, '%')
-              and fmm.SUPPLIER_NAME like concat('%', :supplierName, '%')
-              and fmm.MANUFACTURER_NAME like concat('%', :manufacturerName, '%')
-              and fmm.MATERIAL_NAME like concat('%', :materialName, '%')
+              and (:warehouseName IS NULL OR :warehouseName = '' OR fw.WAREHOUSE_NAME like concat('%', :warehouseName, '%'))
+              and (:supplierName IS NULL OR :supplierName = '' OR fmm.SUPPLIER_NAME like concat('%', :supplierName, '%'))
+              and (:manufacturerName IS NULL OR :manufacturerName = '' OR fmm.MANUFACTURER_NAME like concat('%', :manufacturerName, '%'))
+              and (:materialName IS NULL OR :materialName = '' OR fmm.MATERIAL_NAME like concat('%', :materialName, '%'))
         """, nativeQuery = true)
     fun findInventoryStatusFiltered(
         @Param("site") site: String?,
@@ -399,8 +399,34 @@ interface InventoryStatusRep : JpaRepository<InventoryStatus, Long> {
     ): InventoryStatus?
 }
 
-interface InventoryLogRep : JpaRepository<InventoryLog, Long> {
-
+interface InventoryHistoryRep : JpaRepository<InventoryHistory, Long> {
+    @Query(
+        nativeQuery = true,
+        value = """
+        SELECT * FROM INVENTORY_HISTORY ih
+        WHERE ih.IN_OUT_TYPE IN ('IN', 'OUT') 
+            AND (:site IS NULL OR :site = '' OR ih.SITE = :site)
+          AND (:compCd IS NULL OR :compCd = '' OR ih.COMP_CD = :compCd)
+          AND (:warehouseName IS NULL OR :warehouseName = '' OR ih.WAREHOUSE_NAME LIKE CONCAT('%', :warehouseName, '%'))
+          AND (:inOutType IS NULL OR :inOutType = '' OR ih.IN_OUT_TYPE LIKE CONCAT('%', :inOutType, '%'))
+          AND (:supplierName IS NULL OR :supplierName = '' OR ih.SUPPLIER_NAME LIKE CONCAT('%', :supplierName, '%'))
+          AND (:manufacturerName IS NULL OR :manufacturerName = '' OR ih.MANUFACTURER_NAME LIKE CONCAT('%', :manufacturerName, '%'))
+          AND (:materialName IS NULL OR :materialName = '' OR ih.MATERIAL_NAME LIKE CONCAT('%', :materialName, '%'))
+          AND (:startDate IS NULL OR :startDate = '' OR ih.CREATE_DATE >= STR_TO_DATE(:startDate, '%Y-%m-%d'))
+          AND (:endDate IS NULL OR :endDate = '' OR ih.CREATE_DATE <= STR_TO_DATE(:endDate, '%Y-%m-%d 23:59:59'))
+        """
+    )
+    fun searchInventoryHistory(
+        @Param("site") site: String?,
+        @Param("compCd") compCd: String?,
+        @Param("warehouseName") warehouseName: String?,
+        @Param("inOutType") inOutType: String?,
+        @Param("supplierName") supplierName: String?,
+        @Param("manufacturerName") manufacturerName: String?,
+        @Param("materialName") materialName: String?,
+        @Param("startDate") startDate: String?,
+        @Param("endDate") endDate: String?
+    ): List<InventoryHistory?>
 }
 
 

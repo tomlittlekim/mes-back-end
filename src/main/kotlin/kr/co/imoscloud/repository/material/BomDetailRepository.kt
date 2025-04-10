@@ -14,11 +14,13 @@ interface BomDetailRepository : JpaRepository<BomDetail, Int> {
         SELECT new kr.co.imoscloud.model.material.BomDetailMaterialDto(
             d,
             m.materialType,
+            m.materialCategory,
             m.userMaterialId,
             m.materialName,
             m.materialStandard,
             m.unit,
             pm.userMaterialId,
+            pm.materialType,
             pm.materialName
         )
         FROM BomDetail d
@@ -48,11 +50,13 @@ interface BomDetailRepository : JpaRepository<BomDetail, Int> {
         SELECT new kr.co.imoscloud.model.material.BomDetailMaterialDto(
             d,
             m.materialType,
+            m.materialCategory,
             m.userMaterialId,
             m.materialName,
             m.materialStandard,
             m.unit,
             pm.userMaterialId,
+            pm.materialType,
             pm.materialName
         )
         FROM BomDetail d
@@ -75,20 +79,6 @@ interface BomDetailRepository : JpaRepository<BomDetail, Int> {
         compCd: String,
         bomDetailIds: List<String>
     ): List<BomDetailMaterialDto>
-
-    @Modifying(clearAutomatically = true)
-    @Query("""
-        UPDATE BomDetail bd 
-        SET bd.flagActive = false
-        WHERE bd.site = :site 
-        AND bd.compCd = :compCd 
-        AND bd.bomId = :bomId
-    """)
-    fun updateBomDetailsFlagActive(
-        site: String,
-        compCd: String,
-        bomId: String
-    ): Int
 
     @Modifying(clearAutomatically = true)
     @Query("""

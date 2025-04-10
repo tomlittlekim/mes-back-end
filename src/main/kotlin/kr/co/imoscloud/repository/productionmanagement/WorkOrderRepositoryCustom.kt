@@ -10,7 +10,7 @@ interface WorkOrderRepositoryCustom {
         prodPlanId: String?,
         productId: String?,
         shiftType: String?,
-        state: String?,
+        state: List<String>?,
         flagActive: Boolean?
     ): List<WorkOrder>
 

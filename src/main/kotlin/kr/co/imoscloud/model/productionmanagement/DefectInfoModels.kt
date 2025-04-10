@@ -39,7 +39,6 @@ data class DefectInfoDto(
  * 불량정보 입력 클래스
  */
 data class DefectInfoInput(
-    val workOrderId: String,
     val prodResultId: String? = null,
     val productId: String? = null,
     val productName: String? = null,

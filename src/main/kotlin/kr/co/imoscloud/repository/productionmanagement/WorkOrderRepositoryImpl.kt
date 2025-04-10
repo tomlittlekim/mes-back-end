@@ -36,7 +36,7 @@ class WorkOrderRepositoryImpl(
         prodPlanId: String?,
         productId: String?,
         shiftType: String?,
-        state: String?,
+        state: List<String>?,
         flagActive: Boolean?
     ): List<WorkOrder> {
         val workOrder = QWorkOrder.workOrder
@@ -76,10 +76,10 @@ class WorkOrderRepositoryImpl(
             }
         }
 
-        // state 필터링
+        // state 필터링 - List<String>으로 받아서 in 연산자 사용
         state?.let {
-            if (it.isNotBlank()) {
-                query.where(workOrder.state.eq(it))
+            if (it.isNotEmpty()) {
+                query.where(workOrder.state.`in`(it))
             }
         }
 

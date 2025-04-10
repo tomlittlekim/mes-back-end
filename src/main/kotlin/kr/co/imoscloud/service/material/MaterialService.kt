@@ -138,7 +138,7 @@ class MaterialService(
                 supplierId = it?.supplierId,
                 materialStorage = it?.materialStorage,
             ).apply {
-                flagActive = it?.flagActive.equals("Y" )
+                flagActive = it?.flagActive.equals("Y")
                 createCommonCol(userPrincipal!!)
             }
         }
@@ -193,7 +193,66 @@ class MaterialService(
             systemMaterialIds = systemMaterialIds
         ) > 0
     }
+
+    /** 드랍다운용 조회 메서드 */
+    //제품 정보 테이블을 MaterialResponseModel로 전체 조회
+    fun getMaterialCode(): List<MaterialResponseModel?> {
+        val userPrincipal = getCurrentUser()
+        val materialCodeList = materialRep.getMaterialCode(
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+        )
+        return entityToResponse(materialCodeList)
+    }
+
+    //제품 정보 테이블을 MaterialTypeGroupResponseModel 계층구조로 전체 조회
+    fun getAllMaterials(): List<MaterialTypeGroupResponseModel> {
+        val userPrincipal = getCurrentUser()
+        val materials = materialRep.getAllMaterials(
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD
+        )
+
+        // 먼저 materialType으로 그룹화
+        val typeGroups = materials.groupBy { it.materialType }
+
+        return typeGroups.map { (materialType, typeMaterials) ->
+            val categoryGroups = typeMaterials.groupBy { it.materialCategory }
+
+            MaterialTypeGroupResponseModel(
+                materialType = materialType,
+                materialCategory = null,
+                materials = emptyList(),
+                categories = categoryGroups.map { (materialCategory, categoryMaterials) ->
+                    MaterialCategoryGroupResponseModel(
+                        materialCategory = materialCategory,
+                        materials = categoryMaterials.map { material ->
+                            MaterialResponseModel(
+                                systemMaterialId = material.systemMaterialId,
+                                userMaterialId = material.userMaterialId,
+                                materialName = material.materialName,
+                                materialStandard = material.materialStandard,
+                                unit = material.unit
+                            )
+                        }
+                    )
+                }
+            )
+        }
+    }
 }
+
+data class MaterialTypeGroupResponseModel(
+    val materialType: String?,
+    val materialCategory: String?,
+    val materials: List<MaterialResponseModel>,
+    val categories: List<MaterialCategoryGroupResponseModel>
+)
+
+data class MaterialCategoryGroupResponseModel(
+    val materialCategory: String?,
+    val materials: List<MaterialResponseModel>
+)
 
 data class MaterialResponseModel(
     val systemMaterialId: String? = null,

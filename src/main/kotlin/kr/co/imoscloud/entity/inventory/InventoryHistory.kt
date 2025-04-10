@@ -2,10 +2,11 @@ package kr.co.imoscloud.entity.inventory
 
 import jakarta.persistence.*
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity
-@Table(name = "INVENTORY_LOG")
-class InventoryLog {
+@Table(name = "INVENTORY_HISTORY")
+class InventoryHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SEQ", nullable = false)
@@ -17,8 +18,8 @@ class InventoryLog {
     @Column(name = "COMP_CD", length = 20)
     var compCd: String? = null
 
-    @Column(name = "FACTORY_ID", length = 100)
-    var factoryId: String? = null
+    @Column(name = "FACTORY_NAME", length = 100)
+    var factoryName: String? = null
 
     @Column(name = "WAREHOUSE_NAME", length = 100)
     var warehouseName: String? = null
@@ -31,9 +32,6 @@ class InventoryLog {
 
     @Column(name = "MANUFACTURER_NAME", length = 100)
     var manufacturerName: String? = null
-
-    @Column(name = "SYSTEM_MATERIAL_ID", length = 100)
-    var systemMaterialId: String? = null
 
     @Column(name = "MATERIAL_NAME", length = 100)
     var materialName: String? = null
@@ -60,11 +58,11 @@ class InventoryLog {
     var createUser: String? = null
 
     @Column(name = "CREATE_DATE")
-    var createDate: LocalDate? = null
+    var createDate: LocalDateTime? = null
 
     @Column(name = "UPDATE_USER", length = 100)
     var updateUser: String? = null
 
     @Column(name = "UPDATE_DATE")
-    var updateDate: LocalDate? = null
+    var updateDate: LocalDateTime? = null
 }

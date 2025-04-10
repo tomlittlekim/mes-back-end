@@ -10,7 +10,6 @@ interface DefectInfoRepositoryCustom {
     fun getDefectInfoList(
         site: String,
         compCd: String,
-        workOrderId: String? = null,
         prodResultId: String? = null,
         defectId: String? = null,
         productId: String? = null,
@@ -29,15 +28,6 @@ interface DefectInfoRepositoryCustom {
         site: String,
         compCd: String,
         prodResultId: String
-    ): List<DefectInfo>
-
-    /**
-     * 작업지시 ID로 불량 정보 조회
-     */
-    fun getDefectInfoByWorkOrderId(
-        site: String,
-        compCd: String,
-        workOrderId: String
     ): List<DefectInfo>
 
     /**

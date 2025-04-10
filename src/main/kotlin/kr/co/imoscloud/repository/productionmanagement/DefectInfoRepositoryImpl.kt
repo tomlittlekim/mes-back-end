@@ -32,26 +32,6 @@ class DefectInfoRepositoryImpl(
         return query.fetch()
     }
 
-    override fun getDefectInfoByWorkOrderId(
-        site: String,
-        compCd: String,
-        workOrderId: String
-    ): List<DefectInfo> {
-        val defectInfo = QDefectInfo.defectInfo
-
-        val query = queryFactory
-            .selectFrom(defectInfo)
-            .where(
-                defectInfo.site.eq(site),
-                defectInfo.compCd.eq(compCd),
-                defectInfo.workOrderId.eq(workOrderId),
-                defectInfo.flagActive.eq(true)
-            )
-            .orderBy(defectInfo.createDate.desc())
-
-        return query.fetch()
-    }
-
     override fun getDefectInfoForStats(
         site: String,
         compCd: String,
@@ -76,7 +56,6 @@ class DefectInfoRepositoryImpl(
     override fun getDefectInfoList(
         site: String,
         compCd: String,
-        workOrderId: String?,
         prodResultId: String?,
         defectId: String?,
         productId: String?,
@@ -103,11 +82,6 @@ class DefectInfoRepositoryImpl(
             defectInfo.site.eq(site),
             defectInfo.compCd.eq(compCd)
         )
-
-        // workOrderId 필터링
-        workOrderId?.takeIf { it.isNotBlank() }?.let {
-            query.where(defectInfo.workOrderId.eq(it))
-        }
 
         // prodResultId 필터링
         prodResultId?.takeIf { it.isNotBlank() }?.let {

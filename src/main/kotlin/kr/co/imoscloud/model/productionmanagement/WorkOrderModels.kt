@@ -6,7 +6,7 @@ data class WorkOrderFilter(
     var prodPlanId: String? = null,
     var productId: String? = null,
     var shiftType: String? = null,
-    var state: String? = null,
+    var state: List<String>? = null,
     var flagActive: Boolean? = null
 )
 

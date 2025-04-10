@@ -109,7 +109,7 @@ class WorkOrderService(
      * @param newState 변경할 상태 (IN_PROGRESS, COMPLETED 등)
      * @return 상태 변경 성공 여부
      */
-    fun updateWorkOrderState(workOrderId: String, newState: String): Boolean {
+    private fun updateWorkOrderState(workOrderId: String, newState: String): Boolean {
         try {
             val currentUser = getCurrentUserPrincipal()
 

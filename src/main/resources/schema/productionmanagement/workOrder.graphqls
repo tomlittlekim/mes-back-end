@@ -15,7 +15,7 @@ input WorkOrderFilter {
     prodPlanId: String
     productId: String
     shiftType: String
-    state: String
+    state: [String]
     flagActive: Boolean
 }
 
@@ -34,9 +34,6 @@ type WorkOrder {
     updateDate: String
     updateUser: String
     flagActive: Boolean
-    productionPlan: ProductionPlan
-    productionResults: [ProductionResult]
-    defectInfos: [DefectInfo]
 }
 
 input WorkOrderInput {

@@ -1,28 +1,7 @@
 extend type Query {
     # 불량 정보 조회 관련 쿼리
-    defectInfoList(filter: DefectInfoFilter): [DefectInfo]!
     defectInfosByProdResultId(prodResultId: String!): [DefectInfo]!
-    defectStatsByProduct(fromDate: String!, toDate: String!): [DefectStatsByProduct]!
-    defectStatsByCause(fromDate: String!, toDate: String!): [DefectStatsByCause]!
-}
-
-extend type Mutation {
-    saveDefectInfo(createdRows: [DefectInfoInput], updatedRows: [DefectInfoUpdate]): Boolean
-    deleteDefectInfo(defectId: String!, isSoftDelete: Boolean = true): Boolean
-}
-
-# 불량 정보 조회용 필터
-input DefectInfoFilter {
-    defectId: String
-    workOrderId: String
-    prodResultId: String
-    productId: String
-    productName: String
-    state: String
-    defectType: String
-    fromDate: String
-    toDate: String
-    flagActive: Boolean
+    defectInfosByWorkOrderId(workOrderId: String!): [DefectInfo]!
 }
 
 # 불량 정보 Entity
@@ -47,13 +26,11 @@ type DefectInfo {
     updateDate: String
     updateUser: String
     flagActive: Boolean
-    workOrder: WorkOrder
     productionResult: ProductionResult
 }
 
 # 불량 정보 등록 입력
 input DefectInfoInput {
-    workOrderId: String!
     prodResultId: String
     productId: String
     productName: String
@@ -66,65 +43,4 @@ input DefectInfoInput {
     defectReason: String
     equipmentId: String
     flagActive: Boolean
-}
-
-# 불량 정보 수정 입력
-input DefectInfoUpdate {
-    defectId: String!
-    workOrderId: String
-    prodResultId: String
-    productId: String
-    productName: String
-    defectName: String
-    defectQty: Float
-    defectCause: String
-    state: String
-    resultInfo: String
-    defectType: String
-    defectReason: String
-    equipmentId: String
-    flagActive: Boolean
-}
-
-# 제품별 불량 통계
-type DefectStatsByProduct {
-    productId: String
-    productName: String
-    totalDefectQty: Float
-    defectCount: Int
-    defectTypes: [DefectTypeCount]
-    defectCauses: [DefectCauseCount]
-}
-
-# 원인별 불량 통계
-type DefectStatsByCause {
-    defectCause: String
-    totalDefectQty: Float
-    defectCount: Int
-    products: [ProductDefectCount]
-}
-
-# 불량 유형별 통계
-type DefectTypeCount {
-    defectType: String
-    count: Int
-    qty: Float
-    percentage: Float
-}
-
-# 불량 원인별 통계
-type DefectCauseCount {
-    cause: String
-    count: Int
-    qty: Float
-    percentage: Float
-}
-
-# 제품별 불량 통계
-type ProductDefectCount {
-    productId: String
-    productName: String
-    qty: Float
-    count: Int
-    percentage: Float
 }

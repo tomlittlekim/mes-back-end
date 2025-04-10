@@ -1,17 +1,16 @@
 package kr.co.imoscloud.fetcher.productionmanagement
 
 import com.netflix.graphql.dgs.*
+import com.netflix.graphql.dgs.exceptions.DgsEntityNotFoundException
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
 import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
-import kr.co.imoscloud.service.productionmanagement.ProductionResultService
+import kr.co.imoscloud.service.productionmanagement.productionresult.ProductionResultService
 import kr.co.imoscloud.service.productionmanagement.WorkOrderService
 import kr.co.imoscloud.util.DateUtils
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @DgsComponent
 class ProductionResultDataFetcher(
@@ -80,66 +79,6 @@ class ProductionResultDataFetcher(
         }
     }
 
-    // 생산실적 상세 조회
-    @DgsQuery
-    fun productionResultDetail(@InputArgument("prodResultId") prodResultId: String): ProductionResultDetailDto? {
-        try {
-            return productionResultService.getProductionResultDetail(prodResultId)
-        } catch (e: Exception) {
-            log.error("생산실적 상세 조회 중 오류 발생", e)
-            return null
-        }
-    }
-
-    // 생산실적 통계 조회
-    @DgsQuery
-    fun productionResultStatistics(
-        @InputArgument("fromDate") fromDate: String,
-        @InputArgument("toDate") toDate: String
-    ): ProductionStatisticsDto {
-        try {
-            // 문자열을 LocalDate로 변환
-            val formatter = DateTimeFormatter.ISO_DATE
-            val from = LocalDate.parse(fromDate, formatter)
-            val to = LocalDate.parse(toDate, formatter)
-
-            return productionResultService.getProductionResultStatistics(from, to)
-        } catch (e: Exception) {
-            log.error("생산실적 통계 조회 중 오류 발생", e)
-            // 빈 통계 객체 반환
-            return ProductionStatisticsDto(
-                fromDate = fromDate,
-                toDate = toDate,
-                totalPlanQty = 0.0,
-                totalGoodQty = 0.0,
-                totalDefectQty = 0.0,
-                achievementRate = "0.0",
-                defectRate = "0.0",
-                dailyStats = emptyList(),
-                productStats = emptyList()
-            )
-        }
-    }
-
-    // 설비별 생산실적 통계 조회
-    @DgsQuery
-    fun productionResultByEquipment(
-        @InputArgument("fromDate") fromDate: String,
-        @InputArgument("toDate") toDate: String
-    ): List<ProductionEquipmentStat> {
-        try {
-            // 문자열을 LocalDate로 변환
-            val formatter = DateTimeFormatter.ISO_DATE
-            val from = LocalDate.parse(fromDate, formatter)
-            val to = LocalDate.parse(toDate, formatter)
-
-            return productionResultService.getProductionResultByEquipment(from, to)
-        } catch (e: Exception) {
-            log.error("설비별 생산실적 통계 조회 중 오류 발생", e)
-            return emptyList()
-        }
-    }
-
     // 작업지시와 생산실적 통합 조회 (UI에서 필요한 경우)
     @DgsQuery
     fun workOrdersWithProductionResults(@InputArgument("filter") filter: WorkOrderFilter): List<WorkOrder> {
@@ -162,10 +101,27 @@ class ProductionResultDataFetcher(
         @InputArgument("defectInfos") defectInfos: List<DefectInfoInput>? = null
     ): Boolean {
         try {
-            return productionResultService.saveProductionResult(createdRows, updatedRows, defectInfos)
+            log.info("GraphQL 요청: saveProductionResult - 생성: ${createdRows?.size ?: 0}개, 수정: ${updatedRows?.size ?: 0}개, 불량정보: ${defectInfos?.size ?: 0}개")
+
+            // 불량정보 로깅
+            defectInfos?.forEachIndexed { index, defectInfo ->
+                log.info("불량정보[$index] - prodResultId: ${defectInfo.prodResultId}, " +
+                        "defectQty: ${defectInfo.defectQty}, defectType: ${defectInfo.defectType}, " +
+                        "defectCause: ${defectInfo.defectCause}")
+            }
+
+            // 서비스 메서드 호출. 예외는 서비스 계층에서 던짐
+            val result = productionResultService.saveProductionResult(createdRows, updatedRows, defectInfos)
+            log.info("GraphQL 응답: saveProductionResult - 결과: $result")
+            return result
+        } catch (e: IllegalArgumentException) {
+            // 비즈니스 로직 오류는 로그로 남기고 예외를 던짐
+            log.warn("생산실적 저장 중 비즈니스 로직 오류: ${e.message}")
+            throw DgsEntityNotFoundException(e.message ?: "비즈니스 로직 오류가 발생했습니다.")
         } catch (e: Exception) {
+            // 기타 예외는 에러 로그로 남기고 예외를 던짐
             log.error("생산실적 저장 중 오류 발생", e)
-            return false
+            throw RuntimeException("생산실적 저장 중 오류가 발생했습니다: ${e.message}", e)
         }
     }
 
@@ -197,19 +153,5 @@ class ProductionResultDataFetcher(
             log.error("작업지시 조회 중 오류 발생", e)
             return null
         }
-    }
-
-    // 생산통계의 일별 통계 데이터 필드 리졸버
-    @DgsData(parentType = "ProductionStatistics", field = "dailyStats")
-    fun getDailyStats(dfe: DgsDataFetchingEnvironment): List<ProductionDailyStat> {
-        val statistics = dfe.getSource<ProductionStatisticsDto>()
-        return statistics?.dailyStats ?: emptyList()
-    }
-
-    // 생산통계의 제품별 통계 데이터 필드 리졸버
-    @DgsData(parentType = "ProductionStatistics", field = "productStats")
-    fun getProductStats(dfe: DgsDataFetchingEnvironment): List<ProductionProductStat> {
-        val statistics = dfe.getSource<ProductionStatisticsDto>()
-        return statistics?.productStats ?: emptyList()
     }
 }

@@ -1,25 +1,16 @@
-// WorkOrderDataFetcher.kt
 package kr.co.imoscloud.fetcher.productionmanagement
 
 import com.netflix.graphql.dgs.*
-import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
-import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
-import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
 import kr.co.imoscloud.model.productionmanagement.WorkOrderFilter
 import kr.co.imoscloud.model.productionmanagement.WorkOrderInput
 import kr.co.imoscloud.model.productionmanagement.WorkOrderUpdate
-import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
-import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
 import kr.co.imoscloud.service.productionmanagement.WorkOrderService
-import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import org.slf4j.LoggerFactory
 
 @DgsComponent
 class WorkOrderDataFetcher(
-    private val workOrderService: WorkOrderService,
-    private val productionPlanService: ProductionPlanService,
-    private val productionResultRepository: ProductionResultRepository
+    private val workOrderService: WorkOrderService
 ) {
     private val log = LoggerFactory.getLogger(WorkOrderDataFetcher::class.java)
 
@@ -97,43 +88,6 @@ class WorkOrderDataFetcher(
         } catch (e: Exception) {
             log.error("작업 완료 중 오류 발생", e)
             return false
-        }
-    }
-
-    // 작업지시에 연결된 생산계획 정보 조회 (GraphQL 리졸버)
-    @DgsData(parentType = "WorkOrder", field = "productionPlan")
-    fun productionPlan(dfe: DgsDataFetchingEnvironment): ProductionPlan? {
-        try {
-            val workOrder = dfe.getSource<WorkOrder>()
-            val prodPlanId = workOrder?.prodPlanId ?: return null
-
-            val filter = ProductionPlanFilter(prodPlanId = prodPlanId, flagActive = true)
-            val plans = productionPlanService.getProductionPlans(filter)
-
-            return plans.firstOrNull()
-        } catch (e: Exception) {
-            log.error("생산계획 조회 중 오류 발생", e)
-            return null
-        }
-    }
-
-    // 작업지시에 연결된 생산실적 목록 조회 (GraphQL 리졸버)
-    @DgsData(parentType = "WorkOrder", field = "productionResults")
-    fun productionResults(dfe: DgsDataFetchingEnvironment): List<ProductionResult> {
-        try {
-            val workOrder = dfe.getSource<WorkOrder>()
-            val workOrderId = workOrder?.workOrderId ?: return emptyList()
-
-            val currentUser = getCurrentUserPrincipal()
-
-            return productionResultRepository.getProductionResultsByWorkOrderId(
-                site = currentUser.getSite(),
-                compCd = currentUser.compCd,
-                workOrderId = workOrderId
-            )
-        } catch (e: Exception) {
-            log.error("생산실적 목록 조회 중 오류 발생", e)
-            return emptyList()
         }
     }
 }

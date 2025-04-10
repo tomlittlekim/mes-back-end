@@ -1,7 +1,14 @@
 extend type Query {
     # 불량 정보 조회 관련 쿼리
+    allDefectInfos: [DefectInfo]
     defectInfosByProdResultId(prodResultId: String!): [DefectInfo]!
-    defectInfosByWorkOrderId(workOrderId: String!): [DefectInfo]!
+}
+
+extend type Mutation {
+    # 불량 정보 등록 관련 뮤테이션
+    saveDefectInfo(input: DefectInfoInput!): DefectInfo
+    updateDefectInfo(defectId: String!, input: DefectInfoInput!): DefectInfo
+    deleteDefectInfo(defectId: String!): Boolean
 }
 
 # 불량 정보 Entity
@@ -26,12 +33,12 @@ type DefectInfo {
     updateDate: String
     updateUser: String
     flagActive: Boolean
-    productionResult: ProductionResult
 }
 
 # 불량 정보 등록 입력
 input DefectInfoInput {
     prodResultId: String
+    workOrderId: String
     productId: String
     productName: String
     defectName: String

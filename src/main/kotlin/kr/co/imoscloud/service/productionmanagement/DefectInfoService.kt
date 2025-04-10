@@ -7,6 +7,7 @@ import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepositor
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 /**
  * 불량 정보 서비스
@@ -17,6 +18,19 @@ class DefectInfoService(
     private val defectInfoRepository: DefectInfoRepository,
     private val productionResultRepository: ProductionResultRepository
 ) {
+    /**
+     * 모든 불량 정보 조회
+     * 기본적으로 사용자의 사이트와 회사 코드에 해당하는 데이터만 조회
+     */
+    fun getAllDefectInfos(): List<DefectInfo?>? {
+        val currentUser = getCurrentUserPrincipal()
+
+        return defectInfoRepository.findAllBySiteAndCompCdAndFlagActiveIsTrue(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+        )
+    }
+
     /**
      * 생산 실적 ID로 불량 정보 조회
      */

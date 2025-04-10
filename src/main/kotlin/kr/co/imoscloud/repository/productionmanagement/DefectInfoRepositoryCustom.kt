@@ -4,22 +4,6 @@ import kr.co.imoscloud.entity.productionmanagement.DefectInfo
 import java.time.LocalDateTime
 
 interface DefectInfoRepositoryCustom {
-    /**
-     * 여러 조건으로 불량 정보 목록 조회
-     */
-    fun getDefectInfoList(
-        site: String,
-        compCd: String,
-        prodResultId: String? = null,
-        defectId: String? = null,
-        productId: String? = null,
-        state: String? = null,
-        defectType: String? = null,
-        equipmentId: String? = null,
-        fromDate: LocalDateTime? = null,
-        toDate: LocalDateTime? = null,
-        flagActive: Boolean? = true
-    ): List<DefectInfo>
 
     /**
      * 생산실적 ID로 불량 정보 조회

@@ -5,6 +5,8 @@ import kr.co.imoscloud.entity.productionmanagement.DefectInfo
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * 불량 정보 GraphQL 데이터 페처
@@ -17,10 +19,17 @@ class DefectInfoDataFetcher(
     private val log = LoggerFactory.getLogger(DefectInfoDataFetcher::class.java)
 
     /**
+     * 모든 불량 정보 조회
+     * 오류가 발생해도 빈 배열을 반환해야 GraphQL non-null 타입 조건을 충족함
+     */
+    @DgsQuery
+    fun allDefectInfos(): List<DefectInfo?>? = defectInfoService.getAllDefectInfos()
+
+    /**
      * 생산 실적 ID로 불량 정보 조회
      */
     @DgsQuery
-    fun defectInfosByProdResultId(@InputArgument("prodResultId") prodResultId: String): List<DefectInfo> {
+    fun defectInfosByProdResultId(@InputArgument prodResultId: String): List<DefectInfo> {
         try {
             return defectInfoService.getDefectInfoByProdResultId(prodResultId)
         } catch (e: Exception) {

@@ -128,4 +128,19 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         site: String,
         compCd: String,
     ): List<MaterialMaster>
+
+    @Query(
+        """
+        SELECT m
+        FROM MaterialMaster m
+        WHERE m.site = :site
+        AND m.compCd = :compCd
+        AND m.flagActive = true
+        ORDER BY m.materialType, m.materialCategory, m.materialName
+        """
+    )
+    fun getAllMaterials(
+        site: String,
+        compCd: String
+    ): List<MaterialMaster>
 }

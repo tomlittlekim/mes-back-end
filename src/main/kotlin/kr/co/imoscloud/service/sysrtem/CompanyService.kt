@@ -12,7 +12,7 @@ class CompanyService(
     private val core: Core
 ) {
 
-    fun getCompanySelect(): List<Company>  = core.companyRepo.findAllByFlagActiveIsTrue()
+    fun getCompanies(): List<Company>  = core.companyRepo.findAllByFlagActiveIsTrue()
 
     @AuthLevel(minLevel = 3)
     fun upsertCompany(req: CompanyDto): String {

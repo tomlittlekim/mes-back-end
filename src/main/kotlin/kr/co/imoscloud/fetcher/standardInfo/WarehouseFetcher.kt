@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.service.standardInfo.FactoryResponseModel
 import kr.co.imoscloud.service.standardInfo.WarehouseResponse
 import kr.co.imoscloud.service.standardInfo.WarehouseService
 
@@ -28,6 +29,11 @@ class WarehouseFetcher(
     @DgsMutation
     fun deleteWarehouse(@InputArgument("warehouseId") warehouseId: String): Boolean {
         return warehouseService.deleteWarehouse(warehouseId)
+    }
+
+    @DgsQuery
+    fun getGridWarehouse(): List<WarehouseResponse?> {
+        return warehouseService.getWarehouse()
     }
 
 }

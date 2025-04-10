@@ -98,6 +98,15 @@ class WarehouseService(
         ) > 0
     }
 
+    fun getWarehouse(): List<WarehouseResponse?> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
+        return warehouseRep.getGridWarehouse(
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
+        )
+    }
+
 }
 
 data class WarehouseResponse(

@@ -36,6 +36,7 @@ type Warehouse{
 
 extend type Query {
     getWarehouse(filter:WarehouseFilter): [Warehouse]
+    getGridWarehouse:[Warehouse]
 }
 
 extend type Mutation {

@@ -55,6 +55,9 @@ class Company(
     override val loginId: String,
 
     @Column(name = "PHONE_NUMBER", length = 11)
-    var phoneNumber: String? = null
+    var phoneNumber: String? = null,
 
-) : CommonCol(), DtoLoginIdBase, DtoCompCdBase
+    @Column(name = "DEFAULT_USER_PWD", length = 100)
+    var defaultUserPwd: String? = null
+
+    ) : CommonCol(), DtoLoginIdBase, DtoCompCdBase

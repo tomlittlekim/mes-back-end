@@ -42,6 +42,7 @@ extend type Mutation {
 }
 
 extend type Query {
+    getCompaniesForSelect: [Company]
     getCompanies: [Company]
     getCompanyDetails: Company
 }

@@ -59,7 +59,7 @@ class UserRoleService(
                 UserRole(
                     site = req.site ?: loginUser.getSite(),
                     compCd = req.compCd ?: loginUser.compCd,
-                    roleName = roleSummery.roleName,
+                    roleName = req.roleName!!,
                     priorityLevel = roleSummery.priorityLevel,
                     sequence = req.sequence
                 ).apply { createCommonCol(loginUser) }

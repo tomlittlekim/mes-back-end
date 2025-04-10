@@ -98,7 +98,8 @@ data class UserRoleRequest(
     val fixRoleId: Long,
     val roleName: String?=null,
     val compCd: String?=null,
-    val flagDeFault: Boolean?=null,
+    val flagDefault: Boolean?=null,
+    val sequence: Int?=0,
 )
 
 data class MenuRequest(

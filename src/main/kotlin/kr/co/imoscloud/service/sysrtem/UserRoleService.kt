@@ -39,8 +39,8 @@ class UserRoleService(
     @Transactional
     fun upsertUserRole(req: UserRoleRequest): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        val roleSummery = core.getAllRoleMap(loginUser)[req.roleId]
-            ?: throw IllegalArgumentException("변경하려는 권한 정보가 존재하지 않습니다. ")
+        val roleSummery = core.getAllRoleMap(loginUser)[req.fixRoleId]
+            ?: throw IllegalArgumentException("적용할 권한 정보가 존재하지 않습니다. ")
 
         var modifyRole: UserRole = req.roleId
             ?.let { roleId ->
@@ -49,6 +49,7 @@ class UserRoleService(
                         role.apply {
                             roleName = roleSummery.roleName
                             priorityLevel = roleSummery.priorityLevel
+                            sequence = req.sequence ?: this.sequence
                             updateCommonCol(loginUser)
                         }
                     }
@@ -59,12 +60,13 @@ class UserRoleService(
                     site = req.site ?: loginUser.getSite(),
                     compCd = req.compCd ?: loginUser.compCd,
                     roleName = roleSummery.roleName,
-                    priorityLevel = roleSummery.priorityLevel
+                    priorityLevel = roleSummery.priorityLevel,
+                    sequence = req.sequence
                 ).apply { createCommonCol(loginUser) }
             }
 
         val isDev =  core.isDeveloper(loginUser)
-        modifyRole = req.flagDeFault
+        modifyRole = req.flagDefault
             ?.let { flag ->
                 if (isDev && modifyRole.compCd == "default" || !isDev) {
                     core.roleRepo.resetDefaultByCompCd(loginUser.compCd)

@@ -31,7 +31,6 @@ extend type Mutation {
 }
 
 extend type Query {
-    getMenuRoleGroup: [MenuRole]
-    getInitialMenuRole(roleId: Int): [MenuRole]
+    getMenuRoleGroup(roleId: Int): [MenuRole]
     getMenuRole(menuId: String!): MenuRole
 }

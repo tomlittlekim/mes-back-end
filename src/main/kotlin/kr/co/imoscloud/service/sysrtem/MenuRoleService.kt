@@ -5,6 +5,7 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.MenuRoleDto
 import kr.co.imoscloud.entity.system.MenuRole
 import kr.co.imoscloud.repository.system.MenuRoleRepository
+import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 
@@ -14,9 +15,10 @@ class MenuRoleService(
     private val menuRoleRepo: MenuRoleRepository
 ) {
 
-    fun getMenuRoleGroup(): List<MenuRole> {
+    fun getMenuRoleGroup(roleId: Long): List<Any> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        return core.getAllMenuRoleByRoleId(loginUser.roleId)
+        val menuRoleList = core.getAllMenuRoleByRoleId(loginUser.roleId)
+        return menuRoleList.ifEmpty { getInitialMenuRole(roleId) }
     }
 
     fun getMenuRole(menuId: String): MenuRole {
@@ -25,9 +27,7 @@ class MenuRoleService(
             ?: throw IllegalArgumentException("Menu에 대한 권한 정보가 존재하지 않습니다. ")
     }
 
-    fun getInitialMenuRole(roleId: Long): List<MenuRoleDto> =
-        menuRoleRepo.findAll().map { menu -> MenuRoleDto(roleId = roleId, menuId = menu.menuId) }
-
+    @AuthLevel(minLevel = 3)
     @Transactional
     fun upsertMenuRole(list: List<MenuRoleDto>): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
@@ -74,6 +74,10 @@ class MenuRoleService(
         }
 
         menuRoleRepo.saveAll(menuRoleList)
+        core.upsertMenuRoleFromInMemory(menuRoleList)
         return "메뉴 권한 ${upsertStr} 성공"
     }
+
+    private fun getInitialMenuRole(roleId: Long): List<MenuRoleDto> =
+        menuRoleRepo.findAll().map { menu -> MenuRoleDto(roleId = roleId, menuId = menu.menuId) }
 }

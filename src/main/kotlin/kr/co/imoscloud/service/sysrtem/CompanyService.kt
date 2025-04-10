@@ -5,6 +5,7 @@ import kr.co.imoscloud.dto.CompanyDto
 import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 
 @Service
@@ -13,6 +14,14 @@ class CompanyService(
 ) {
 
     fun getCompanies(): List<Company>  = core.companyRepo.findAllByFlagActiveIsTrue()
+
+    fun getCompanyDetails(): Company {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        if (core.isDeveloper(loginUser)) throw IllegalArgumentException("개발자는 이용할 수 없는 서비스")
+
+        return core.companyRepo.findByCompCdAndFlagActiveIsTrue(loginUser.compCd)
+            ?: throw IllegalArgumentException("회사의 정보를 찾을 수 없습니다. ")
+    }
 
     @AuthLevel(minLevel = 3)
     fun upsertCompany(req: CompanyDto): String {

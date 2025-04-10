@@ -9,4 +9,5 @@ interface CompanyRepository: JpaRepository<Company, Long> {
     fun findAllByCompCdIn(compCdList: List<String?>): List<Company>
     fun findAllByFlagActiveIsTrue(): List<Company>
     fun findByIdAndFlagActiveIsTrue(id: Long): Company?
+    fun findByCompCdAndFlagActiveIsTrue(compCd: String): Company?
 }

@@ -91,6 +91,9 @@ class SystemFetcher(
     @DgsQuery
     fun getCompanies(): List<Company> = companyService.getCompanies()
 
+    @DgsQuery
+    fun getCompanyDetails(): Company = companyService.getCompanyDetails()
+
     @DgsMutation
     fun upsertCompany(@InputArgument("req") req: CompanyDto) = companyService.upsertCompany(req)
 

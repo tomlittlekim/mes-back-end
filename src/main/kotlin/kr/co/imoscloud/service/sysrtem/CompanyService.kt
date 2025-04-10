@@ -22,7 +22,9 @@ class CompanyService(
             if (companyMap.size == 1) core.companyRepo.findAll().map { core.companyToSummery(it) }
             else companyMap.values.toList()
         } else {
-            core.getAllCompanyMapByIndies(listOf(loginUser.compCd, "default")).values.toList()
+            core.getAllCompanyMap(loginUser)
+                .filterValues { listOf(loginUser.compCd, "default").contains(it?.compCd) }
+                .values.toList()
         }
     }
 

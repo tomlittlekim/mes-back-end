@@ -443,6 +443,34 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
     fun findByWarehouseId(
         warehouseId: String?
     ): Warehouse?
+
+    @Query(
+        value = """
+            select new kr.co.imoscloud.service.standardInfo.WarehouseResponse(
+                w.factoryId,
+                f.factoryName,
+                w.warehouseId,
+                w.warehouseName,
+                w.warehouseType,
+                w.createUser,
+                w.createDate,
+                w.updateUser,
+                w.updateDate
+            )
+            from Warehouse w
+            join  Factory  f
+            on  w.site = f.site
+            and w.compCd = f.compCd
+            and w.factoryId = f.factoryId
+            where w.site = :site
+            and   w.compCd = :compCd
+            and   w.flagActive = true
+        """
+    )
+    fun getGridWarehouse(
+        site:String,
+        compCd:String
+    ):List<WarehouseResponse?>
 }
 
 interface EquipmentRep:JpaRepository<Equipment,Long>{

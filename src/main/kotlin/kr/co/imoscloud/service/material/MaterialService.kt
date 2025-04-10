@@ -193,6 +193,16 @@ class MaterialService(
             systemMaterialIds = systemMaterialIds
         ) > 0
     }
+
+    //드롭다운용 코드 조회
+    fun getMaterialCode(): List<MaterialResponseModel?> {
+        val userPrincipal = getCurrentUser()
+        val materialCodeList = materialRep.getMaterialCode(
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+        )
+        return entityToResponse(materialCodeList)
+    }
 }
 
 data class MaterialResponseModel(

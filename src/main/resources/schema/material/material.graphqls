@@ -67,6 +67,9 @@ extend type Query {
     getCompleteMaterials(filter: MaterialFilter): [Material]
     getHalfMaterials(filter: MaterialFilter): [Material]
     getMaterialsByType(materialType: String!): [Material]
+
+    #드롭다운용 코드 조회
+    getMaterialCode: [Material]
 }
 
 extend type Mutation {

@@ -45,6 +45,12 @@ class MaterialDataFetcher(
     fun deleteMaterials(@InputArgument systemMaterialIds: List<String>): Boolean {
         return materialService.deleteMaterials(systemMaterialIds)
     }
+
+    //드롭다운용 코드 조회
+    @DgsQuery
+    fun getMaterialCode(): List<MaterialResponseModel?> {
+        return materialService.getMaterialCode()
+    }
 }
 
 data class MaterialFilter(

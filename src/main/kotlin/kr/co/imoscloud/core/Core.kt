@@ -51,6 +51,8 @@ class Core(
 
     fun getUserRoleFromInMemory(roleId: Long): RoleSummery? = getAllRoleMap(OnlyRoleIdReq(roleId))[roleId]
 
+    fun getCompanyFromInMemory(compCd: String): CompanySummery? = getAllCompanyMap(OnlyCompanyIdReq(compCd))[compCd]
+
     fun getUserGroupByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
         return if (getIsInspect()) {
             userRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.compCd)

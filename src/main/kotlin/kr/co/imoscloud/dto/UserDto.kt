@@ -85,6 +85,10 @@ data class OnlyRoleIdReq(
     override val roleId: Long,
 ): DtoRoleIdBase
 
+data class OnlyCompanyIdReq(
+    override val compCd: String
+): DtoCompCdBase
+
 data class RoleSummery(
     override val roleId: Long,
     override val compCd: String,

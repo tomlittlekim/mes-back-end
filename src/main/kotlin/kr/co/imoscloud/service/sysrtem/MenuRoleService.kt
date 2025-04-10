@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.MenuRoleDto
 import kr.co.imoscloud.entity.system.MenuRole
+import kr.co.imoscloud.repository.system.MenuRepository
 import kr.co.imoscloud.repository.system.MenuRoleRepository
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
@@ -12,12 +13,12 @@ import org.springframework.stereotype.Service
 @Service
 class MenuRoleService(
     private val core: Core,
+    private val menuRepo: MenuRepository,
     private val menuRoleRepo: MenuRoleRepository
 ) {
 
     fun getMenuRoleGroup(roleId: Long): List<Any> {
-        val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        val menuRoleList = core.getAllMenuRoleByRoleId(loginUser.roleId)
+        val menuRoleList = core.getAllMenuRoleByRoleId(roleId)
         return menuRoleList.ifEmpty { getInitialMenuRole(roleId) }
     }
 
@@ -58,14 +59,14 @@ class MenuRoleService(
                         MenuRole(
                             roleId = req.roleId!!,
                             menuId = req.menuId,
-                            isOpen = req.isOpen!!,
-                            isDelete = req.isDelete!!,
-                            isInsert = req.isInsert!!,
-                            isAdd = req.isAdd!!,
-                            isPopup = req.isPopup!!,
-                            isPrint = req.isPrint!!,
-                            isSelect = req.isSelect!!,
-                            isUpdate = req.isUpdate!!,
+                            isOpen = req.isOpen  ?: false,
+                            isDelete = req.isDelete ?: false,
+                            isInsert = req.isInsert ?: false,
+                            isAdd = req.isAdd ?: false,
+                            isPopup = req.isPopup ?: false,
+                            isPrint = req.isPrint ?: false,
+                            isSelect = req.isSelect ?: false,
+                            isUpdate = req.isUpdate ?: false,
                         )
                     }
             }
@@ -79,5 +80,5 @@ class MenuRoleService(
     }
 
     private fun getInitialMenuRole(roleId: Long): List<MenuRoleDto> =
-        menuRoleRepo.findAll().map { menu -> MenuRoleDto(roleId = roleId, menuId = menu.menuId) }
+        menuRepo.findAll().map { menu -> MenuRoleDto(roleId = roleId, menuId = menu.menuId) }
 }

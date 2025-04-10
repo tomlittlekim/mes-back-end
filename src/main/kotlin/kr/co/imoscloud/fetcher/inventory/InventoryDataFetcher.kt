@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.entity.inventory.InventoryHistory
 import kr.co.imoscloud.service.inventory.*
 
 @DgsComponent
@@ -59,8 +60,8 @@ class InventoryDataFetcher(
     @DgsMutation
     fun saveInventoryOut(
         @InputArgument("createdRows") createdRows: List<InventoryOutSaveInput?>,
-        @InputArgument("updatedRows") updatedRows:List<InventoryOutUpdateInput?>
-    ): Boolean { inventoryService.saveInventoryOut(createdRows, updatedRows)
+        @InputArgument("updatedRows") updatedRows:List<InventoryOutUpdateInput?>?
+    ): Boolean { inventoryService.saveInventoryOut(createdRows, updatedRows ?: emptyList())
         return true
     }
     @DgsMutation
@@ -78,11 +79,16 @@ class InventoryDataFetcher(
     fun getInventoryStatusList(@InputArgument("filter") filter: InventoryStatusFilter?): List<InventoryStatusResponseModel?> {
         return inventoryService.getInventoryStatusWithJoinInfo(filter ?: InventoryStatusFilter())
     }
+    //재고 이력
+    @DgsQuery
+    fun getInventoryHistoryList(@InputArgument("filter") filter: InventoryHistoryFilter): List<InventoryHistory?> {
+        return inventoryService.getInventoryHistoryList(filter)
+    }
 }
 
 // 입고관리 DTO
 data class InventoryInFilter(
-    val inManagementId: String? = null
+    val inManagementId: String? = null,
 )
 data class InventoryInManagementFilter(
     var inManagementId: String? = null,
@@ -99,6 +105,15 @@ data class InventoryStatusFilter(
     val supplierName: String? = null,
     val manufactureName: String? = null,
     val materialName: String? = null,
+)
+data class InventoryHistoryFilter(
+    var warehouseName : String? = null,
+    var inOutType : String? = null,
+    var supplierName : String? = null,
+    var manufacturerName : String? = null,
+    var materialName : String? = null,
+    var startDate : String? = null,
+    var endDate : String? = null,
 )
 data class InventoryInManagementSaveInput(
     var inType: String,

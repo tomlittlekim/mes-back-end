@@ -3,8 +3,8 @@
 type InventoryInManagement {
     inManagementId: String,
     inType: String,
-    factoryName: String,
-    warehouseName: String,
+    factoryId: String,
+    warehouseId: String,
     materialInfo: String,
     totalPrice: String,
     hasInvoice: String,
@@ -35,8 +35,19 @@ type InventoryStatus {
     manufacturerName: String
     systemMaterialId: String
     materialName: String
+    currentQty: String
     unit: String
     qty: Int
+}
+type InventoryHistory {
+    inOutType: String
+    warehouseName: String
+    supplierName: String
+    manufacturerName: String
+    materialName: String
+    unit: String
+    currentQty: Int
+    createDate: String
 }
 input InventoryInManagementFilter {
     inManagementId: String
@@ -56,6 +67,15 @@ input InventoryStatusFilter{
     supplierName: String
     manufacturerName: String
     materialName: String
+}
+input InventoryHistoryFilter{
+    warehouseName : String
+    inOutType : String
+    supplierName : String
+    manufacturerName : String
+    materialName : String
+    startDate : String
+    endDate : String
 }
 input InventoryInManagementSaveInput {
     inType: String
@@ -112,8 +132,8 @@ input InventoryInDeleteInput {
 type InventoryOutManagement {
     outManagementId: String,
     outType: String,
-    factoryName: String,
-    warehouseName: String,
+    factoryId: String,
+    warehouseId: String,
     materialInfo: String,
     totalPrice: String,
     userName: String,
@@ -212,6 +232,9 @@ extend type Query {
 
     #재고현황
     getInventoryStatusList(filter: InventoryStatusFilter): [InventoryStatus]
+
+    #재고상세이력
+    getInventoryHistoryList(filter: InventoryHistoryFilter): [InventoryHistory]
 }
 
 # 뮤테이션 정의

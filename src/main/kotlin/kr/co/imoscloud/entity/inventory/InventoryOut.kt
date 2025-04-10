@@ -1,7 +1,7 @@
 package kr.co.imoscloud.entity.inventory
 
 import jakarta.persistence.*
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "INVENTORY_OUT")
@@ -48,11 +48,11 @@ class InventoryOut {
     var createUser: String? = null
 
     @Column(name = "CREATE_DATE")
-    var createDate: LocalDate? = null
+    var createDate: LocalDateTime? = null
 
     @Column(name = "UPDATE_USER", length = 100)
     var updateUser: String? = null
 
     @Column(name = "UPDATE_DATE")
-    var updateDate: LocalDate? = null
+    var updateDate: LocalDateTime? = null
 }

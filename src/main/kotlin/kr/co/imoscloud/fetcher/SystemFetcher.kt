@@ -62,13 +62,10 @@ class SystemFetcher(
 
 
     @DgsQuery
-    fun getMenuRoleGroup() = menuRoleService.getMenuRoleGroup()
+    fun getMenuRoleGroup(@InputArgument("roleId") roleId: Long) = menuRoleService.getMenuRoleGroup(roleId)
 
     @DgsQuery
     fun getMenuRole(@InputArgument("menuId") menuId: String) = menuRoleService.getMenuRole(menuId)
-
-    @DgsQuery
-    fun getInitialMenuRole(@InputArgument("roleId") roleId: Long) = menuRoleService.getInitialMenuRole(roleId)
 
     @DgsMutation
     fun upsertMenuRole(@InputArgument("list") list: List<MenuRoleDto>) = menuRoleService.upsertMenuRole(list)

@@ -1,7 +1,5 @@
 package kr.co.imoscloud.dto
 
-import java.time.LocalDateTime
-
 data class CompanySummery(
     val id: Long,
     val compCd: String,

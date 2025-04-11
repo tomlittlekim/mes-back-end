@@ -48,6 +48,7 @@ class CompanyService(
     }
 
     @AuthLevel(minLevel = 3)
+    @Transactional
     fun upsertCompany(req: CompanyDto): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
@@ -79,7 +80,7 @@ class CompanyService(
                 ?: run {
                     val randomPwd = UUID.randomUUID().toString().replace("-", "").substring(0, 16)
                     upsertStr = "수정"
-                    Company(
+                    val company = Company(
                         site = req.site!!,
                         compCd = req.compCd!!,
                         businessRegistrationNumber = req.businessRegistrationNumber!!,
@@ -90,10 +91,15 @@ class CompanyService(
                         businessType = req.businessType,
                         businessItem = req.businessItem,
                         flagSubscription = req.flagSubscription,
-                        loginId = req.loginId!!,
                         phoneNumber = req.phoneNumber,
+                        loginId = "temp",
                         defaultUserPwd = req.defaultUserPwd ?: randomPwd
                     ).apply { createCommonCol(loginUser) }
+
+                    val owner = userService.generateOwner(company)
+                    core.userRepo.save(owner)
+                    core.upsertFromInMemory(owner)
+                    company
                 }
         } catch (e: NullPointerException) {
             throw IllegalArgumentException("회사를 생성하는데 필요한 정보 누락이 존재합니다. ")

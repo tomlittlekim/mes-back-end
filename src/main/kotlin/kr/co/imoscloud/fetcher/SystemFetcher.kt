@@ -33,6 +33,9 @@ class SystemFetcher(
     fun getUserGroup(@InputArgument("req") req: UserGroupRequest?): List<UserSummery?> = userService.getUserGroupByCompany(req)
 
     @DgsQuery
+    fun getUserSummery(@InputArgument("loginId") loginId: String): UserSummery = userService.getUserSummery(loginId)
+
+    @DgsQuery
     fun getUserDetail(@InputArgument("loginId") loginId: String): UserDetail = userService.getUserDetail(loginId)
 
     @DgsMutation

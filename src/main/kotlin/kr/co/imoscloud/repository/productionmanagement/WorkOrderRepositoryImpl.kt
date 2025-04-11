@@ -22,7 +22,7 @@ class WorkOrderRepositoryImpl(
                 workOrder.site.eq(site),
                 workOrder.compCd.eq(compCd),
                 workOrder.prodPlanId.eq(prodPlanId),
-                workOrder.flagActive.eq(true)
+                workOrder.flagActive.eq(true) // 활성화된 데이터만 조회
             )
             .orderBy(workOrder.createDate.desc())
 
@@ -36,7 +36,7 @@ class WorkOrderRepositoryImpl(
         prodPlanId: String?,
         productId: String?,
         shiftType: String?,
-        state: String?,
+        state: List<String>?,
         flagActive: Boolean?
     ): List<WorkOrder> {
         val workOrder = QWorkOrder.workOrder
@@ -76,17 +76,15 @@ class WorkOrderRepositoryImpl(
             }
         }
 
-        // state 필터링
+        // state 필터링 - List<String>으로 받아서 in 연산자 사용
         state?.let {
-            if (it.isNotBlank()) {
-                query.where(workOrder.state.eq(it))
+            if (it.isNotEmpty()) {
+                query.where(workOrder.state.`in`(it))
             }
         }
 
-        // flagActive 필터링
-        flagActive?.let {
-            query.where(workOrder.flagActive.eq(it))
-        }
+        // flagActive 필터링 (기본값은 true)
+        query.where(workOrder.flagActive.eq(flagActive ?: true))
 
         return query.fetch()
     }

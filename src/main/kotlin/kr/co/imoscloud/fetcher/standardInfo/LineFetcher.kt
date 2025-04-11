@@ -44,14 +44,14 @@ data class LineFilter(
     val factoryCode: String,
     val lineId: String,
     val lineName: String,
-    val flagActive: String ?= null
+//    val flagActive: String ?= null
 )
 
 data class LineInput(
     val factoryId: String,
     val lineName: String,
     val lineDesc: String ?= null,
-    val flagActive: String ?= null
+//    val flagActive: String ?= null
 )
 
 data class LineUpdate(
@@ -59,5 +59,5 @@ data class LineUpdate(
     val factoryId: String,
     val lineName: String,
     val lineDesc: String ?= null,
-    val flagActive: String ?= null
+//    val flagActive: String ?= null
 )

@@ -1,0 +1,36 @@
+input MenuRoleRequest {
+    id: Int
+    roleId: Int
+    menuId: String
+    isOpen: Boolean
+    isDelete: Boolean
+    isInsert: Boolean
+    isAdd: Boolean
+    isPopup: Boolean
+    isPrint: Boolean
+    isSelect: Boolean
+    isUpdate: Boolean
+}
+
+type MenuRole {
+    id: Int
+    roleId: Int
+    menuId: String
+    isOpen: Boolean
+    isDelete: Boolean
+    isInsert: Boolean
+    isAdd: Boolean
+    isPopup: Boolean
+    isPrint: Boolean
+    isSelect: Boolean
+    isUpdate: Boolean
+}
+
+extend type Mutation {
+    upsertMenuRole(list: [MenuRoleRequest]): String
+}
+
+extend type Query {
+    getMenuRoleGroup(roleId: Int): [MenuRole]
+    getMenuRole(menuId: String!): MenuRole
+}

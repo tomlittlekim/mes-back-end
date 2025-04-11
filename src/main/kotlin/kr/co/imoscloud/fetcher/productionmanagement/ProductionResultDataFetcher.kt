@@ -1,65 +1,157 @@
-// ProductionResultDataFetcher.kt
 package kr.co.imoscloud.fetcher.productionmanagement
 
 import com.netflix.graphql.dgs.*
+import com.netflix.graphql.dgs.exceptions.DgsEntityNotFoundException
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
-import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter
-import kr.co.imoscloud.model.productionmanagement.ProductionResultInput
-import kr.co.imoscloud.model.productionmanagement.ProductionResultUpdate
-import kr.co.imoscloud.model.productionmanagement.WorkOrderFilter
+import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
-import kr.co.imoscloud.service.productionmanagement.ProductionResultService
+import kr.co.imoscloud.service.productionmanagement.DefectInfoService
+import kr.co.imoscloud.service.productionmanagement.productionresult.ProductionResultService
 import kr.co.imoscloud.service.productionmanagement.WorkOrderService
+import kr.co.imoscloud.util.DateUtils
+import org.slf4j.LoggerFactory
 
 @DgsComponent
 class ProductionResultDataFetcher(
     private val productionResultService: ProductionResultService,
     private val workOrderService: WorkOrderService,
-    private val workOrderRepository: WorkOrderRepository
+    private val workOrderRepository: WorkOrderRepository,
+    private val defectInfoService: DefectInfoService
 ) {
+    private val log = LoggerFactory.getLogger(ProductionResultDataFetcher::class.java)
+
     // 특정 작업지시에 속한 생산실적 목록 조회
     @DgsQuery
     fun productionResultsByWorkOrderId(@InputArgument("workOrderId") workOrderId: String): List<ProductionResult> {
-        return productionResultService.getProductionResultsByWorkOrderId(workOrderId)
+        try {
+            return productionResultService.getProductionResultsByWorkOrderId(workOrderId)
+        } catch (e: Exception) {
+            log.error("생산실적 목록 조회 중 오류 발생", e)
+            return emptyList()
+        }
     }
 
     // 조건에 맞는 생산실적 목록 조회
     @DgsQuery
-    fun productionResults(@InputArgument("filter") filter: ProductionResultFilter): List<ProductionResult> {
-        return productionResultService.getProductionResults(filter)
+    fun productionResults(@InputArgument("filter") filterInput: Map<String, Any>?): List<ProductionResult> {
+        try {
+            // Map으로 받은 입력값을 ProductionResultFilter로 변환
+            val filter = ProductionResultFilter()
+
+            filterInput?.let { input ->
+                // 문자열 필드들 설정
+                filter.workOrderId = input["workOrderId"] as? String
+                filter.prodResultId = input["prodResultId"] as? String
+                filter.equipmentId = input["equipmentId"] as? String
+
+                // 날짜 필드 변환
+                if (input.containsKey("planStartDateFrom")) {
+                    val startDateFromStr = input["planStartDateFrom"] as? String
+                    filter.planStartDateFrom = DateUtils.parseDate(startDateFromStr)
+                }
+
+                if (input.containsKey("planStartDateTo")) {
+                    val startDateToStr = input["planStartDateTo"] as? String
+                    filter.planStartDateTo = DateUtils.parseDate(startDateToStr)
+                }
+
+                // Boolean 필드 설정
+                filter.flagActive = input["flagActive"] as? Boolean ?: true
+            }
+
+            // flagActive가 설정되지 않은 경우 true로 설정하여 활성화된 데이터만 조회
+            return productionResultService.getProductionResults(filter)
+        } catch (e: Exception) {
+            log.error("생산실적 목록 조회 중 오류 발생", e)
+            return emptyList()
+        }
+    }
+
+    // 생산실적 목록 조회 (변환된 DTO 형식으로 반환)
+    @DgsQuery
+    fun productionResultList(@InputArgument("filter") filter: ProductionResultInquiryFilter?): List<ProductionResultSummaryDto> {
+        try {
+            return productionResultService.getProductionResultSummaryList(filter ?: ProductionResultInquiryFilter())
+        } catch (e: Exception) {
+            log.error("생산실적 요약 목록 조회 중 오류 발생", e)
+            return emptyList()
+        }
     }
 
     // 작업지시와 생산실적 통합 조회 (UI에서 필요한 경우)
     @DgsQuery
     fun workOrdersWithProductionResults(@InputArgument("filter") filter: WorkOrderFilter): List<WorkOrder> {
-        // 단순히 작업지시 목록을 반환 (GraphQL 리졸버를 통해 생산실적을 채움)
-        return workOrderService.getWorkOrders(filter)
+        try {
+            // flagActive가 설정되지 않은 경우 true로 설정하여 활성화된 데이터만 조회
+            val activeFilter = filter.copy(flagActive = filter.flagActive ?: true)
+            // 단순히 작업지시 목록을 반환 (GraphQL 리졸버를 통해 생산실적을 채움)
+            return workOrderService.getWorkOrders(activeFilter)
+        } catch (e: Exception) {
+            log.error("작업지시 목록 조회 중 오류 발생", e)
+            return emptyList()
+        }
     }
 
     // 생산실적 저장 (생성/수정)
     @DgsData(parentType = "Mutation", field = "saveProductionResult")
     fun saveProductionResult(
         @InputArgument("createdRows") createdRows: List<ProductionResultInput>? = null,
-        @InputArgument("updatedRows") updatedRows: List<ProductionResultUpdate>? = null
+        @InputArgument("updatedRows") updatedRows: List<ProductionResultUpdate>? = null,
+        @InputArgument("defectInfos") defectInfos: List<DefectInfoInput>? = null
     ): Boolean {
-        return productionResultService.saveProductionResult(createdRows, updatedRows)
+        try {
+            log.info("GraphQL 요청: saveProductionResult - 생성: ${createdRows?.size ?: 0}개, 수정: ${updatedRows?.size ?: 0}개, 불량정보: ${defectInfos?.size ?: 0}개")
+
+            // 불량정보 로깅
+            defectInfos?.forEachIndexed { index, defectInfo ->
+                log.info("불량정보[$index] - prodResultId: ${defectInfo.prodResultId}, " +
+                        "defectQty: ${defectInfo.defectQty}, defectType: ${defectInfo.defectType}, " +
+                        "defectCause: ${defectInfo.defectCause}")
+            }
+
+            // 서비스 메서드 호출. 예외는 서비스 계층에서 던짐
+            val result = productionResultService.saveProductionResult(createdRows, updatedRows, defectInfos)
+            log.info("GraphQL 응답: saveProductionResult - 결과: $result")
+            return result
+        } catch (e: IllegalArgumentException) {
+            // 비즈니스 로직 오류는 로그로 남기고 예외를 던짐
+            log.warn("생산실적 저장 중 비즈니스 로직 오류: ${e.message}")
+            throw DgsEntityNotFoundException(e.message ?: "비즈니스 로직 오류가 발생했습니다.")
+        } catch (e: Exception) {
+            // 기타 예외는 에러 로그로 남기고 예외를 던짐
+            log.error("생산실적 저장 중 오류 발생", e)
+            throw RuntimeException("생산실적 저장 중 오류가 발생했습니다: ${e.message}", e)
+        }
     }
 
-    // 생산실적 삭제
+    // 생산실적 삭제 (소프트 삭제로 변경)
     @DgsData(parentType = "Mutation", field = "deleteProductionResult")
     fun deleteProductionResult(
         @InputArgument("prodResultId") prodResultId: String
     ): Boolean {
-        return productionResultService.deleteProductionResult(prodResultId)
+        try {
+            return productionResultService.softDeleteProductionResult(prodResultId)
+        } catch (e: Exception) {
+            log.error("생산실적 삭제 중 오류 발생", e)
+            return false
+        }
     }
 
     // 생산실적에 연결된 작업지시 정보 조회 (GraphQL 리졸버)
     @DgsData(parentType = "ProductionResult", field = "workOrder")
     fun workOrder(dfe: DgsDataFetchingEnvironment): WorkOrder? {
-        val productionResult = dfe.getSource<ProductionResult>()
-        val workOrderId = productionResult?.workOrderId ?: return null
+        try {
+            val productionResult = dfe.getSource<ProductionResult>()
+            val workOrderId = productionResult?.workOrderId ?: return null
 
-        return workOrderRepository.findByWorkOrderId(workOrderId)
+            // 활성화된 작업지시만 조회
+            return workOrderRepository.findByWorkOrderId(workOrderId)?.let {
+                if (it.flagActive == true) it else null
+            }
+        } catch (e: Exception) {
+            log.error("작업지시 조회 중 오류 발생", e)
+            return null
+        }
     }
 }

@@ -55,6 +55,7 @@ class ProductionPlanRepositoryImpl(
             }
         }
 
+        // shiftType 필터링
         shiftType?.let {
             if (it.isNotBlank()) {
                 query.where(productionPlan.shiftType.eq(it))
@@ -75,10 +76,11 @@ class ProductionPlanRepositoryImpl(
             query.where(productionPlan.planStartDate.lt(startOfNextDay))
         }
 
-        // flagActive 필터링
-        flagActive?.let {
-            query.where(productionPlan.flagActive.eq(it))
-        }
+        // flagActive 필터링 (기본값은 true)
+        query.where(productionPlan.flagActive.eq(flagActive ?: true))
+
+        // 생산계획ID 역순 정렬 추가
+        query.orderBy(productionPlan.prodPlanId.desc())
 
         return query.fetch()
     }

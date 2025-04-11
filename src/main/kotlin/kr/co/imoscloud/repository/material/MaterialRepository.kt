@@ -1,7 +1,8 @@
-package kr.co.imoscloud.repository.Material
+package kr.co.imoscloud.repository.material
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.entity.standardInfo.Factory
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -90,4 +91,56 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         compCd: String,
         systemMaterialIds: List<String?>
     ): Int
+
+    //단순 조회용 메서드 추가
+    fun findBySystemMaterialId(
+        systemMaterialId: String?
+    ): MaterialMaster?
+
+    @Query(
+        """
+        SELECT m
+        FROM MaterialMaster m
+        WHERE m.site = :site
+        AND m.compCd = :compCd
+        AND m.materialType = :materialType
+        AND m.flagActive = true
+        ORDER BY m.createDate DESC
+        """
+    )
+    fun getMaterialsByType(
+        site: String,
+        compCd: String,
+        materialType: String
+    ): List<MaterialMaster>
+
+    @Query(
+        """
+        SELECT m
+        FROM MaterialMaster m
+        WHERE m.site = :site
+        AND m.compCd = :compCd
+        AND m.flagActive = true
+        ORDER BY m.createDate DESC
+        """
+    )
+    fun getMaterialCode(
+        site: String,
+        compCd: String,
+    ): List<MaterialMaster>
+
+    @Query(
+        """
+        SELECT m
+        FROM MaterialMaster m
+        WHERE m.site = :site
+        AND m.compCd = :compCd
+        AND m.flagActive = true
+        ORDER BY m.materialType, m.materialCategory, m.materialName
+        """
+    )
+    fun getAllMaterials(
+        site: String,
+        compCd: String
+    ): List<MaterialMaster>
 }

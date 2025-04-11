@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletRequestWrapper
 import kr.co.imoscloud.dto.LoginOutput
 import kr.co.imoscloud.dto.RoleSummery
-import kr.co.imoscloud.entity.user.User
+import kr.co.imoscloud.entity.system.User
 import org.springframework.http.ResponseEntity
 
 interface IUser: ResponseVO {
@@ -32,6 +32,7 @@ interface IUser: ResponseVO {
                 email = user.userEmail,
                 roleId = user.roleId,
                 roleNm = role?.roleName,
+                priorityLevel = role?.priorityLevel,
                 status = 200,
                 message = "${user.loginId} 로그인 성공"
             )}

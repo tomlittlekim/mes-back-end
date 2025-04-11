@@ -1,40 +1,59 @@
 package kr.co.imoscloud.model.productionmanagement
 
 /**
- * 불량 정보 필터 - 기본 조회용
+ * 불량정보 필터 클래스
  */
 data class DefectInfoFilter(
-    var workOrderId: String? = null,
-    var prodResultId: String? = null,
-    var defectId: String? = null,
-    var productId: String? = null,
-    var productName: String? = null,
-    var defectType: String? = null,
-    var fromDate: String? = null,
-    var toDate: String? = null,
-    var state: String? = null,
-    var flagActive: Boolean? = true
-)
-
-/**
- * 불량 정보 입력 - 신규 등록용
- */
-data class DefectInfoInput(
-    val workOrderId: String,
-    val prodResultId: String,
+    val defectId: String? = null,
+    val workOrderId: String? = null,
+    val prodResultId: String? = null,
     val productId: String? = null,
     val productName: String? = null,
-    val defectQty: Double? = null,
-    val defectType: String? = null,
-    val defectReason: String? = null,
-    val resultInfo: String? = null,
     val state: String? = null,
-    val defectCause: String? = null,
+    val defectType: String? = null,
+    val fromDate: String? = null,
+    val toDate: String? = null,
     val flagActive: Boolean? = true
 )
 
 /**
- * 불량 정보 업데이트 - 수정용
+ * 불량정보 DTO
+ */
+data class DefectInfoDto(
+    val defectId: String? = null,
+    val workOrderId: String? = null,
+    val prodResultId: String? = null,
+    val productId: String? = null,
+    val defectName: String? = null,
+    val defectQty: Double? = null,
+    val defectCause: String? = null,
+    val state: String? = null,
+    val resultInfo: String? = null,
+    val createDate: String? = null,
+    val updateDate: String? = null,
+    val createUser: String? = null,
+    val updateUser: String? = null
+)
+
+/**
+ * 불량정보 입력 클래스
+ */
+data class DefectInfoInput(
+    val prodResultId: String? = null,
+    val productId: String? = null,
+    val productName: String? = null,
+    val defectName: String? = null,
+    val defectQty: Double = 0.0,
+    val defectCause: String? = null,
+    val state: String? = "NEW",
+    val resultInfo: String? = null,
+    val defectType: String? = null,
+    val defectReason: String? = null,
+    val flagActive: Boolean? = true
+)
+
+/**
+ * 불량정보 수정 클래스
  */
 data class DefectInfoUpdate(
     val defectId: String,
@@ -42,17 +61,18 @@ data class DefectInfoUpdate(
     val prodResultId: String? = null,
     val productId: String? = null,
     val productName: String? = null,
+    val defectName: String? = null,
     val defectQty: Double? = null,
+    val defectCause: String? = null,
+    val state: String? = null,
+    val resultInfo: String? = null,
     val defectType: String? = null,
     val defectReason: String? = null,
-    val resultInfo: String? = null,
-    val state: String? = null,
-    val defectCause: String? = null,
     val flagActive: Boolean? = null
 )
 
 /**
- * 제품별 불량 통계
+ * 제품별 불량 통계 DTO
  */
 data class DefectStatsByProductDto(
     val productId: String,
@@ -64,7 +84,7 @@ data class DefectStatsByProductDto(
 )
 
 /**
- * 불량 유형별 통계
+ * 불량 유형별 통계 DTO
  */
 data class DefectTypeCountDto(
     val defectType: String,
@@ -74,7 +94,7 @@ data class DefectTypeCountDto(
 )
 
 /**
- * 불량 원인별 통계
+ * 불량 원인별 통계 DTO
  */
 data class DefectCauseCountDto(
     val cause: String,
@@ -84,7 +104,7 @@ data class DefectCauseCountDto(
 )
 
 /**
- * 원인별 불량 통계
+ * 원인별 불량 통계 DTO
  */
 data class DefectStatsByCauseDto(
     val defectCause: String,
@@ -94,7 +114,7 @@ data class DefectStatsByCauseDto(
 )
 
 /**
- * 제품별 불량 통계
+ * 제품별 불량 개수 DTO
  */
 data class ProductDefectCountDto(
     val productId: String,

@@ -1,14 +1,12 @@
 package kr.co.imoscloud.core
 
 import kr.co.imoscloud.dto.*
-import kr.co.imoscloud.entity.company.Company
-import kr.co.imoscloud.entity.user.MenuRole
-import kr.co.imoscloud.entity.user.User
-import kr.co.imoscloud.entity.user.UserRole
-import kr.co.imoscloud.iface.DtoLoginIdBase
-import kr.co.imoscloud.iface.DtoRoleIdBase
-import kr.co.imoscloud.repository.company.CompanyRepository
-import kr.co.imoscloud.repository.user.*
+import kr.co.imoscloud.entity.system.Company
+import kr.co.imoscloud.entity.system.MenuRole
+import kr.co.imoscloud.entity.system.User
+import kr.co.imoscloud.entity.system.UserRole
+import kr.co.imoscloud.repository.system.CompanyRepository
+import kr.co.imoscloud.repository.system.*
 import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.stereotype.Component
 
@@ -40,40 +38,41 @@ class Core(
             companyRepo.findByCompCd(indies.first()).map(::listOf).orElseGet { emptyList<Company>() }
         } else companyRepo.findAllByCompCdIn(indies)
 
-        return companyList.associate { it.compCd to CompanySummery(it.id, it.companyName) }.toMutableMap()
+        return companyList.associate { it.compCd to companyToSummery(it) }.toMutableMap()
     }
 
-    override fun getMenuRoleDuringInspection(roleId: Long, menuId: String): MenuRole? {
-        return menuRoleRepo.findByRoleIdAndMenuId(roleId, menuId)
+    override fun getMenuRoleDuringInspection(roleId: Long, menuId: String?): List<MenuRole> {
+        return menuId
+            ?.let { menuRoleRepo.findByRoleIdAndMenuId(roleId, menuId)?.let { listOf(it) } }
+            ?:run { menuRoleRepo.findAllByRoleId(roleId) }
     }
 
-    fun <T> getUserFromInMemory(req: T): UserSummery {
-        val index: String
-        val userMap: Map<String, UserSummery?> = when {
-            req is String -> { index = req; getAllUserMap(listOf(ExistLoginIdRequest(req))) }
-            req is DtoLoginIdBase -> { index = req.loginId; getAllUserMap(listOf(req)) }
-            else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
-        }
-        return userMap[index] ?: throw IllegalArgumentException("User not found with loginId: $index")
-    }
+    fun getUserFromInMemory(loginId: String): UserSummery? = getAllUserMap(ExistLoginIdRequest(loginId))[loginId]
 
-    fun <T> getUserRoleFromInMemory(req: T): RoleSummery {
-        val index: Long
-        val roleMap: Map<Long, RoleSummery?> = when  {
-            req is Long -> { index = req; getAllRoleMap(listOf(RoleInput(req))) }
-            req is DtoRoleIdBase -> { index = req.roleId; getAllRoleMap(listOf(req)) }
-            else -> throw IllegalArgumentException("지원하지 않는 객체입니다. want: Long,UserRole")
-        }
-        return roleMap[index] ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
-    }
+    fun getUserRoleFromInMemory(roleId: Long): RoleSummery? = getAllRoleMap(OnlyRoleIdReq(roleId))[roleId]
+
+    fun getCompanyFromInMemory(compCd: String): CompanySummery? = getAllCompanyMap(OnlyCompanyIdReq(compCd))[compCd]
 
     fun getUserGroupByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
         return if (getIsInspect()) {
-            userRepo.findAllBySiteAndCompCdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd)
+            userRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.compCd)
                 .map { userToSummery(it) }
         } else {
-            val userMap = getAllUserMap(listOf(loginUser))
-            return userMap.filterValues { it?.compCd == loginUser.compCd }.values.toList()
+            getAllUserMap(loginUser)
+                .filterValues { it?.compCd == loginUser.compCd }
+                .values.toList()
+                .sortedBy { it?.id }
+        }
+    }
+
+    fun getRoleGroupByCompCd(loginUser: UserPrincipal): List<RoleSummery?> {
+        return if (getIsInspect()) {
+            roleRepo.getRolesByCompany(loginUser.compCd).map { roleToSummery(it) }
+        } else {
+            getAllRoleMap(loginUser)
+                .filterValues { v -> (v?.compCd == loginUser.compCd || v?.compCd == "default" ) }
+                .values.toList()
+                .sortedByDescending { it?.priorityLevel }
         }
     }
 
@@ -90,13 +89,28 @@ class Core(
         )
     }
 
-    fun isDeveloper(loginUser: UserPrincipal): Boolean {
-        val roleSummery = getUserRoleFromInMemory(loginUser)
-        return roleSummery.priorityLevel == 5
-    }
+    fun isDeveloper(loginUser: UserPrincipal): Boolean =
+        getUserRoleFromInMemory(loginUser.roleId)
+            ?.let { it.priorityLevel == 5 }
+            ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
-    fun isAdminOrHigher(loginUser: UserPrincipal): Boolean {
-        val roleSummery = getUserRoleFromInMemory(loginUser)
-        return roleSummery.priorityLevel!! >= 3
+    fun isAdminOrHigher(loginUser: UserPrincipal): Boolean =
+        getUserRoleFromInMemory(loginUser.roleId)
+            ?.let { it.priorityLevel >= 3 }
+            ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
+
+    fun validatePriorityIsHigherThan(roleId: Long, loginUser: UserPrincipal): Unit {
+        val roleMap = getAllRoleMap(OnlyRoleIdReq(roleId), loginUser)
+
+        try {
+            val targetRole = roleMap[roleId]!!
+            val loginUserRole = roleMap[loginUser.roleId]!!
+            if (targetRole.priorityLevel > loginUserRole.priorityLevel) {
+                val msg = "권한 레벨이 부족합니다. ${targetRole.roleName} 또는 그에 준하거나 이상의 권한이 필요합니다."
+                throw IllegalArgumentException(msg)
+            }
+        } catch (e: NullPointerException) {
+            throw IllegalArgumentException("대상: $roleId 또는 로그인 유저: ${loginUser.roleId} 의 권한 정보가 존재하지 않습니다. ")
+        }
     }
 }

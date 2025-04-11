@@ -1,0 +1,29 @@
+type Role {
+    roleId: Int!              # 권한 ID (PK)
+    site: String             # 사이트
+    compCd: String           # 회사 코드
+    priorityLevel: Int       # 우선순위 레벨 (선택)
+    roleName: String!        # 권한 이름
+    flagDefault: Boolean     # 기본 권한 여부
+    sequence: Int            # 정렬 순서
+}
+
+input UserRoleRequest {
+    site: String
+    roleId: Int
+    fixRoleId: Int!,
+    roleName: String
+    compCd: String
+    flagDefault: Boolean
+    sequence: Int
+}
+
+extend type Mutation {
+    upsertUserRole(req: UserRoleRequest!): String
+    deleteUserRole(roleId: Int!): String
+}
+
+extend type Query {
+    getRoles: [Role]
+    getRolesForSelect: [Role]
+}

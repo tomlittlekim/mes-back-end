@@ -26,8 +26,7 @@ class VendorService(
             vendorId = vendorFilter.vendorId,
             vendorName = vendorFilter.vendorName,
             ceoName = vendorFilter.ceoName,
-            businessType = vendorFilter.businessType,
-            flagActive = vendorFilter.flagActive?.let { it == "Y" }
+            businessType = vendorFilter.businessType
         )
 
         return vendorList.map {
@@ -40,7 +39,7 @@ class VendorService(
                 businessRegNo = it.businessRegNo ?: throw Exception(" 사업자 번호가 존재하지 않습니다."),
                 address = it.address,
                 telNo = it.telNo,
-                flagActive = if (it.flagActive == true) "Y" else "N",
+//                flagActive = if (it.flagActive == true) "Y" else "N",
                 createUser = it.createUser,
                 createDate = it.createDate.toString().replace("T", " "),
                 updateUser = it.updateUser,
@@ -74,7 +73,6 @@ class VendorService(
                 address = it.address,
                 telNo = it.telNo,
             ).apply {
-                flagActive = it.flagActive.equals("Y" )
                 createCommonCol(userPrincipal)
             }
         }
@@ -108,7 +106,6 @@ class VendorService(
                 it.businessType = x.businessType
                 it.address = x.address
                 it.telNo = x.telNo
-                it.flagActive = x.flagActive.equals("Y" )
                 it.updateCommonCol(userPrincipal)
             }
         }
@@ -122,7 +119,8 @@ class VendorService(
         return vendorRep.deleteByVendorId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            vendorId = vendorId
+            vendorId = vendorId,
+            updateUser = userPrincipal.loginId
         ) > 0
     }
 
@@ -137,7 +135,7 @@ data class VendorResponse(
     val businessType: String ?= null,
     val address: String ?= null,
     val telNo: String ?= null,
-    val flagActive:String,
+//    val flagActive:String,
     val createUser:String ?= null,
     val createDate:String ?= null,
     val updateUser:String ?= null,

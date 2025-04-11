@@ -1,23 +1,22 @@
 # 테이블 타입 정의
+# 입고관리
 type InventoryInManagement {
     inManagementId: String,
     inType: String,
-    factoryName: String,
-    warehouseName: String,
+    factoryId: String,
+    warehouseId: String,
     materialInfo: String,
     totalPrice: String,
     hasInvoice: String,
     userName: String,
     createDate: String,
 }
-
-# InventoryIn 타입 정의
 type InventoryIn {
     inManagementId: String
     inInventoryId: String
     supplierName: String
     manufacturerName: String
-    userMaterialId: String
+    systemMaterialId: String
     materialName: String
     materialCategory: String
     materialStandard: String
@@ -30,18 +29,26 @@ type InventoryIn {
     updateUser: String
     updateDate: String
 }
-
-# InventoryInM 입력 타입 정의
-input InventoryInMInput {
-    site: String
-    compCd: String
-    inType: String
-    factoryId: String
-    warehouseId: String
-    totalPrice: String
-    hasInvoice: String
+type InventoryStatus {
+    warehouseName: String
+    supplierName: String
+    manufacturerName: String
+    systemMaterialId: String
+    materialName: String
+    currentQty: String
+    unit: String
+    qty: Int
 }
-
+type InventoryHistory {
+    inOutType: String
+    warehouseName: String
+    supplierName: String
+    manufacturerName: String
+    materialName: String
+    unit: String
+    currentQty: Int
+    createDate: String
+}
 input InventoryInManagementFilter {
     inManagementId: String
     inType: String
@@ -52,16 +59,35 @@ input InventoryInManagementFilter {
     startDate: String
     endDate: String
 }
-
 input InventoryInFilter {
     inManagementId: String
 }
-
-input DetailedInventoryInput {
+input InventoryStatusFilter{
+    warehouseName: String
+    supplierName: String
+    manufacturerName: String
+    materialName: String
+}
+input InventoryHistoryFilter{
+    warehouseName : String
+    inOutType : String
+    supplierName : String
+    manufacturerName : String
+    materialName : String
+    startDate : String
+    endDate : String
+}
+input InventoryInManagementSaveInput {
+    inType: String
+    factoryId: String
+    warehouseId: String
+    totalPrice: String
+    hasInvoice: String
+}
+input InventoryInSaveInput {
     inManagementId: String!
     supplierName: String
     manufactureName: String
-    userMaterialId: String
     inType: String
     systemMaterialId: String
     materialName: String
@@ -77,12 +103,12 @@ input DetailedInventoryInput {
     updateDate: String
 }
 
-input DetailedInventoryUpdateInput {
+input InventoryInUpdateInput {
     inManagementId: String!
     inInventoryId: String!
     supplierName: String
     manufactureName: String
-    userMaterialId: String
+    systemMaterialId: String
     materialName: String
     materialCategory: String
     materialStandard: String
@@ -95,28 +121,131 @@ input DetailedInventoryUpdateInput {
     updateUser: String
     updateDate: String
 }
-input InventoryDeleteInput {
-    site: String
-    compCd: String
+input InventoryInManagementDeleteInput {
     inManagementId: String
 }
-
-input InventoryDetailDeleteInput {
-    site: String
-    compCd: String
+input InventoryInDeleteInput {
     inInventoryId: String
+}
+
+#출고 관리
+type InventoryOutManagement {
+    outManagementId: String,
+    outType: String,
+    factoryId: String,
+    warehouseId: String,
+    materialInfo: String,
+    totalPrice: String,
+    userName: String,
+    createDate: String,
+}
+type InventoryOut {
+    outManagementId: String
+    outInventoryId: String
+    supplierName: String
+    manufacturerName: String
+    systemMaterialId: String
+    materialName: String
+    materialCategory: String
+    materialStandard: String
+    qty: Int
+    unitPrice: Int
+    unitVat: Int
+    totalPrice: Int
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+
+input InventoryOutManagementFilter {
+    outManagementId: String
+    outType: String
+    factoryName: String
+    warehouseName: String
+    createUser: String
+    startDate: String
+    endDate: String
+}
+input InventoryOutFilter {
+    outManagementId: String
+}
+input InventoryOutManagementSaveInput {
+    outType: String
+    factoryId: String
+    warehouseId: String
+    totalPrice: String
+}
+
+input InventoryOutSaveInput {
+    outManagementId: String!
+    supplierName: String
+    manufactureName: String
+    outType: String
+    systemMaterialId: String
+    materialName: String
+    materialCategory: String
+    materialStandard: String
+    qty: String
+    unitPrice: String
+    unitVat: String
+    totalPrice: String
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+input InventoryOutUpdateInput {
+    outManagementId: String!
+    outInventoryId: String!
+    supplierName: String
+    manufactureName: String
+    systemMaterialId: String
+    materialName: String
+    materialCategory: String
+    materialStandard: String
+    qty: String
+    unitPrice: String
+    unitVat: String
+    totalPrice: String
+    createUser: String
+    createDate: String
+    updateUser: String
+    updateDate: String
+}
+input InventoryOutManagementDeleteInput {
+    outManagementId: String
+}
+input InventoryOutDeleteInput {
+    outInventoryId: String
 }
 
 # 쿼리 정의
 extend type Query {
+    #입고관리
     getInventoryInManagementList(filter: InventoryInManagementFilter): [InventoryInManagement]
     getInventoryInList(filter: InventoryInFilter): [InventoryIn]
+
+    #출고관리
+    getInventoryOutManagementList(filter: InventoryOutManagementFilter): [InventoryOutManagement]
+    getInventoryOutList(filter: InventoryOutFilter): [InventoryOut]
+
+    #재고현황
+    getInventoryStatusList(filter: InventoryStatusFilter): [InventoryStatus]
+
+    #재고상세이력
+    getInventoryHistoryList(filter: InventoryHistoryFilter): [InventoryHistory]
 }
 
 # 뮤테이션 정의
 extend type Mutation {
-    saveDetailedInventory(createdRows: [DetailedInventoryInput], updatedRows:[DetailedInventoryUpdateInput] ): Boolean
-    saveInventory(createdRows: [InventoryInMInput]) :Boolean
-    deleteInventory(inManagementId: InventoryDeleteInput): Boolean
-    deleteDetailedInventory(inInventoryId: InventoryDetailDeleteInput): Boolean
+    saveInventoryInManagement(createdRows: [InventoryInManagementSaveInput]) :Boolean
+    saveInventoryIn(createdRows: [InventoryInSaveInput], updatedRows:[InventoryInUpdateInput] ): Boolean
+    deleteInventoryInManagement(inManagementId: InventoryInManagementDeleteInput): Boolean
+    deleteInventoryIn(inInventoryId: InventoryInDeleteInput): Boolean
+
+    saveInventoryOutManagement(createdRows: [InventoryOutManagementSaveInput]) :Boolean
+    saveInventoryOut(createdRows: [InventoryOutSaveInput], updatedRows:[InventoryOutUpdateInput] ): Boolean
+    deleteInventoryOutManagement(outManagementId: InventoryOutManagementDeleteInput): Boolean
+    deleteInventoryOut(outInventoryId: InventoryOutDeleteInput): Boolean
 }

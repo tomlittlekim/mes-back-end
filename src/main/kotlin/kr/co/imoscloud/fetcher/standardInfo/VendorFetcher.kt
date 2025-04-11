@@ -38,7 +38,7 @@ data class VendorFilter(
     val vendorName:String,
     val ceoName:String,
     val businessType:String,
-    val flagActive:String? = null
+//    val flagActive:String? = null
 )
 
 data class VendorInput(
@@ -49,7 +49,7 @@ data class VendorInput(
     val businessType: String? = null,
     val address: String? = null,
     val telNo: String? = null,
-    val flagActive: String? = null
+//    val flagActive: String? = null
 )
 
 data class VendorUpdate(
@@ -61,5 +61,5 @@ data class VendorUpdate(
     val businessType: String? = null,
     val address: String? = null,
     val telNo: String? = null,
-    val flagActive: String? = null
+//    val flagActive: String? = null
 )

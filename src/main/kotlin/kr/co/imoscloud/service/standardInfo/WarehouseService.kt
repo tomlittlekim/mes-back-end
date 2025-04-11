@@ -27,7 +27,6 @@ class WarehouseService(
             factoryName = filter.factoryName,
             warehouseId = filter.warehouseId,
             warehouseName = filter.warehouseName,
-            flagActive = filter.flagActive?.let{ it == "Y" }
         )
     }
 
@@ -52,7 +51,6 @@ class WarehouseService(
                 warehouseName = it.warehouseName,
                 warehouseType = it.warehouseType,
             ).apply{
-                flagActive = it.flagActive.equals("Y" )
                 createCommonCol(userPrincipal)
             }
         }
@@ -81,7 +79,6 @@ class WarehouseService(
                 it.factoryId = x.factoryId
                 it.warehouseName = x.warehouseName
                 it.warehouseType = x.warehouseType
-                it.flagActive = x.flagActive.equals("Y" )
                 it.updateCommonCol(userPrincipal)
             }
         }
@@ -96,8 +93,18 @@ class WarehouseService(
         return warehouseRep.deleteByWarehouseId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            warehouseId = warehouseId
+            warehouseId = warehouseId,
+            updateUser = userPrincipal.loginId
         ) > 0
+    }
+
+    fun getWarehouse(): List<WarehouseResponse?> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
+        return warehouseRep.getGridWarehouse(
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
+        )
     }
 
 }
@@ -108,7 +115,7 @@ data class WarehouseResponse(
     val warehouseId: String,
     val warehouseName: String,
     val warehouseType: String,
-    val flagActive: String,
+//    val flagActive: String,
     val createUser: String?= null,
     val createDate: LocalDateTime? = null,
     val updateUser: String? = null,

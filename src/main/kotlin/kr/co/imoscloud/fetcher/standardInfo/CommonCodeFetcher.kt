@@ -51,7 +51,10 @@ class CommonCodeFetcher(
         return commonCodeService.getGridCodes(codeClassId)
     }
 
-
+    @DgsQuery
+    fun getInitialCodes(@InputArgument("codeClassId") codeClassId: String): List<CodeResponse> {
+        return commonCodeService.getInitialCodes(codeClassId)
+    }
 }
 
 data class CodeClassFilter(
@@ -69,7 +72,6 @@ data class CodeInput(
     val codeName: String,
     val codeDesc: String,
     val sortOrder: Int,
-    val flagActive:String
 )
 
 data class CodeUpdate(
@@ -78,7 +80,6 @@ data class CodeUpdate(
     val codeName: String,
     val codeDesc: String,
     val sortOrder: Int,
-    val flagActive:String
 )
 
 data class CodeClassUpdate(

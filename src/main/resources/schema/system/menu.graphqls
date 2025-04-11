@@ -1,0 +1,37 @@
+input MenuRequest {
+    id: Int
+    menuId: String
+    upMenuId: String
+    menuName: String
+    flagSubscribe: Boolean
+    flagActive: Boolean
+    sequence: Int
+
+    isOpen: Boolean
+    isDelete: Boolean
+    isInsert: Boolean
+    isAdd: Boolean
+    isPopup: Boolean
+    isPrint: Boolean
+    isSelect: Boolean
+    isUpdate: Boolean
+}
+
+type Menu {
+    id: Int
+    menuId: String
+    upMenuId: String
+    menuName: String
+    flagSubscribe: Boolean
+    sequence: Int
+    flagActive: Boolean
+}
+
+extend type Mutation {
+    upsertMenus(req: MenuRequest!): String
+    deleteMenu(id: Int): String
+}
+
+extend type Query {
+    getMenus(menuId: String, menuName: String): [Menu]
+}

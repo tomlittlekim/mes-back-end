@@ -1,21 +1,47 @@
 extend type Query {
+    # 기본 생산실적 조회 쿼리
     productionResults(filter: ProductionResultFilter): [ProductionResult]!
     productionResultsByWorkOrderId(workOrderId: String!): [ProductionResult]!
     workOrdersWithProductionResults(filter: WorkOrderFilter): [WorkOrder]!
+
+    # 생산실적 조회 관련 쿼리
+    productionResultList(filter: ProductionResultInquiryFilter): [ProductionResultSummary]!
+    productionResultDetail(prodResultId: String!): ProductionResultDetail
 }
 
 extend type Mutation {
-    saveProductionResult(createdRows: [ProductionResultInput], updatedRows: [ProductionResultUpdate]): Boolean
+    # 생산실적 관련 뮤테이션
+    saveProductionResult(
+        createdRows: [ProductionResultInput],
+        updatedRows: [ProductionResultUpdate],
+        defectInfos: [DefectInfoInput]
+    ): Boolean
     deleteProductionResult(prodResultId: String!): Boolean
 }
 
+# 기본 생산실적 조회용 필터
 input ProductionResultFilter {
     workOrderId: String
     prodResultId: String
     equipmentId: String
+    planStartDateFrom: String
+    planStartDateTo: String
     flagActive: Boolean
 }
 
+# 생산실적 조회용 필터
+input ProductionResultInquiryFilter {
+    workOrderId: String
+    prodResultId: String
+    productId: String
+    equipmentId: String
+    fromDate: String
+    toDate: String
+    status: String
+    flagActive: Boolean
+}
+
+# 생산실적 엔티티 타입
 type ProductionResult {
     id: Int
     site: String
@@ -35,8 +61,67 @@ type ProductionResult {
     updateUser: String
     flagActive: Boolean
     workOrder: WorkOrder
+    defectInfos: [DefectInfo]
 }
 
+# 생산실적 요약 정보
+type ProductionResultSummary {
+    id: Int
+    prodResultId: String
+    workOrderId: String
+    productId: String
+    productName: String
+    equipmentId: String
+    equipmentName: String
+    productionDate: String
+    planQuantity: Float
+    actualQuantity: Float
+    defectQuantity: Float
+    progressRate: String
+    defectRate: String
+    worker: String
+    status: String
+    createDate: String
+    updateDate: String
+}
+
+# 생산실적 상세 정보
+type ProductionResultDetail {
+    id: Int
+    prodResultId: String
+    workOrderId: String
+    productId: String
+    productName: String
+    factoryId: String
+    factoryName: String
+    lineId: String
+    lineName: String
+    equipmentId: String
+    equipmentName: String
+    productionDate: String
+    planQuantity: Float
+    goodQuantity: Float
+    defectQuantity: Float
+    inputAmount: Float
+    outputAmount: Float
+    yieldRate: String
+    productionTime: String
+    startTime: String
+    endTime: String
+    worker: String
+    supervisor: String
+    progressRate: String
+    defectRate: String
+    status: String
+    defectCause: String
+    resultInfo: String
+    createDate: String
+    updateDate: String
+    createUser: String
+    updateUser: String
+}
+
+# 생산실적 입력 타입
 input ProductionResultInput {
     workOrderId: String
     goodQty: Float
@@ -47,6 +132,7 @@ input ProductionResultInput {
     flagActive: Boolean
 }
 
+# 생산실적 수정 타입
 input ProductionResultUpdate {
     prodResultId: String!
     workOrderId: String
@@ -56,8 +142,4 @@ input ProductionResultUpdate {
     resultInfo: String
     defectCause: String
     flagActive: Boolean
-}
-
-extend type WorkOrder {
-    productionResults: [ProductionResult]
 }

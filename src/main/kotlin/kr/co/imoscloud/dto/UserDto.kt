@@ -1,21 +1,21 @@
 package kr.co.imoscloud.dto
 
-import kr.co.imoscloud.iface.DtoAllInOneBase
-import kr.co.imoscloud.iface.DtoLoginIdBase
-import kr.co.imoscloud.iface.DtoRoleIdBase
+import kr.co.imoscloud.iface.*
 import kr.co.imoscloud.iface.ResponseVO.ResponseBase
 
 data class UserInput(
     val id: Long? = null,
     var site: String?=null,
     var compCd: String?=null,
-    var userId: String?=null,
-    var password: String?=null,
-    var userNm: String?=null,
-    var email: String?=null,
+    var loginId: String?=null,
+    var userPwd: String?=null,
+    var userName: String?=null,
+    var userEmail: String?=null,
     var roleId: Long?=null,
     var phoneNum: String?=null,
-    var departmentId: String?=null
+    var departmentId: String?=null,
+    var positionId: String?=null,
+    var flagActive: Boolean?=null
 )
 
 data class LoginOutput(
@@ -27,6 +27,7 @@ data class LoginOutput(
     var email: String?=null,
     override var roleId: Long,
     var roleNm: String?=null,
+    var priorityLevel: Int?=null
 ): ResponseBase, DtoRoleIdBase
 
 data class LoginRequest(val userId: String, val userPwd: String)
@@ -49,7 +50,7 @@ data class UserSummery(
     val id: Long,
     val site: String,
     override val compCd: String,
-    val username: String?=null,
+    val userName: String?=null,
     override val loginId: String,
     val userPwd: String,
     val imagePath: String?=null,
@@ -73,16 +74,68 @@ data class UserDetail(
     val flagActive: String
 ): DtoLoginIdBase
 
-data class RoleInput(
-    override val roleId: Long,
-): DtoRoleIdBase
-
-data class RoleSummery(
-    val roleName: String,
-    val priorityLevel: Int?,
+data class UserGroupRequest(
+    var userName: String? = null,
+    var departmentId: String? = null,
+    var positionId: String? = null,
+    var roleId: Long? = null
 )
 
-data class RoleResponseForSelect(
+data class OnlyRoleIdReq(
     override val roleId: Long,
-    val roleName: String,
 ): DtoRoleIdBase
+
+data class OnlyCompanyIdReq(
+    override val compCd: String
+): DtoCompCdBase
+
+data class RoleSummery(
+    override val roleId: Long,
+    override val compCd: String,
+    val roleName: String,
+    val priorityLevel: Int,
+): DtoRoleIdBase, DtoCompCdBase
+
+data class UserRoleRequest(
+    val site: String?=null,
+    val roleId: Long?=null,
+    val fixRoleId: Long,
+    val roleName: String?=null,
+    val compCd: String?=null,
+    val flagDefault: Boolean?=null,
+    val sequence: Int?=0,
+)
+
+data class MenuRequest(
+    val id: Long?=null,
+    val menuId: String? = null,
+    val upMenuId: String? = null,
+    val menuName: String? = null,
+    val flagSubscribe: Boolean?=null,
+    val sequence: Int? = null,
+    val flagActive: Boolean = true,
+
+    // 신규 메뉴 생성 시 default 값을 위함 필드들
+    var isOpen: Boolean?=null,
+    var isDelete: Boolean?=null,
+    var isInsert: Boolean?=null,
+    var isAdd: Boolean?=null,
+    var isPopup: Boolean?=null,
+    var isPrint: Boolean?=null,
+    var isSelect: Boolean?=null,
+    var isUpdate: Boolean?=null
+)
+
+data class MenuRoleDto(
+    var id: Long?=null,
+    var roleId: Long?=null,
+    var menuId: String,
+    var isOpen: Boolean?=null,
+    var isDelete: Boolean?=null,
+    var isInsert: Boolean?=null,
+    var isAdd: Boolean?=null,
+    var isPopup: Boolean?=null,
+    var isPrint: Boolean?=null,
+    var isSelect: Boolean?=null,
+    var isUpdate: Boolean?=null
+)

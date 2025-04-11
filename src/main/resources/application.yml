@@ -7,6 +7,10 @@ spring:
     hikari:
       auto-commit: false
 
+  data:
+    mongodb:
+      uri: mongodb://121.169.203.219:37017/pb_sensor_data
+
   application:
     name: imos-back-end
 
@@ -23,6 +27,7 @@ spring:
         format_sql: false
         use_sql_comments: false
     open-in-view: false
+
 
 jwt:
   secret: your_jwt_secret_key_should_be_very_long_and_secure_at_least_256_bits

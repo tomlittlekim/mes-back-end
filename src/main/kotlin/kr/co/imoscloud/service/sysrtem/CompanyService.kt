@@ -6,13 +6,15 @@ import kr.co.imoscloud.dto.CompanyDto
 import kr.co.imoscloud.dto.CompanySummery
 import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.util.AuthLevel
+import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class CompanyService(
-    private val core: Core
+    private val core: Core,
+    private val userService: UserService,
 ) {
 
     fun getCompaniesForSelect(): List<CompanySummery?> {
@@ -65,8 +67,8 @@ class CompanyService(
                             businessAddress = req.businessAddress ?: businessAddress
                             businessType = req.businessType ?: businessType
                             businessItem = req.businessItem ?: businessItem
-                            paymentDate = req.paymentDate ?: paymentDate
-                            expiredDate = req.expiredDate ?: expiredDate
+                            paymentDate = DateUtils.parseDateTime(req.paymentDate) ?: paymentDate
+                            expiredDate = DateUtils.parseDateTime(req.expiredDate) ?: expiredDate
                             flagSubscription = req.flagSubscription
                             phoneNumber = req.phoneNumber ?: phoneNumber
                             defaultUserPwd = req.defaultUserPwd ?: defaultUserPwd
@@ -82,13 +84,11 @@ class CompanyService(
                         compCd = req.compCd!!,
                         businessRegistrationNumber = req.businessRegistrationNumber!!,
                         corporateRegistrationNumber = req.corporateRegistrationNumber!!,
-                        companyName = req.compName!!,
+                        companyName = req.companyName!!,
                         imagePath = req.imagePath,
                         businessAddress = req.businessAddress,
                         businessType = req.businessType,
                         businessItem = req.businessItem,
-                        paymentDate = req.paymentDate,
-                        expiredDate = req.expiredDate,
                         flagSubscription = req.flagSubscription,
                         loginId = req.loginId!!,
                         phoneNumber = req.phoneNumber,

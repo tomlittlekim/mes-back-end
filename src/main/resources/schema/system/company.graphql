@@ -21,7 +21,7 @@ input CompanyInput {
     id: Int
     site: String
     compCd: String
-    compName: String
+    companyName: String
     businessRegistrationNumber: String
     corporateRegistrationNumber: String
     companyStatus: String

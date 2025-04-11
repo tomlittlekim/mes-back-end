@@ -1,21 +1,13 @@
 extend type Query {
     productionPlans(filter: ProductionPlanFilter): [ProductionPlan]!
     productionPlansWithWorkOrders(filter: ProductionPlanFilter): [ProductionPlan]!
+    productMaterials: [Material]! # 새로운 쿼리 추가
 }
 
 extend type Mutation {
+    # 생산계획 저장 및 수정 관련 뮤테이션 추가
     saveProductionPlan(createdRows: [ProductionPlanInput], updatedRows: [ProductionPlanUpdate]): Boolean
     deleteProductionPlan(prodPlanId: String!): Boolean
-}
-
-input ProductionPlanFilter {
-    prodPlanId: String
-    orderId: String
-    productId: String
-    shiftType: String
-    planStartDateFrom: String
-    planStartDateTo: String
-    flagActive: Boolean
 }
 
 type ProductionPlan {
@@ -25,6 +17,7 @@ type ProductionPlan {
     prodPlanId: String
     orderId: String
     productId: String
+    productName: String # 제품명 필드 추가
     shiftType: String
     planQty: Float
     planStartDate: String
@@ -37,9 +30,21 @@ type ProductionPlan {
     workOrders: [WorkOrder]
 }
 
+input ProductionPlanFilter {
+    prodPlanId: String
+    orderId: String
+    productId: String
+    productName: String # 제품명 필드 추가
+    shiftType: String
+    planStartDateFrom: String
+    planStartDateTo: String
+    flagActive: Boolean
+}
+
 input ProductionPlanInput {
     orderId: String
     productId: String
+    productName: String # 제품명 필드 추가
     shiftType: String
     planQty: Float
     planStartDate: String
@@ -51,6 +56,7 @@ input ProductionPlanUpdate {
     prodPlanId: String!
     orderId: String
     productId: String
+    productName: String # 제품명 필드 추가
     shiftType: String
     planQty: Float
     planStartDate: String

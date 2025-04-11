@@ -3,10 +3,12 @@ package kr.co.imoscloud.fetcher.productionmanagement
 import com.netflix.graphql.dgs.*
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
+import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
+import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
@@ -15,7 +17,8 @@ import org.slf4j.LoggerFactory
 @DgsComponent
 class ProductionPlanDataFetcher(
     private val productionPlanService: ProductionPlanService,
-    private val workOrderRepository: WorkOrderRepository
+    private val workOrderRepository: WorkOrderRepository,
+    private val materialMasterRepository: MaterialRepository // 자재 저장소 추가
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanDataFetcher::class.java)
 
@@ -31,6 +34,7 @@ class ProductionPlanDataFetcher(
                 filter.prodPlanId = input["prodPlanId"] as? String
                 filter.orderId = input["orderId"] as? String
                 filter.productId = input["productId"] as? String
+                filter.productName = input["productName"] as? String  // 제품명 필드 추가
                 filter.shiftType = input["shiftType"] as? String  // 주/야간 유형 필드 설정
 
                 // 날짜 필드 변환
@@ -58,8 +62,29 @@ class ProductionPlanDataFetcher(
         }
     }
 
+    // 제품 목록 조회 (Material 테이블의 제품 데이터)
+    @DgsQuery
+    fun productMaterials(): List<MaterialMaster?> {
+        try {
+            // 사용자 정보 가져오기
+            val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
+                ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+            // 제품 유형(FINISH)의 자재만 조회
+            return materialMasterRepository.findBySiteAndCompCdAndMaterialTypeAndFlagActiveOrderByMaterialNameAsc(
+                currentUser.getSite(),
+                currentUser.compCd,
+                "FINISH", // 제품 유형
+                true      // 활성화된 데이터만
+            )
+        } catch (e: Exception) {
+            log.error("제품 정보 조회 중 오류 발생", e)
+            return emptyList()
+        }
+    }
+
     // 생산계획 저장 (생성/수정)
-    @DgsData(parentType = "Mutation", field = "saveProductionPlan")
+    @DgsMutation
     fun saveProductionPlan(
         @InputArgument("createdRows") createdRows: List<ProductionPlanInput>? = null,
         @InputArgument("updatedRows") updatedRows: List<ProductionPlanUpdate>? = null
@@ -79,7 +104,7 @@ class ProductionPlanDataFetcher(
     }
 
     // 생산계획 삭제 (소프트 삭제로 변경)
-    @DgsData(parentType = "Mutation", field = "deleteProductionPlan")
+    @DgsMutation
     fun deleteProductionPlan(
         @InputArgument("prodPlanId") prodPlanId: String
     ): Boolean {

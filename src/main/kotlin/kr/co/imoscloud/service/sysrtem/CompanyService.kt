@@ -34,7 +34,7 @@ class CompanyService(
     fun getCompanies(req: CompanySearchCondition): List<Company> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         return if (core.isDeveloper(loginUser)) {
-            core.companyRepo.findAllBySearchCondition(req.site, req.companyName)
+            core.companyRepo.findAllBySearchCondition(req.site, "%${req.companyName}%")
         } else {
             core.companyRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.compCd)
         }
@@ -113,7 +113,7 @@ class CompanyService(
 
     @AuthLevel(minLevel = 5)
     @Transactional
-    fun deleteCompany(id: Long): Unit {
+    fun deleteCompany(id: Long): Boolean {
         val target = core.companyRepo.findByIdAndFlagActiveIsTrue(id)
             ?.apply {
                 flagActive = false
@@ -124,5 +124,6 @@ class CompanyService(
         core.companyRepo.save(target)
         core.userRepo.deleteAllbyCompCd(target.compCd)
         core.roleRepo.deleteAllByCompCd(target.compCd)
+        return true
     }
 }

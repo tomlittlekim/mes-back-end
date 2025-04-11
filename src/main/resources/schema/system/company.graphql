@@ -1,5 +1,5 @@
 type Company {
-    id: ID,
+    id: Int,
     site: String,
     compCd: String!,
     businessRegistrationNumber: String,

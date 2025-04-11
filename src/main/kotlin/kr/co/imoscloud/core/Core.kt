@@ -38,7 +38,7 @@ class Core(
             companyRepo.findByCompCd(indies.first()).map(::listOf).orElseGet { emptyList<Company>() }
         } else companyRepo.findAllByCompCdIn(indies)
 
-        return companyList.associate { it.compCd to CompanySummery(it.id, it.companyName) }.toMutableMap()
+        return companyList.associate { it.compCd to companyToSummery(it) }.toMutableMap()
     }
 
     override fun getMenuRoleDuringInspection(roleId: Long, menuId: String?): List<MenuRole> {
@@ -50,6 +50,8 @@ class Core(
     fun getUserFromInMemory(loginId: String): UserSummery? = getAllUserMap(ExistLoginIdRequest(loginId))[loginId]
 
     fun getUserRoleFromInMemory(roleId: Long): RoleSummery? = getAllRoleMap(OnlyRoleIdReq(roleId))[roleId]
+
+    fun getCompanyFromInMemory(compCd: String): CompanySummery? = getAllCompanyMap(OnlyCompanyIdReq(compCd))[compCd]
 
     fun getUserGroupByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
         return if (getIsInspect()) {

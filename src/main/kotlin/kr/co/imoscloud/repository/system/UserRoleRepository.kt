@@ -36,4 +36,12 @@ interface UserRoleRepository: JpaRepository<UserRole, Long> {
         where ur.flagActive is true
     """)
     fun getAllRoleIds(): List<Long>
+
+    @Modifying
+    @Query("""
+        update UserRole ur
+        set ur.flagDefault = false
+        where ur.compCd = :compCd
+    """)
+    fun deleteAllByCompCd(compCd: String)
 }

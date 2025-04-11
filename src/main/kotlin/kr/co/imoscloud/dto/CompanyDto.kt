@@ -4,7 +4,9 @@ import java.time.LocalDateTime
 
 data class CompanySummery(
     val id: Long,
+    val compCd: String,
     val companyName: String?,
+    val defaultUserPwd: String
 )
 
 data class CompanyDto(
@@ -23,5 +25,6 @@ data class CompanyDto(
     val expiredDate: LocalDateTime? = null,
     val flagSubscription: Boolean = false,
     val loginId: String? = null,
-    val phoneNumber: String? = null
+    val phoneNumber: String? = null,
+    val defaultUserPwd: String? = null
 )

@@ -77,8 +77,8 @@ abstract class AbstractInitialSetting(
         else userMap
     }
 
-    fun <T: DtoRoleIdBase>  getAllRoleMap(vararg req: T?): MutableMap<Long, RoleSummery?> = getAllRoleMap(req.filterNotNull())
-    fun <T: DtoRoleIdBase>  getAllRoleMap(req: List<T?>): MutableMap<Long, RoleSummery?> {
+    fun <T: DtoRoleIdBase> getAllRoleMap(vararg req: T?): MutableMap<Long, RoleSummery?> = getAllRoleMap(req.filterNotNull())
+    fun <T: DtoRoleIdBase> getAllRoleMap(req: List<T?>): MutableMap<Long, RoleSummery?> {
         return if (getIsInspect()) {
             val indies = extractRoleIdFromRequest(req)
             getAllRolesDuringInspection(indies)
@@ -89,7 +89,8 @@ abstract class AbstractInitialSetting(
         else roleMap
     }
 
-    fun <T: DtoCompCdBase>  getAllCompanyMap(req: List<T?>): MutableMap<String, CompanySummery?> {
+    fun <T: DtoCompCdBase> getAllCompanyMap(vararg req: T?): MutableMap<String, CompanySummery?> = getAllCompanyMap(req.filterNotNull())
+    fun <T: DtoCompCdBase> getAllCompanyMap(req: List<T?>): MutableMap<String, CompanySummery?> {
         return if (getIsInspect()) {
             val indies = extractCompCdFromRequest(req)
             getAllCompanyDuringInspection(indies)
@@ -137,7 +138,7 @@ abstract class AbstractInitialSetting(
             else roleMap[req.roleId] = summery
         }
         is Company -> {
-            val summery = CompanySummery(req.id, req.companyName)
+            val summery = companyToSummery(req)
             if (isInspect) upsertCompanyQue[req.compCd] = summery
             else companyMap[req.compCd] = summery
         }
@@ -191,6 +192,7 @@ abstract class AbstractInitialSetting(
         )
     }
 
+    fun companyToSummery(it: Company) = CompanySummery(it.id, it.compCd, it.companyName, it.defaultUserPwd?:"1234")
     fun roleToSummery(it: UserRole): RoleSummery = RoleSummery(it.roleId, it.compCd, it.roleName, it.priorityLevel)
     fun userToSummery(u: User): UserSummery = UserSummery(
         u.id,u.site,u.compCd,u.userName,u.loginId,u.userPwd,u.imagePath,u.roleId,u.userEmail,u.phoneNum,u.departmentId,u.positionId,u.flagActive
@@ -207,10 +209,7 @@ abstract class AbstractInitialSetting(
 
         roleMap = roleRepo.findAll().associate { it.roleId to roleToSummery(it) }.toMutableMap()
 
-        companyMap = companyRepo.findAll().associate {
-            val summery = CompanySummery(it.id, it.companyName)
-            it.compCd to summery
-        }.toMutableMap()
+        companyMap = companyRepo.findAll().associate { it.compCd to companyToSummery(it) }.toMutableMap()
 
         val encodeMenuRoleMap: MutableMap<String, Int?> = mutableMapOf()
         menuRoleRepo.findAll().forEach { mr ->

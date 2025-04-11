@@ -30,6 +30,6 @@ class UserRole(
     var flagDefault: Boolean = false,
 
     @Column(name = "SEQUENCE")
-    val sequence: Int? = null
+    var sequence: Int? = null
 
 ): CommonCol(), DtoRoleIdBase, DtoCompCdBase

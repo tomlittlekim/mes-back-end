@@ -14,7 +14,8 @@ input UserRoleRequest {
     fixRoleId: Int!,
     roleName: String
     compCd: String
-    flagDeFault: Boolean
+    flagDefault: Boolean
+    sequence: Int
 }
 
 extend type Mutation {

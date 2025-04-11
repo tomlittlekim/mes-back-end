@@ -7,6 +7,7 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.service.material.MaterialResponseModel
 import kr.co.imoscloud.service.material.MaterialService
+import kr.co.imoscloud.service.material.MaterialTypeGroupResponseModel
 
 @DgsComponent
 class MaterialDataFetcher(
@@ -50,6 +51,11 @@ class MaterialDataFetcher(
     @DgsQuery
     fun getMaterialCode(): List<MaterialResponseModel?> {
         return materialService.getMaterialCode()
+    }
+
+    @DgsQuery
+    fun getAllMaterials(): List<MaterialTypeGroupResponseModel> {
+        return materialService.getAllMaterials()
     }
 }
 

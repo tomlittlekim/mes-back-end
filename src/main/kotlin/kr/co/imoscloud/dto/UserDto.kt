@@ -85,6 +85,10 @@ data class OnlyRoleIdReq(
     override val roleId: Long,
 ): DtoRoleIdBase
 
+data class OnlyCompanyIdReq(
+    override val compCd: String
+): DtoCompCdBase
+
 data class RoleSummery(
     override val roleId: Long,
     override val compCd: String,
@@ -98,7 +102,8 @@ data class UserRoleRequest(
     val fixRoleId: Long,
     val roleName: String?=null,
     val compCd: String?=null,
-    val flagDeFault: Boolean?=null,
+    val flagDefault: Boolean?=null,
+    val sequence: Int?=0,
 )
 
 data class MenuRequest(

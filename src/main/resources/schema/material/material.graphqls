@@ -62,11 +62,24 @@ type Material {
     updateDate: String
 }
 
+type MaterialTypeGroup {
+    materialType: String
+    materialCategory: String
+    materials: [Material]
+    categories: [MaterialCategoryGroup]
+}
+
+type MaterialCategoryGroup {
+    materialCategory: String
+    materials: [Material]
+}
+
 extend type Query {
     getRawSubMaterials(filter: MaterialFilter): [Material]
     getCompleteMaterials(filter: MaterialFilter): [Material]
     getHalfMaterials(filter: MaterialFilter): [Material]
     getMaterialsByType(materialType: String!): [Material]
+    getAllMaterials: [MaterialTypeGroup]
 
     #드롭다운용 코드 조회
     getMaterialCode: [Material]

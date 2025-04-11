@@ -23,10 +23,12 @@ data class BomMaterialDto(
 data class BomDetailMaterialDto(
     val bomDetail: BomDetail,
     val materialType: String?,
+    val materialCategory: String?,
     val userMaterialId: String?,
     val materialName: String?,
     val materialStandard: String?,
     val unit: String?,
     val userParentItemCd: String?,
+    val parentMaterialType: String?,
     val parentMaterialName: String?
 )

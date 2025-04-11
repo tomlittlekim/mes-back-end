@@ -52,11 +52,13 @@ type BomDetail {
     bomId: String! # BOM ID (hide)
     bomDetailId: String! # BOM Detail ID (hide)
     bomLevel: Int! # BOM 레벨
-    materialType: String # 제품 타
+    materialType: String # 제품 타입
+    materialCategory: String # 제품 유형
     systemMaterialId: String! # 제품ID(시스템생성, hide)
     userMaterialId: String # 제품ID(사용자생성)
     parentItemCd: String # 상위품목ID(시스템생성, hide)
     userParentItemCd: String # 상위품목ID(사용자생성)
+    parentMaterialType: String # 부모 제품 타입
     materialName: String # 제품명
     parentMaterialName: String # 상위제품명
     materialStandard: String # 규격

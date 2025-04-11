@@ -66,11 +66,15 @@ class UserService(
     @AuthLevel(minLevel = 3)
     fun upsertUser(req: UserInput): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        req.roleId?.let { id -> core.validatePriorityIsHigherThan(id, loginUser) }
+
         val modifyReq = modifyReqByRole(loginUser, req)
         val loginId = req.loginId ?: throw IllegalArgumentException("id is null")
 
         val upsertUser = core.getUserFromInMemory(loginId)
             ?.let { user ->
+                core.validatePriorityIsHigherThan(user.roleId, loginUser)
+
                 val site = modifyReq.site ?: throw IllegalArgumentException("site is null")
                 val target = core.userRepo.findBySiteAndLoginIdForSignUp(site, user.loginId)!!
                 modifyUser(target, req, loginUser)
@@ -128,6 +132,7 @@ class UserService(
         return core.userRepo.findById(id)
             .map { user ->
                 core.validatePriorityIsHigherThan(user.roleId, loginUser)
+
                 // company 객체 내부에 초기화 비밀번호 값을 가지고 있거나 \\ 사용자가 입력 하는 방식으로 진행해야함
                 val encoder = BCryptPasswordEncoder()
                 user.apply { userPwd = encoder.encode("1234"); updateCommonCol(loginUser) }

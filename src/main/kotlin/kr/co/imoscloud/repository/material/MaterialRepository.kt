@@ -129,6 +129,21 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         compCd: String,
     ): List<MaterialMaster>
 
+    @Query(
+        """
+        SELECT m
+        FROM MaterialMaster m
+        WHERE m.site = :site
+        AND m.compCd = :compCd
+        AND m.flagActive = true
+        ORDER BY m.materialType, m.materialCategory, m.materialName
+        """
+    )
+    fun getAllMaterials(
+        site: String,
+        compCd: String
+    ): List<MaterialMaster>
+
     // 사이트, 회사코드, 자재유형, 활성화 여부로 조회 (정렬 포함)
     fun findBySiteAndCompCdAndMaterialTypeAndFlagActiveOrderByMaterialNameAsc(
         site: String,

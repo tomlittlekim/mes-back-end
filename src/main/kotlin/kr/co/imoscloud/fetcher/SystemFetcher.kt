@@ -87,6 +87,8 @@ class SystemFetcher(
 
 
 
+    @DgsQuery
+    fun getCompaniesForSelect(): List<CompanySummery?> = companyService.getCompaniesForSelect()
 
     @DgsQuery
     fun getCompanies(): List<Company> = companyService.getCompanies()

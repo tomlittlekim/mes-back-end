@@ -18,7 +18,6 @@ class MenuService(
     private val menuRoleRepo: MenuRoleRepository,
 ) {
 
-    @AuthLevel(minLevel = 5)
     fun getMenus(menuId: String?, menuName: String?): List<Menu> {
         return if (menuId==null&&menuName==null) menuRepo.findAll()
         else menuRepo.findAllByParms(menuId, "%${menuName}%")

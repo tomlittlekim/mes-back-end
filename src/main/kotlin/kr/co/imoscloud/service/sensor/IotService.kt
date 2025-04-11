@@ -67,9 +67,8 @@ class IotService(
         val startStr = localDate.minusDays(daysRange).atStartOfDay().format(mongoDateTimeFormatter)
         val endStr = localDate.plusDays(1).atStartOfDay().minusSeconds(1).format(mongoDateTimeFormatter)
 
-        //TODO EPIN001 => userPrincipal.compCd
         val match = Aggregation.match(
-            Criteria.where("vendorid").`is`("EPIN001")
+            Criteria.where("vendorid").`is`(userPrincipal.compCd)
                 .and("timestamp").gte(startStr).lte(endStr)
         )
 

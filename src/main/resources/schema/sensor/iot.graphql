@@ -1,0 +1,16 @@
+input PowerHourFilter{
+    date:String,
+    range:String
+}
+
+
+type Iot{
+    timeLabel:String,
+    deviceId:String,
+    power:String
+}
+
+extend type Query {
+    getPowerData:[Iot]
+    getPopupPowerData(filter:PowerHourFilter):[Iot]
+}

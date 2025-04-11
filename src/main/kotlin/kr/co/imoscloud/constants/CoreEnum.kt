@@ -27,4 +27,12 @@ class CoreEnum {
         DAY("dd"),
         MONTH_DAY_TIME_MIN("MM-dd HH:mm")
     }
+
+    enum class SensorType(val key: String){
+        POWER("POWER"),
+        TEMPER("TEMPER"),
+        VIBRA("VIBRA"),
+        DOOR("DOOR"),
+        RIDAR("RIDAR")
+    }
 }

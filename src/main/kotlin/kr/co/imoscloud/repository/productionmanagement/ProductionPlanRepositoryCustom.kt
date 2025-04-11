@@ -10,6 +10,7 @@ interface ProductionPlanRepositoryCustom {
         prodPlanId: String?,
         orderId: String?,
         productId: String?,
+        productName: String?,
         shiftType: String?,
         planStartDateFrom: LocalDate?,  // 계획시작일 범위 시작
         planStartDateTo: LocalDate?,    // 계획시작일 범위 끝

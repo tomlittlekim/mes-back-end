@@ -9,6 +9,7 @@ data class ProductionPlanFilter(
     var prodPlanId: String? = null,
     var orderId: String? = null,
     var productId: String? = null,
+    var productName: String? = null, // 제품명 필드 추가
     var shiftType: String? = null,
     var planStartDateFrom: LocalDate? = null,
     var planStartDateTo: LocalDate? = null,
@@ -18,6 +19,7 @@ data class ProductionPlanFilter(
 data class ProductionPlanInput(
     val orderId: String? = null,
     val productId: String? = null,
+    val productName: String? = null, // 제품명 필드 추가
     val shiftType: String? = null,
     val planQty: Double? = null,
     val planStartDate: String? = null,
@@ -43,6 +45,7 @@ data class ProductionPlanUpdate(
     val prodPlanId: String,
     val orderId: String? = null,
     val productId: String? = null,
+    val productName: String? = null, // 제품명 필드 추가
     val shiftType: String? = null,
     val planQty: Double? = null,
     val planStartDate: String? = null,

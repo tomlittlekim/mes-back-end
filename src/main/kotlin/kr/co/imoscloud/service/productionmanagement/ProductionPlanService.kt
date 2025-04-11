@@ -1,19 +1,38 @@
 package kr.co.imoscloud.service.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
+import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
 import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
+import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipalOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class ProductionPlanService(
-    val productionPlanRepository: ProductionPlanRepository
+    val productionPlanRepository: ProductionPlanRepository,
+    val materialMasterRepository: MaterialRepository
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanService::class.java)
+
+    // 제품 정보 조회 메서드 추가
+    fun getProductMaterials(): List<MaterialMaster?> {
+        // 사용자 정보 획득
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        // 제품 유형(FINISH)의 자재만 조회
+        return materialMasterRepository.findBySiteAndCompCdAndMaterialTypeAndFlagActiveOrderByMaterialNameAsc(
+            currentUser.getSite(),
+            currentUser.compCd,
+            "FINISH", // 제품 유형
+            true      // 활성화된 데이터만
+        )
+    }
 
     fun getProductionPlans(filter: ProductionPlanFilter): List<ProductionPlan> {
         // 1. 파라미터로 받은 사용자 정보가 있으면 사용, 없으면 SecurityUtils에서 가져오기 시도
@@ -23,17 +42,43 @@ class ProductionPlanService(
         // flagActive가 null인 경우 true로 설정하여 활성화된 데이터만 조회
         val activeFilter = filter.copy(flagActive = filter.flagActive ?: true)
 
-        return productionPlanRepository.getProductionPlanList(
+        // 생산계획 목록 조회
+        val planList = productionPlanRepository.getProductionPlanList(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
             prodPlanId = activeFilter.prodPlanId,
             orderId = activeFilter.orderId,
             productId = activeFilter.productId,
+            productName = activeFilter.productName, // 제품명 필드 추가
             shiftType = activeFilter.shiftType,
             planStartDateFrom = activeFilter.planStartDateFrom,
             planStartDateTo = activeFilter.planStartDateTo,
             flagActive = activeFilter.flagActive
         )
+
+        // 제품ID를 기준으로 제품명 정보 채우기
+        val productIds = planList.mapNotNull { it.productId }.distinct()
+        if (productIds.isNotEmpty()) {
+            val materials = materialMasterRepository.findBySiteAndCompCdAndSystemMaterialIdInAndFlagActive(
+                currentUser.getSite(),
+                currentUser.compCd,
+                productIds,
+                true
+            )
+
+            val materialMap = materials.associateBy { it?.systemMaterialId }
+
+            // 각 생산계획에 제품명 설정
+            planList.forEach { plan ->
+                plan.productId?.let { productId ->
+                    materialMap[productId]?.let { material ->
+                        plan.productName = material.materialName
+                    }
+                }
+            }
+        }
+
+        return planList
     }
 
     fun saveProductionPlan(

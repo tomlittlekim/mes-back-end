@@ -128,4 +128,21 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         site: String,
         compCd: String,
     ): List<MaterialMaster>
+
+    // 사이트, 회사코드, 자재유형, 활성화 여부로 조회 (정렬 포함)
+    fun findBySiteAndCompCdAndMaterialTypeAndFlagActiveOrderByMaterialNameAsc(
+        site: String,
+        compCd: String,
+        materialType: String,
+        flagActive: Boolean
+    ): List<MaterialMaster?>
+
+    // 여러 자재ID로 조회
+    fun findBySiteAndCompCdAndSystemMaterialIdInAndFlagActive(
+        site: String,
+        compCd: String,
+        systemMaterialIds: List<String>,
+        flagActive: Boolean
+    ): List<MaterialMaster?>
+
 }

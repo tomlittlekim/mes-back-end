@@ -19,4 +19,13 @@ interface CompanyRepository: JpaRepository<Company, Long> {
             and c.flagActive is true 
     """)
     fun findAllByCompCdAndFlagActiveIsTrue(compCd: String): List<Company>
+
+    @Query("""
+        select c
+        from Company c
+        where (:site is null or c.site = :site)
+            and (:companyName is null or c.companyName like :companyName)
+            and c.flagActive is true
+    """)
+    fun findAllBySearchCondition(site: String?=null, companyName: String?=null): List<Company>
 }

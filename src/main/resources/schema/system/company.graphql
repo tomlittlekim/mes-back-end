@@ -37,6 +37,11 @@ input CompanyInput {
     defaultUserPwd: String
 }
 
+input CompanySearchCondition {
+    site: String,
+    companyName: String
+}
+
 extend type Mutation {
     upsertCompany(req: CompanyInput): String
     deleteCompany(id: Int): Boolean
@@ -44,6 +49,6 @@ extend type Mutation {
 
 extend type Query {
     getCompaniesForSelect: [Company]
-    getCompanies: [Company]
+    getCompanies(req: CompanySearchCondition): [Company]
     getCompanyDetails: Company
 }

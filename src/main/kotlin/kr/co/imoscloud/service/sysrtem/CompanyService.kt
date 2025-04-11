@@ -3,6 +3,7 @@ package kr.co.imoscloud.service.sysrtem
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.CompanyDto
+import kr.co.imoscloud.dto.CompanySearchCondition
 import kr.co.imoscloud.dto.CompanySummery
 import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.util.AuthLevel
@@ -30,10 +31,10 @@ class CompanyService(
         }
     }
 
-    fun getCompanies(): List<Company> {
+    fun getCompanies(req: CompanySearchCondition): List<Company> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         return if (core.isDeveloper(loginUser)) {
-            core.companyRepo.findAllByFlagActiveIsTrue()
+            core.companyRepo.findAllBySearchCondition(req.site, req.companyName)
         } else {
             core.companyRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.compCd)
         }
@@ -99,7 +100,7 @@ class CompanyService(
                     val owner = userService.generateOwner(company)
                     core.userRepo.save(owner)
                     core.upsertFromInMemory(owner)
-                    company
+                    company.apply { loginId = owner.loginId }
                 }
         } catch (e: NullPointerException) {
             throw IllegalArgumentException("회사를 생성하는데 필요한 정보 누락이 존재합니다. ")

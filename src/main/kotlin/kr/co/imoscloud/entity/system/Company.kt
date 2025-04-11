@@ -52,7 +52,7 @@ class Company(
     var flagSubscription: Boolean = false,
 
     @Column(name = "ONER_ID", length = 40)
-    override val loginId: String,
+    override var loginId: String,
 
     @Column(name = "PHONE_NUMBER", length = 11)
     var phoneNumber: String? = null,

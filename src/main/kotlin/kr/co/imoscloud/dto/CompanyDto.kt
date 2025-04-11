@@ -1,5 +1,10 @@
 package kr.co.imoscloud.dto
 
+data class CompanySearchCondition(
+    val site: String?=null,
+    val companyName: String?=null,
+)
+
 data class CompanySummery(
     val id: Long,
     val compCd: String,

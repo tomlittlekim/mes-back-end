@@ -61,5 +61,5 @@ extend type Query {
     signIn(req: UserInput!): UserOutput!
     existLoginId(req: ExistLoginRequest!): Boolean!
     getUserGroup(req: UserGroupRequest!): [User]
-    getUserDetail(id: Int): User
+    getUserDetail(loginId: String!): User
 }

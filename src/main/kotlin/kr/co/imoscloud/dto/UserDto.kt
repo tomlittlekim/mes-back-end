@@ -69,9 +69,9 @@ data class UserDetail(
     var departmentName: String?,
     var position: String?,
     val authorityName: String,
-    val email: String?,
+    val userEmail: String?,
     val phoneNumber: String?,
-    val flagActive: String
+    val flagActive: String?="Y"
 ): DtoLoginIdBase
 
 data class UserGroupRequest(

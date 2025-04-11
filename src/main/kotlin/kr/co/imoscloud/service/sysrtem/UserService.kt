@@ -98,19 +98,21 @@ class UserService(
         }
     }
 
-    fun getUserDetail(userId: Long): UserDetail {
+    fun getUserDetail(loginId: String): UserDetail {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        val target = if (core.isDeveloper(loginUser)) core.userRepo.findByIdAndFlagActiveIsTrue(userId)
-        else core.userRepo.findBySiteAndIdAndFlagActiveIsTrue(loginUser.getSite(), userId)
+        val target = core.getUserFromInMemory(loginId)
+        if (!core.isDeveloper(loginUser) && target?.compCd != loginUser.compCd)
+            throw IllegalArgumentException("소속이 달라서 조회할 수 없습니다. ")
 
-        val codeMap = codeRep.findAllByCodeClassIdIn(listOf("DEPARTMENT","POSITION"))
-            .associate { it?.codeId to it?.codeName }
+        val codeClassIds = listOf("DEPARTMENT","POSITION")
+        val codeMap = codeRep.findAllByCodeClassIdIn(codeClassIds).associate { it?.codeId to it?.codeName }
+
         val roleSummery = core.getUserRoleFromInMemory(loginUser.roleId)
             ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
         return target
-            ?.let{ UserDetail(it.id,it.loginId,it.userName?:"",codeMap[it.departmentId],codeMap[it.positionId],roleSummery.roleName,it.userEmail,it.phoneNum,if(it.flagActive)"Y" else "N") }
+            ?.let { UserDetail(it.id,it.loginId,it.userName?:"",codeMap[it.departmentId],codeMap[it.positionId],roleSummery.roleName,it.userEmail,it.phoneNum) }
             ?:throw UsernameNotFoundException("유저가 존재하지 않습니다. ")
     }
 

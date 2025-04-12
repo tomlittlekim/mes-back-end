@@ -11,13 +11,25 @@ interface UserRoleRepository: JpaRepository<UserRole, Long> {
     @Query("""
         select ur
         from UserRole ur
-        where (ur.compCd = 'default' or ur.compCd = :compCd)
+        where (:site is null or ur.site = :site)
+            and (ur.compCd = 'default' or ur.compCd = :compCd)
+            and (:priorityLevel is null or ur.priorityLevel = :priorityLevel)
             and ur.flagActive is true 
         order by ur.sequence desc
     """)
-    fun getRolesByCompany(compCd: String): List<UserRole>
+    fun getRolesByCompanyForExceptDev(compCd: String, site: String?=null, priorityLevel: Int?=null): List<UserRole>
 
-    fun findAllByFlagActiveIsTrue(): List<UserRole>
+    @Query("""
+        select ur
+        from UserRole ur
+        where (:site is null or ur.site = :site)
+            and (:compCd is null or ur.compCd = :compCd)
+            and (:priorityLevel is null or ur.priorityLevel = :priorityLevel)
+            and ur.flagActive is true
+        order by ur.sequence desc
+    """)
+    fun findAllBySearchConditionForDev(site: String?=null, compCd: String?=null, priorityLevel: Int?=null): List<UserRole>
+
     fun findByRoleIdAndFlagActiveIsTrue(roleId: Long): UserRole?
 
     @Modifying

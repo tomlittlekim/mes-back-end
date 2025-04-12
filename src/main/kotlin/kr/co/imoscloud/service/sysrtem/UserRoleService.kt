@@ -2,6 +2,7 @@ package kr.co.imoscloud.service.sysrtem
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.core.Core
+import kr.co.imoscloud.dto.RoleSearchRequest
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserRoleRequest
 import kr.co.imoscloud.entity.system.UserRole
@@ -26,13 +27,13 @@ class UserRoleService(
         }
     }
 
-    fun getUserRoleGroup(): List<UserRole> {
+    fun getUserRoleGroup(req: RoleSearchRequest): List<UserRole> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         return if (core.isDeveloper(loginUser)) {
-            core.roleRepo.findAllByFlagActiveIsTrue()
+            core.roleRepo.findAllBySearchConditionForDev(req.site, req.compCd, req.priorityLevel)
         } else {
-            core.roleRepo.getRolesByCompany(loginUser.compCd)
+            core.roleRepo.getRolesByCompanyForExceptDev(loginUser.compCd, req.site, req.priorityLevel)
         }
     }
 

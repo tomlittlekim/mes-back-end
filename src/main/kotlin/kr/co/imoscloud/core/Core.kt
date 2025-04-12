@@ -67,7 +67,7 @@ class Core(
 
     fun getRoleGroupByCompCd(loginUser: UserPrincipal): List<RoleSummery?> {
         return if (getIsInspect()) {
-            roleRepo.getRolesByCompany(loginUser.compCd).map { roleToSummery(it) }
+            roleRepo.getRolesByCompanyForExceptDev(loginUser.compCd).map { roleToSummery(it) }
         } else {
             getAllRoleMap(loginUser)
                 .filterValues { v -> (v?.compCd == loginUser.compCd || v?.compCd == "default" ) }

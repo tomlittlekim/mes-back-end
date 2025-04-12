@@ -18,12 +18,18 @@ input UserRoleRequest {
     sequence: Int
 }
 
+input RoleSearchRequest {
+    site: String,
+    compCd: String,
+    priorityLevel: Int
+}
+
 extend type Mutation {
     upsertUserRole(req: UserRoleRequest!): String
     deleteUserRole(roleId: Int!): String
 }
 
 extend type Query {
-    getRoles: [Role]
+    getRoles(req: RoleSearchRequest): [Role]
     getRolesForSelect: [Role]
 }

@@ -49,7 +49,7 @@ class SystemFetcher(
 
 
     @DgsQuery
-    fun getRoles(): List<UserRole> = userRoleService.getUserRoleGroup()
+    fun getRoles(@InputArgument("req") req: RoleSearchRequest): List<UserRole> = userRoleService.getUserRoleGroup(req)
 
     @DgsQuery
     fun getRolesForSelect(): List<RoleSummery?> = userRoleService.getUserRoleSelect()

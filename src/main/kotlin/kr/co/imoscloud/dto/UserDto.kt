@@ -139,3 +139,9 @@ data class MenuRoleDto(
     var isSelect: Boolean?=null,
     var isUpdate: Boolean?=null
 )
+
+data class RoleSearchRequest(
+    val site: String? = null,
+    val compCd: String? = null,
+    val priorityLevel: Int? = null,
+)

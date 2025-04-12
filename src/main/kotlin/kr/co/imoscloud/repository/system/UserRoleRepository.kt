@@ -17,7 +17,7 @@ interface UserRoleRepository: JpaRepository<UserRole, Long> {
             and ur.flagActive is true 
         order by ur.sequence desc
     """)
-    fun getRolesByCompanyForExceptDev(compCd: String, site: String?=null, priorityLevel: Int?=null): List<UserRole>
+    fun findAllBySearchConditionForExceptDev(compCd: String, site: String?=null, priorityLevel: Int?=null): List<UserRole>
 
     @Query("""
         select ur

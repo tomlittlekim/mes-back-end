@@ -34,9 +34,9 @@ class CompanyService(
     fun getCompanies(req: CompanySearchCondition): List<Company> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         return if (core.isDeveloper(loginUser)) {
-            core.companyRepo.findAllBySearchCondition(req.site, "%${req.companyName}%")
+            core.companyRepo.findAllBySearchConditionForDev(req.site, "%${req.companyName?:""}%")
         } else {
-            core.companyRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.compCd)
+            core.companyRepo.findAllBySearchConditionForExceptDev(loginUser.compCd)
         }
     }
 

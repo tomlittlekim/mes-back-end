@@ -15,10 +15,12 @@ interface CompanyRepository: JpaRepository<Company, Long> {
     @Query("""
         select c
         from Company c
-        where (c.compCd = 'default' or c.compCd = :compCd)
+        where (:site is null or c.site = :site)
+            and (c.compCd = 'default' or c.compCd = :compCd)
+            and (:companyName is null or c.companyName like :companyName)
             and c.flagActive is true 
     """)
-    fun findAllByCompCdAndFlagActiveIsTrue(compCd: String): List<Company>
+    fun findAllBySearchConditionForExceptDev(compCd: String, site: String?=null, companyName: String?=null): List<Company>
 
     @Query("""
         select c
@@ -27,5 +29,5 @@ interface CompanyRepository: JpaRepository<Company, Long> {
             and (:companyName is null or c.companyName like :companyName)
             and c.flagActive is true
     """)
-    fun findAllBySearchCondition(site: String?=null, companyName: String?=null): List<Company>
+    fun findAllBySearchConditionForDev(site: String?=null, companyName: String?=null): List<Company>
 }

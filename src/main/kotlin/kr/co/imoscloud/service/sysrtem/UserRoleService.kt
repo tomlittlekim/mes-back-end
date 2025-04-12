@@ -33,7 +33,7 @@ class UserRoleService(
         return if (core.isDeveloper(loginUser)) {
             core.roleRepo.findAllBySearchConditionForDev(req.site, req.compCd, req.priorityLevel)
         } else {
-            core.roleRepo.getRolesByCompanyForExceptDev(loginUser.compCd, req.site, req.priorityLevel)
+            core.roleRepo.findAllBySearchConditionForExceptDev(loginUser.compCd, req.site, req.priorityLevel)
         }
     }
 

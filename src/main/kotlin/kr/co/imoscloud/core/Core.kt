@@ -67,7 +67,7 @@ class Core(
 
     fun getRoleGroupByCompCd(loginUser: UserPrincipal): List<RoleSummery?> {
         return if (getIsInspect()) {
-            roleRepo.getRolesByCompanyForExceptDev(loginUser.compCd).map { roleToSummery(it) }
+            roleRepo.findAllBySearchConditionForExceptDev(loginUser.compCd).map { roleToSummery(it) }
         } else {
             getAllRoleMap(loginUser)
                 .filterValues { v -> (v?.compCd == loginUser.compCd || v?.compCd == "default" ) }
@@ -92,11 +92,6 @@ class Core(
     fun isDeveloper(loginUser: UserPrincipal): Boolean =
         getUserRoleFromInMemory(loginUser.roleId)
             ?.let { it.priorityLevel == 5 }
-            ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
-
-    fun isAdminOrHigher(loginUser: UserPrincipal): Boolean =
-        getUserRoleFromInMemory(loginUser.roleId)
-            ?.let { it.priorityLevel >= 3 }
             ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
     fun validatePriorityIsHigherThan(roleId: Long, loginUser: UserPrincipal): Unit {

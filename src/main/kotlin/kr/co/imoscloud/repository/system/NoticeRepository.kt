@@ -6,4 +6,5 @@ import java.time.LocalDateTime
 
 interface NoticeRepository: JpaRepository<Notice, Long> {
     fun findAllByCreateDateBetweenAndFlagActiveIsTrue(fromDate: LocalDateTime, toDate: LocalDateTime): List<Notice>
+    fun findByNoticeIdAndFlagActiveIsTrue(noticeId: Long): Notice?
 }

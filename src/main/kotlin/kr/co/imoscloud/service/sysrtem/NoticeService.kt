@@ -6,6 +6,7 @@ import kr.co.imoscloud.entity.system.Notice
 import kr.co.imoscloud.repository.system.NoticeRepository
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
+import org.springframework.data.crossstore.ChangeSetPersister
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -41,7 +42,21 @@ class NoticeService(
 
     fun upsertNotice(req: UpsertNoticeRequest): String { return "" }
 
-    fun deleteNotice(id: Long): String { return "" }
+    fun deleteNotice(id: Long): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        val target = noticeRepo.findByNoticeIdAndFlagActiveIsTrue(id)
+            ?.let {
+                if (!validatePriorityLevel(loginUser.priorityLevel, it))
+                    throw IllegalArgumentException("권한 레벨이 부족합니다. ")
+
+                val update = it.apply { flagActive = false; updateCommonCol(loginUser) }
+                noticeRepo.save(update)
+            }
+            ?: throw IllegalArgumentException("삭제할 공지사항이 존재하지 않습니다. ")
+
+        return "${target.noticeTitle} 공지사항 삭제 성공"
+    }
 
     fun upReadCountForNotice(id: Long): String { return "" }
 

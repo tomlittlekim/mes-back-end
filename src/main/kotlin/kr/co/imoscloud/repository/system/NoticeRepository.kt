@@ -15,7 +15,7 @@ interface NoticeRepository: JpaRepository<Notice, Long> {
         update Notice n
         set n.readCount = n.readCount + 1
         where n.noticeId = :noticeId
-            and n.priorityLevel >= :priorityLevel
+            and n.priorityLevel <= :priorityLevel
             and n.flagActive = true
     """)
     fun updateReadCount(noticeId: Long, priorityLevel: Int): Int

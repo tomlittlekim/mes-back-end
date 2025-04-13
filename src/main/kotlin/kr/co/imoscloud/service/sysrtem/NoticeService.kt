@@ -80,10 +80,10 @@ class NoticeService(
     }
 
     @AuthLevel(minLevel = 5)
-    fun deleteNotice(id: Long): String {
+    fun deleteNotice(noticeId: Long): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        val target = noticeRepo.findByNoticeIdAndFlagActiveIsTrue(id)
+        val target = noticeRepo.findByNoticeIdAndFlagActiveIsTrue(noticeId)
             ?.let {
                 if (!validatePriorityLevel(loginUser.priorityLevel, it))
                     throw IllegalArgumentException("권한 레벨이 부족합니다. ")
@@ -97,9 +97,9 @@ class NoticeService(
     }
 
     @Transactional
-    fun upReadCountForNotice(id: Long): Unit {
+    fun upReadCountForNotice(noticeId: Long): Unit {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        if (noticeRepo.updateReadCount(id, loginUser.priorityLevel) == 0)
+        if (noticeRepo.updateReadCount(noticeId, loginUser.priorityLevel) == 0)
             throw IllegalArgumentException("공지사항이 없거나 권한 레벨이 부족합니다. ")
     }
 

@@ -87,6 +87,7 @@ class SystemFetcher(
 
 
 
+
     @DgsQuery
     fun getCompaniesForSelect(): List<CompanySummery?> = companyService.getCompaniesForSelect()
 
@@ -101,4 +102,20 @@ class SystemFetcher(
 
     @DgsMutation
     fun deleteCompany(@InputArgument("id") id: Long) = companyService.deleteCompany(id)
+
+
+
+    
+
+    @DgsQuery
+    fun getALlNotice(@InputArgument("req") req: NoticeSearchRequest) = noticeService.getALlNotice(req)
+
+    @DgsMutation
+    fun upsertNotice(@InputArgument("req") req: UpsertNoticeRequest) = noticeService.upsertNotice(req)
+
+    @DgsMutation
+    fun deleteNotice(@InputArgument("noticeId") noticeId: Long) = noticeService.deleteNotice(noticeId)
+
+    @DgsMutation
+    fun upReadCountForNotice(@InputArgument("noticeId") noticeId: Long) = noticeService.upReadCountForNotice(noticeId)
 }

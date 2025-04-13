@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.sysrtem
 
+import jakarta.transaction.Transactional
 import kr.co.imoscloud.dto.NoticeSearchRequest
 import kr.co.imoscloud.dto.UpsertNoticeRequest
 import kr.co.imoscloud.entity.system.Notice
@@ -58,7 +59,12 @@ class NoticeService(
         return "${target.noticeTitle} 공지사항 삭제 성공"
     }
 
-    fun upReadCountForNotice(id: Long): String { return "" }
+    @Transactional
+    fun upReadCountForNotice(id: Long): Unit {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        if (noticeRepo.updateReadCount(id, loginUser.priorityLevel) == 0)
+            throw IllegalArgumentException("공지사항이 없거나 권한 레벨이 부족합니다. ")
+    }
 
     private fun validatePriorityLevel(compareLevel: Int, notice: Notice): Boolean {
         return notice.priorityLevel?.let { compareLevel >= it } ?: true

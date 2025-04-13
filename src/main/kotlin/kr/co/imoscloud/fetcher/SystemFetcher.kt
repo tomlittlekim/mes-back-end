@@ -8,11 +8,7 @@ import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.entity.system.Menu
 import kr.co.imoscloud.entity.system.UserRole
-import kr.co.imoscloud.service.sysrtem.UserRoleService
-import kr.co.imoscloud.service.sysrtem.UserService
-import kr.co.imoscloud.service.sysrtem.CompanyService
-import kr.co.imoscloud.service.sysrtem.MenuRoleService
-import kr.co.imoscloud.service.sysrtem.MenuService
+import kr.co.imoscloud.service.sysrtem.*
 
 @DgsComponent
 class SystemFetcher(
@@ -20,7 +16,8 @@ class SystemFetcher(
     private val userRoleService: UserRoleService,
     private val menuService: MenuService,
     private val menuRoleService: MenuRoleService,
-    private val companyService: CompanyService
+    private val companyService: CompanyService,
+    private val noticeService: NoticeService,
 ) {
 
     @DgsMutation

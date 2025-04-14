@@ -10,6 +10,7 @@ extend type Mutation {
     deleteProductionPlan(prodPlanId: String!): Boolean
 }
 
+# ProductionPlan 타입 정의 - DTO와 매핑됨
 type ProductionPlan {
     id: Int
     site: String
@@ -17,7 +18,8 @@ type ProductionPlan {
     prodPlanId: String
     orderId: String
     productId: String
-    productName: String # 제품명 필드 추가
+    productName: String  # MaterialMaster 테이블에서 조인한 필드
+    materialCategory: String  # MaterialMaster 테이블에서 조인한 필드
     shiftType: String
     planQty: Float
     planStartDate: String
@@ -27,24 +29,27 @@ type ProductionPlan {
     updateDate: String
     updateUser: String
     flagActive: Boolean
-    workOrders: [WorkOrder]
+    workOrders: [WorkOrder]  # 리졸버를 통해 처리됨
 }
 
 input ProductionPlanFilter {
     prodPlanId: String
     orderId: String
     productId: String
-    productName: String # 제품명 필드 추가
+    productName: String
+    materialCategory: String  # 제품 유형 필드 (필터링 용도)
     shiftType: String
     planStartDateFrom: String
     planStartDateTo: String
+    planEndDateFrom: String
+    planEndDateTo: String
     flagActive: Boolean
 }
 
 input ProductionPlanInput {
     orderId: String
     productId: String
-    productName: String # 제품명 필드 추가
+    productName: String  # 클라이언트에서 전송용
     shiftType: String
     planQty: Float
     planStartDate: String
@@ -56,7 +61,7 @@ input ProductionPlanUpdate {
     prodPlanId: String!
     orderId: String
     productId: String
-    productName: String # 제품명 필드 추가
+    productName: String  # 클라이언트에서 전송용
     shiftType: String
     planQty: Float
     planStartDate: String

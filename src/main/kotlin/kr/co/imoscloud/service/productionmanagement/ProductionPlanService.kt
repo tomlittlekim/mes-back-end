@@ -1,16 +1,16 @@
 package kr.co.imoscloud.service.productionmanagement
 
-import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
 import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
+import kr.co.imoscloud.model.productionmanagement.ProductionPlanDTO
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
-import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
 import kr.co.imoscloud.repository.material.MaterialRepository
+import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipalOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class ProductionPlanService(
@@ -33,15 +33,16 @@ class ProductionPlanService(
         )
     }
 
-    fun getProductionPlans(filter: ProductionPlanFilter): List<ProductionPlan> {
-        // 1. 파라미터로 받은 사용자 정보가 있으면 사용, 없으면 SecurityUtils에서 가져오기 시도
+    // DTO를 직접 반환하는 생산계획 조회 메서드
+    fun getProductionPlans(filter: ProductionPlanFilter): List<ProductionPlanDTO> {
+        // 사용자 정보 획득
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
         // flagActive가 null인 경우 true로 설정하여 활성화된 데이터만 조회
         val activeFilter = filter.copy(flagActive = filter.flagActive ?: true)
 
-        // 생산계획 목록 조회
+        // 생산계획 목록 조회 (DTO로 반환)
         return productionPlanRepository.getProductionPlanList(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
@@ -49,13 +50,14 @@ class ProductionPlanService(
             orderId = activeFilter.orderId,
             productId = activeFilter.productId,
             productName = activeFilter.productName,
+            materialCategory = activeFilter.materialCategory,
             shiftType = activeFilter.shiftType,
             planStartDateFrom = activeFilter.planStartDateFrom,
             planStartDateTo = activeFilter.planStartDateTo,
+            planEndDateFrom = activeFilter.planEndDateFrom,
+            planEndDateTo = activeFilter.planEndDateTo,
             flagActive = activeFilter.flagActive
         )
-
-        // 제품ID를 기준으로 제품명 정보 채우기 부분 제거
     }
 
     fun saveProductionPlan(

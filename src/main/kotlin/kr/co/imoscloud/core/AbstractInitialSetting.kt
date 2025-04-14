@@ -217,6 +217,7 @@ abstract class AbstractInitialSetting(
             encodeMenuRoleMap["${mr.roleId}-${mr.menuId}"] = encodeNumber
         }
         menuRoleMap = encodeMenuRoleMap
+        isInspect = false
     }
 
     private fun <T: DtoLoginIdBase> extractUserIdFromRequest(req: List<T?>): List<String?> {

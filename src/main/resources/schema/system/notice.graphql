@@ -1,0 +1,38 @@
+input UpsertNoticeRequest {
+    noticeId: Int
+    noticeTitle: String
+    attachmentPath: String
+    noticeContents: String
+    priorityLevel: Int
+    noticeTtl: String
+}
+
+input NoticeSearchRequest {
+    fromDate: String
+    toDate: String
+}
+
+type Notice {
+    noticeId: Int
+    noticeTitle: String
+    attachmentPath: String
+    noticeContents: String
+    noticeWriter: String
+    readCount: Int
+    priorityLevel: Int
+    noticeTtl: String
+    # CommonCol 상속 필드
+    createDate: String
+    createUser: String
+    flagActive: Boolean
+}
+
+extend type Mutation {
+    upsertNotice(req: UpsertNoticeRequest): String
+    deleteNotice(noticeId: Int!): String
+    upReadCountForNotice(noticeId: Int!): String
+}
+
+extend type Query {
+    getALlNotice(req: NoticeSearchRequest): [Notice]
+}

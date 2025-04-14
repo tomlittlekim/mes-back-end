@@ -139,3 +139,23 @@ data class MenuRoleDto(
     var isSelect: Boolean?=null,
     var isUpdate: Boolean?=null
 )
+
+data class RoleSearchRequest(
+    val site: String? = null,
+    val compCd: String? = null,
+    val priorityLevel: Int? = null,
+)
+
+data class UpsertNoticeRequest(
+    val noticeId: Long? = null,
+    val noticeTitle: String? = null,
+    val attachmentPath: String? = null,
+    val noticeContents: String? = null,
+    val priorityLevel: Int? = null,
+    val noticeTtl: String? = null,
+)
+
+data class NoticeSearchRequest(
+    val fromDate: String? = null,
+    val toDate: String? = null,
+)

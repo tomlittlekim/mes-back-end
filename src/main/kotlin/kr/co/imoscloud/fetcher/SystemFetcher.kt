@@ -8,11 +8,7 @@ import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.entity.system.Menu
 import kr.co.imoscloud.entity.system.UserRole
-import kr.co.imoscloud.service.sysrtem.UserRoleService
-import kr.co.imoscloud.service.sysrtem.UserService
-import kr.co.imoscloud.service.sysrtem.CompanyService
-import kr.co.imoscloud.service.sysrtem.MenuRoleService
-import kr.co.imoscloud.service.sysrtem.MenuService
+import kr.co.imoscloud.service.sysrtem.*
 
 @DgsComponent
 class SystemFetcher(
@@ -20,7 +16,8 @@ class SystemFetcher(
     private val userRoleService: UserRoleService,
     private val menuService: MenuService,
     private val menuRoleService: MenuRoleService,
-    private val companyService: CompanyService
+    private val companyService: CompanyService,
+    private val noticeService: NoticeService,
 ) {
 
     @DgsMutation
@@ -31,6 +28,9 @@ class SystemFetcher(
 
     @DgsQuery
     fun getUserGroup(@InputArgument("req") req: UserGroupRequest?): List<UserSummery?> = userService.getUserGroupByCompany(req)
+
+    @DgsQuery
+    fun getUserSummery(@InputArgument("loginId") loginId: String): UserSummery = userService.getUserSummery(loginId)
 
     @DgsQuery
     fun getUserDetail(@InputArgument("loginId") loginId: String): UserDetail = userService.getUserDetail(loginId)
@@ -46,7 +46,7 @@ class SystemFetcher(
 
 
     @DgsQuery
-    fun getRoles(): List<UserRole> = userRoleService.getUserRoleGroup()
+    fun getRoles(@InputArgument("req") req: RoleSearchRequest): List<UserRole> = userRoleService.getUserRoleGroup(req)
 
     @DgsQuery
     fun getRolesForSelect(): List<RoleSummery?> = userRoleService.getUserRoleSelect()
@@ -87,11 +87,12 @@ class SystemFetcher(
 
 
 
+
     @DgsQuery
     fun getCompaniesForSelect(): List<CompanySummery?> = companyService.getCompaniesForSelect()
 
     @DgsQuery
-    fun getCompanies(): List<Company> = companyService.getCompanies()
+    fun getCompanies(@InputArgument("req") req: CompanySearchCondition): List<Company> = companyService.getCompanies(req)
 
     @DgsQuery
     fun getCompanyDetails(): Company = companyService.getCompanyDetails()
@@ -101,4 +102,20 @@ class SystemFetcher(
 
     @DgsMutation
     fun deleteCompany(@InputArgument("id") id: Long) = companyService.deleteCompany(id)
+
+
+
+    
+
+    @DgsQuery
+    fun getALlNotice(@InputArgument("req") req: NoticeSearchRequest) = noticeService.getALlNotice(req)
+
+    @DgsMutation
+    fun upsertNotice(@InputArgument("req") req: UpsertNoticeRequest) = noticeService.upsertNotice(req)
+
+    @DgsMutation
+    fun deleteNotice(@InputArgument("noticeId") noticeId: Long) = noticeService.deleteNotice(noticeId)
+
+    @DgsMutation
+    fun upReadCountForNotice(@InputArgument("noticeId") noticeId: Long) = noticeService.upReadCountForNotice(noticeId)
 }

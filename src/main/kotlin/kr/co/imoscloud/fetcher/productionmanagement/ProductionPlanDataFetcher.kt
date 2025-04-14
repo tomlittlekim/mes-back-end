@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
 class ProductionPlanDataFetcher(
     private val productionPlanService: ProductionPlanService,
     private val workOrderRepository: WorkOrderRepository,
-    private val materialMasterRepository: MaterialRepository // 자재 저장소 추가
+    private val materialMasterRepository: MaterialRepository
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanDataFetcher::class.java)
 
@@ -62,21 +62,11 @@ class ProductionPlanDataFetcher(
         }
     }
 
-    // 제품 목록 조회 (Material 테이블의 제품 데이터)
+    // 제품 목록 조회 메서드 유지 (메뉴 마운트 시 한번에 로드하는 용도)
     @DgsQuery
     fun productMaterials(): List<MaterialMaster?> {
         try {
-            // 사용자 정보 가져오기
-            val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
-                ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
-
-            // 제품 유형(FINISH)의 자재만 조회
-            return materialMasterRepository.findBySiteAndCompCdAndMaterialTypeAndFlagActiveOrderByMaterialNameAsc(
-                currentUser.getSite(),
-                currentUser.compCd,
-                "FINISH", // 제품 유형
-                true      // 활성화된 데이터만
-            )
+            return productionPlanService.getProductMaterials()
         } catch (e: Exception) {
             log.error("제품 정보 조회 중 오류 발생", e)
             return emptyList()

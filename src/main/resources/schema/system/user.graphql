@@ -51,6 +51,23 @@ type User {
     flagActive: Boolean
 }
 
+type UserDetail {
+    id: Int                      # Primary Key
+    site: String                # 사이트 식별자
+    compCd: String             # 회사 코드
+    userName: String             # 사용자 이름
+    loginId: String!             # 로그인 ID
+    userPwd: String             # 사용자 비밀번호 (노출 주의)
+    imagePath: String            # 프로필 이미지 경로
+    roleName: String                # 권한 ID
+    userEmail: String            # 이메일
+    phoneNum: String             # 전화번호
+    departmentName: String         # 부서 ID
+    positionName: String           # 직급 ID
+    flagLock: Boolean           # 잠금 여부
+    flagActive: Boolean
+}
+
 extend type Mutation {
     upsertUser(req: UserInput!): String
     deleteUser(id: Int!): String
@@ -61,5 +78,6 @@ extend type Query {
     signIn(req: UserInput!): UserOutput!
     existLoginId(req: ExistLoginRequest!): Boolean!
     getUserGroup(req: UserGroupRequest!): [User]
-    getUserDetail(loginId: String!): User
+    getUserSummery(loginId: String!): User
+    getUserDetail(loginId: String!): UserDetail
 }

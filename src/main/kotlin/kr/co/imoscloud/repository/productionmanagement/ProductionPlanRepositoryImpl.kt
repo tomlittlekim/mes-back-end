@@ -3,7 +3,6 @@ package kr.co.imoscloud.repository.productionmanagement
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
 import kr.co.imoscloud.entity.productionmanagement.QProductionPlan
-import kr.co.imoscloud.entity.material.QMaterialMaster
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -21,14 +20,13 @@ class ProductionPlanRepositoryImpl(
         prodPlanId: String?,
         orderId: String?,
         productId: String?,
-        productName: String?, // 제품명 필드 추가
+        productName: String?, // 제품명 필드는 유지 (프론트엔드에서 필터링 용도)
         shiftType: String?,
         planStartDateFrom: LocalDate?,
         planStartDateTo: LocalDate?,
         flagActive: Boolean?
     ): List<ProductionPlan> {
         val productionPlan = QProductionPlan.productionPlan
-        val materialMaster = QMaterialMaster.materialMaster
 
         // 기본 쿼리 구성
         var query = queryFactory
@@ -86,34 +84,7 @@ class ProductionPlanRepositoryImpl(
         // 생산계획ID 역순 정렬 추가
         query = query.orderBy(productionPlan.prodPlanId.desc())
 
-        // 제품명으로 필터링 (조인 사용)
-        if (productName != null && productName.isNotBlank()) {
-            // 먼저 필터링된 생산계획 ID 목록 가져오기
-            val plans = query.fetch()
-
-            // 제품ID 목록 추출
-            val productIds = plans.mapNotNull { it.productId }.distinct()
-
-            if (productIds.isNotEmpty()) {
-                // 제품명으로 필터링된 제품ID 목록
-                val filteredProductIds = queryFactory
-                    .select(materialMaster.systemMaterialId)
-                    .from(materialMaster)
-                    .where(
-                        materialMaster.site.eq(site),
-                        materialMaster.compCd.eq(compCd),
-                        materialMaster.materialName.like("%$productName%"),
-                        materialMaster.systemMaterialId.`in`(productIds)
-                    )
-                    .fetch()
-
-                // 필터링된 제품ID에 해당하는 생산계획만 반환
-                return plans.filter { plan ->
-                    plan.productId in filteredProductIds
-                }
-            }
-            return emptyList()
-        }
+        // 제품명 필터링은 제거 - 프론트엔드에서 캐싱된 제품정보를 이용하여 필터링
 
         return query.fetch()
     }

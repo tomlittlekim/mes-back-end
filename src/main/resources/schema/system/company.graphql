@@ -1,5 +1,5 @@
 type Company {
-    id: ID,
+    id: Int,
     site: String,
     compCd: String!,
     businessRegistrationNumber: String,
@@ -34,6 +34,12 @@ input CompanyInput {
     flagSubscription: Boolean
     loginId: String
     phoneNumber: String
+    defaultUserPwd: String
+}
+
+input CompanySearchCondition {
+    site: String,
+    companyName: String
 }
 
 extend type Mutation {
@@ -43,6 +49,6 @@ extend type Mutation {
 
 extend type Query {
     getCompaniesForSelect: [Company]
-    getCompanies: [Company]
+    getCompanies(req: CompanySearchCondition): [Company]
     getCompanyDetails: Company
 }

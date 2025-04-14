@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 class AuthLevelAspect {
 
     @Around("@annotation(authLevel)")
-    fun checkPermission(joinPoint: ProceedingJoinPoint, authLevel: AuthLevel): Any {
+    fun checkPermission(joinPoint: ProceedingJoinPoint, authLevel: AuthLevel): Any? {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val userPriority = loginUser.priorityLevel
         val requiredLevel = authLevel.minLevel

@@ -3,6 +3,7 @@ package kr.co.imoscloud.service.sysrtem
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.CompanyDto
+import kr.co.imoscloud.dto.CompanySearchCondition
 import kr.co.imoscloud.dto.CompanySummery
 import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.util.AuthLevel
@@ -30,12 +31,12 @@ class CompanyService(
         }
     }
 
-    fun getCompanies(): List<Company> {
+    fun getCompanies(req: CompanySearchCondition): List<Company> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         return if (core.isDeveloper(loginUser)) {
-            core.companyRepo.findAllByFlagActiveIsTrue()
+            core.companyRepo.findAllBySearchConditionForDev(req.site, "%${req.companyName?:""}%")
         } else {
-            core.companyRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.compCd)
+            core.companyRepo.findAllBySearchConditionForExceptDev(loginUser.compCd)
         }
     }
 
@@ -48,6 +49,7 @@ class CompanyService(
     }
 
     @AuthLevel(minLevel = 3)
+    @Transactional
     fun upsertCompany(req: CompanyDto): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
@@ -79,7 +81,7 @@ class CompanyService(
                 ?: run {
                     val randomPwd = UUID.randomUUID().toString().replace("-", "").substring(0, 16)
                     upsertStr = "수정"
-                    Company(
+                    val company = Company(
                         site = req.site!!,
                         compCd = req.compCd!!,
                         businessRegistrationNumber = req.businessRegistrationNumber!!,
@@ -90,10 +92,15 @@ class CompanyService(
                         businessType = req.businessType,
                         businessItem = req.businessItem,
                         flagSubscription = req.flagSubscription,
-                        loginId = req.loginId!!,
                         phoneNumber = req.phoneNumber,
+                        loginId = "temp",
                         defaultUserPwd = req.defaultUserPwd ?: randomPwd
                     ).apply { createCommonCol(loginUser) }
+
+                    val owner = userService.generateOwner(company)
+                    core.userRepo.save(owner)
+                    core.upsertFromInMemory(owner)
+                    company.apply { loginId = owner.loginId }
                 }
         } catch (e: NullPointerException) {
             throw IllegalArgumentException("회사를 생성하는데 필요한 정보 누락이 존재합니다. ")
@@ -106,7 +113,7 @@ class CompanyService(
 
     @AuthLevel(minLevel = 5)
     @Transactional
-    fun deleteCompany(id: Long): Unit {
+    fun deleteCompany(id: Long): Boolean {
         val target = core.companyRepo.findByIdAndFlagActiveIsTrue(id)
             ?.apply {
                 flagActive = false
@@ -117,5 +124,6 @@ class CompanyService(
         core.companyRepo.save(target)
         core.userRepo.deleteAllbyCompCd(target.compCd)
         core.roleRepo.deleteAllByCompCd(target.compCd)
+        return true
     }
 }

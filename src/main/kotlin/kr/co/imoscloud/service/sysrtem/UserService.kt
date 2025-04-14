@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.*
+import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.entity.system.User
 import kr.co.imoscloud.iface.IUser
 import kr.co.imoscloud.repository.CodeRep
@@ -17,7 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -98,6 +99,16 @@ class UserService(
         }
     }
 
+    fun getUserSummery(loginId: String): UserSummery {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        val target = core.getUserFromInMemory(loginId)
+        if (!core.isDeveloper(loginUser) && target?.compCd != loginUser.compCd)
+            throw IllegalArgumentException("소속이 달라서 조회할 수 없습니다. ")
+
+        return target ?: throw IllegalArgumentException("조회 하려는 유저의 정보가 존재하지 않습니다. ")
+    }
+
+    // 업테, 종목, 권한이 id 값이 아닌 name으로 맵핑되어 반환
     fun getUserDetail(loginId: String): UserDetail {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
@@ -145,6 +156,20 @@ class UserService(
             .orElseThrow { throw IllegalArgumentException("비밀번호를 초기화할 대상이 존재하지 않습니다. ") }
     }
 
+    @AuthLevel(minLevel = 5)
+    fun generateOwner(company: Company): User {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        val encoder = BCryptPasswordEncoder()
+
+        return User(
+            site = company.site,
+            compCd = company.compCd,
+            loginId = createLoginId("owner"),
+            userPwd = encoder.encode("1234"),
+            roleId = 2,
+        ).apply { createCommonCol(loginUser) }
+    }
+
     private fun modifyReqByRole(loginUser: UserPrincipal, req: UserInput): UserInput {
         return if (core.isDeveloper(loginUser)) {
             req.site ?: throw IllegalArgumentException("site 가 존재하지 않습니다. ")
@@ -159,16 +184,12 @@ class UserService(
     }
 
     private fun generateUser(req: UserInput, loginUser: UserPrincipal): User {
-        val uuid =  UUID.randomUUID().toString()
-        val today = LocalDate.now()
-        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-
         val passwordEncoder = BCryptPasswordEncoder()
 
         return User(
             site = req.site!!,
             compCd = req.compCd!!,
-            loginId = req.loginId ?: (uuid.substring(0, 7) + formatter.format(today)),
+            loginId = req.loginId ?: createLoginId(),
             userPwd = passwordEncoder.encode(req.userPwd),
             userName = req.userName,
             userEmail = req.userEmail,
@@ -220,4 +241,10 @@ class UserService(
             updateCommonCol(loginUser)
         }
     }
+
+    private fun createLoginId(id: String?=null): String =
+        StringBuilder()
+            .append(id ?: UUID.randomUUID().toString().replace("-","").substring(0,8))
+            .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")))
+            .toString()
 }

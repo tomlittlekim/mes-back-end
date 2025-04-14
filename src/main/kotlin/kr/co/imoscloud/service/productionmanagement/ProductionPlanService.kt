@@ -19,17 +19,16 @@ class ProductionPlanService(
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanService::class.java)
 
-    // 제품 정보 조회 메서드 추가
+    // 제품 정보 조회 메서드 (유지)
     fun getProductMaterials(): List<MaterialMaster?> {
         // 사용자 정보 획득
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-        // 제품 유형(FINISH)의 자재만 조회
-        return materialMasterRepository.findBySiteAndCompCdAndMaterialTypeAndFlagActiveOrderByMaterialNameAsc(
+        // 제품 조회
+        return materialMasterRepository.findBySiteAndCompCdAndFlagActiveOrderByMaterialNameAsc(
             currentUser.getSite(),
             currentUser.compCd,
-            "FINISH", // 제품 유형
             true      // 활성화된 데이터만
         )
     }
@@ -43,42 +42,20 @@ class ProductionPlanService(
         val activeFilter = filter.copy(flagActive = filter.flagActive ?: true)
 
         // 생산계획 목록 조회
-        val planList = productionPlanRepository.getProductionPlanList(
+        return productionPlanRepository.getProductionPlanList(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
             prodPlanId = activeFilter.prodPlanId,
             orderId = activeFilter.orderId,
             productId = activeFilter.productId,
-            productName = activeFilter.productName, // 제품명 필드 추가
+            productName = activeFilter.productName,
             shiftType = activeFilter.shiftType,
             planStartDateFrom = activeFilter.planStartDateFrom,
             planStartDateTo = activeFilter.planStartDateTo,
             flagActive = activeFilter.flagActive
         )
 
-        // 제품ID를 기준으로 제품명 정보 채우기
-        val productIds = planList.mapNotNull { it.productId }.distinct()
-        if (productIds.isNotEmpty()) {
-            val materials = materialMasterRepository.findBySiteAndCompCdAndSystemMaterialIdInAndFlagActive(
-                currentUser.getSite(),
-                currentUser.compCd,
-                productIds,
-                true
-            )
-
-            val materialMap = materials.associateBy { it?.systemMaterialId }
-
-            // 각 생산계획에 제품명 설정
-            planList.forEach { plan ->
-                plan.productId?.let { productId ->
-                    materialMap[productId]?.let { material ->
-                        plan.productName = material.materialName
-                    }
-                }
-            }
-        }
-
-        return planList
+        // 제품ID를 기준으로 제품명 정보 채우기 부분 제거
     }
 
     fun saveProductionPlan(

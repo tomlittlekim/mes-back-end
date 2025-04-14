@@ -1,6 +1,9 @@
 package kr.co.imoscloud.dto
 
-import java.time.LocalDateTime
+data class CompanySearchCondition(
+    val site: String?=null,
+    val companyName: String?=null,
+)
 
 data class CompanySummery(
     val id: Long,

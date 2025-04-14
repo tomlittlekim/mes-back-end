@@ -77,7 +77,7 @@ extend type Mutation {
 extend type Query {
     signIn(req: UserInput!): UserOutput!
     existLoginId(req: ExistLoginRequest!): Boolean!
-    getUserGroup(req: UserGroupRequest!): [User]
+    getUserGroup(req: UserGroupRequest): [User]
     getUserSummery(loginId: String!): User
     getUserDetail(loginId: String!): UserDetail
 }

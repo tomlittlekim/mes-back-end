@@ -7,7 +7,6 @@ input EquipmentFilter{
     equipmentName: String,
     equipmentSn: String,
     equipmentType: String,
-#    flagActive: String
 }
 
 input EquipmentInput{
@@ -19,7 +18,7 @@ input EquipmentInput{
     equipmentType: String,
     equipmentName: String,
     equipmentStatus: String,
-#    flagActive: String
+    remark: String,
 }
 
 input EquipmentUpdate{
@@ -32,7 +31,7 @@ input EquipmentUpdate{
     equipmentType: String,
     equipmentName: String,
     equipmentStatus: String,
-#    flagActive: String
+    remark: String,
 }
 
 type Equipment{
@@ -47,7 +46,7 @@ type Equipment{
     equipmentType: String
     equipmentName: String
     equipmentStatus: String
-#    flagActive: String
+    remark: String,
     createUser: String
     createDate: String
     updateUser: String

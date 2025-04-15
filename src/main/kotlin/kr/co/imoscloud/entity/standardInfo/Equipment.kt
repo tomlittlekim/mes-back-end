@@ -42,5 +42,8 @@ class Equipment (
     var equipmentName: String? = null,
 
     @Column(name = "EQUIPMENT_STATUS", length = 20)
-    var equipmentStatus: String? = null
+    var equipmentStatus: String? = null,
+
+    @Column(name = "REMARK", length = 100)
+    var remark: String? = null,
 ):CommonCol()

@@ -5,6 +5,7 @@ import kr.co.imoscloud.entity.business.OrderHeader
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.OrderHeaderRepository
 import kr.co.imoscloud.util.DateUtils
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 
 @Service
@@ -14,12 +15,18 @@ class OrderService(
 ) {
 
     // orderHeader 조회
-    fun getAllHeaderBySearchRequestByCompCd(req: OrderHeaderSearchRequest): List<OrderHeader> {
+    fun getHeadersBySearchRequestByCompCd(req: OrderHeaderSearchRequest): List<OrderHeader> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val (from, to) = DateUtils.getSearchDateRange(req.fromDate, req.toDate)
 
         return req.materialId
-            ?.let { detailRepo.findAllBySearchCondition(req.orderNo, from, to, req.customerId, req.materialId) }
-            ?:run { headerRepo.findAllBySearchCondition(req.orderNo, from, to, req.customerId) }
+            ?.let { detailRepo.findAllBySearchCondition(loginUser.compCd, req.orderNo, from, to, req.customerId, req.materialId) }
+            ?:run { headerRepo.findAllBySearchCondition(loginUser.compCd, req.orderNo, from, to, req.customerId) }
+    }
+
+    fun getDetailsByOrderNo(orderNo: String): OrderDetail? {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        return detailRepo.findByOrderNoAndCompCdAndFlagActiveIsTrue(loginUser.compCd, orderNo)
     }
 
     data class OrderHeaderSearchRequest(

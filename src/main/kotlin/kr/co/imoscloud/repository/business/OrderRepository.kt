@@ -17,6 +17,7 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
             and oh.flagActive is true 
     """)
     fun findAllBySearchCondition(
+        compCd: String,
         orderNo: String?=null,
         fromDate: LocalDateTime?,
         toDate: LocalDateTime?,
@@ -37,10 +38,13 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
             and od.flagActive is true 
     """)
     fun findAllBySearchCondition(
+        compCd: String,
         orderNo: String?=null,
         fromDate: LocalDateTime?,
         toDate: LocalDateTime?,
         customerId: String?=null,
         materialId: String?=null,
     ): List<OrderHeader>
+
+    fun findByOrderNoAndCompCdAndFlagActiveIsTrue(compCd: String, orderNo: String?): OrderDetail?
 }

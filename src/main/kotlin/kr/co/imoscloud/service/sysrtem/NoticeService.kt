@@ -15,8 +15,7 @@ import java.time.LocalTime
 
 @Service
 class NoticeService(
-    private val core: Core,
-    private val noticeRepo: NoticeRepository,
+    private val noticeRepo: NoticeRepository
 ) {
 
     fun getALlNotice(req: NoticeSearchRequest): List<Notice> {

@@ -2,6 +2,7 @@ package kr.co.imoscloud.entity.business
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
+import kr.co.imoscloud.iface.DtoCompCdBase
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -12,7 +13,13 @@ class OrderHeader(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
-    val id: Long? = null, // AutoIncrement PK
+    val id: Long? = null, // AutoIncrement PK,
+
+    @Column(name = "SITE", length = 20)
+    val site: String,
+
+    @Column(name = "COMP_CD", length = 20)
+    override val compCd: String,
 
     @Column(name = "ORDER_NO", unique = true, nullable = false, length = 100)
     var orderNo: String,
@@ -46,4 +53,4 @@ class OrderHeader(
 
     @Column(name = "REMARK", length = 100)
     var remark: String? = null
-): CommonCol()
+): CommonCol(), DtoCompCdBase

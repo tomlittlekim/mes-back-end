@@ -106,6 +106,7 @@ class UserService(
             userName = req.userName ?: this.userName
             userEmail = req.userEmail ?: this.userEmail
             phoneNum = req.phoneNum ?: this.phoneNum
+            imagePath = req.imagePath ?: this.imagePath
             updateCommonCol(loginUser)
         }
 
@@ -299,7 +300,7 @@ class UserService(
             } ?: this.userPwd
             userName = req.userName ?: this.userName
             userEmail = req.userEmail ?: this.userEmail
-            //imagePath
+            imagePath = req.imagePath ?: this.imagePath
             roleId = req.roleId ?: this.roleId
             phoneNum = req.phoneNum ?: this.phoneNum
             departmentId = req.departmentId ?: this.departmentId

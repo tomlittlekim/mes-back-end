@@ -21,14 +21,16 @@ data class UserInput(
 data class LoginOutput(
     override val status: Int,
     override val message: String,
-    val id: Long,
+    val site: String?=null,
+    val compCd: String?=null,
+    val id: Long?=null,
     val loginId: String?=null,
     var userNm: String?=null,
     var email: String?=null,
-    override var roleId: Long,
+    var roleId: Long?=null,
     var roleNm: String?=null,
     var priorityLevel: Int?=null
-): ResponseBase, DtoRoleIdBase
+): ResponseBase
 
 data class LoginRequest(val userId: String, val userPwd: String)
 

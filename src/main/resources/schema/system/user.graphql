@@ -26,10 +26,13 @@ input UserGroupRequest {
 }
 
 type UserOutput {
+    site: String
+    compCd: String
     userId: String
     userNm: String
     email: String
     roleId: String
+    priorityLevel: Int
     status: String!
     message: String!
 }

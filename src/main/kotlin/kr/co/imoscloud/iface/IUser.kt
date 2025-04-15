@@ -27,6 +27,8 @@ interface IUser: ResponseVO {
         val output = user
             ?.let { LoginOutput(
                 id = user.id,
+                site = user.site,
+                compCd = user.compCd,
                 loginId = user.loginId,
                 userNm = user.userName,
                 email = user.userEmail,
@@ -37,9 +39,7 @@ interface IUser: ResponseVO {
                 message = "${user.loginId} 로그인 성공"
             )}
             ?:run { LoginOutput(
-                id = -1,
-                roleId = -1,
-                status = 200,
+                status = 404,
                 message = "로그인 실패"
             )}
 

@@ -4,6 +4,7 @@ import kr.co.imoscloud.constants.CoreEnum
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -85,6 +86,23 @@ object DateUtils {
         } catch (e: DateTimeParseException) {
             logger.error("날짜 변환 실패: {}", dateStr)
             null
+        }
+    }
+
+    fun getSearchDateRange(formDateStr: String?, toDateStr: String?): Pair<LocalDateTime?, LocalDateTime?> {
+        val fromDateTime: LocalDateTime? = formDateStr
+            ?.let { dateStr -> parseDate(dateStr) }
+            ?.let { LocalDateTime.of(it, LocalTime.MIN) }
+
+        val toDateTime: LocalDateTime? = toDateStr
+            ?.let { dateStr -> parseDate(dateStr) }
+            ?.let { LocalDateTime.of(it, LocalTime.MAX) }
+
+        return when {
+            fromDateTime != null && toDateTime == null -> Pair(fromDateTime, LocalDateTime.now().plusHours(1))
+            fromDateTime == null && toDateTime != null -> Pair(LocalDateTime.of(2024,1,1,0,0,0), toDateTime)
+            fromDateTime != null && toDateTime != null -> Pair(fromDateTime, toDateTime)
+            else -> Pair(null, null)
         }
     }
 }

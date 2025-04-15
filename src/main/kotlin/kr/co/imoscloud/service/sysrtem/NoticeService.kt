@@ -21,21 +21,7 @@ class NoticeService(
 
     fun getALlNotice(req: NoticeSearchRequest): List<Notice> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-
-        val fromDateTime: LocalDateTime? = req.fromDate
-            ?.let { dateStr -> DateUtils.parseDate(dateStr) }
-            ?.let { LocalDateTime.of(it, LocalTime.MIN) }
-
-        val toDateTime: LocalDateTime? = req.toDate
-            ?.let { dateStr -> DateUtils.parseDate(dateStr) }
-            ?.let { LocalDateTime.of(it, LocalTime.MAX) }
-
-        val (from, to) = when {
-            fromDateTime != null && toDateTime == null -> Pair(fromDateTime, LocalDateTime.now().plusHours(1))
-            fromDateTime == null && toDateTime != null -> Pair(LocalDateTime.of(2024,1,1,0,0,0), toDateTime)
-            fromDateTime != null && toDateTime != null -> Pair(fromDateTime, toDateTime)
-            else -> Pair(null, null)
-        }
+        val (from, to) = DateUtils.getSearchDateRange(req.fromDate, req.toDate)
 
         return from
             ?.let { noticeRepo.findAllByCreateDateBetweenAndFlagActiveIsTrue(from, to!!) }

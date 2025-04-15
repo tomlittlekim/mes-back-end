@@ -26,10 +26,13 @@ input UserGroupRequest {
 }
 
 type UserOutput {
+    site: String
+    compCd: String
     userId: String
     userNm: String
     email: String
     roleId: String
+    priorityLevel: Int
     status: String!
     message: String!
 }
@@ -79,7 +82,7 @@ extend type Mutation {
 extend type Query {
     signIn(req: UserInput!): UserOutput!
     existLoginId(req: ExistLoginRequest!): Boolean!
-    getUserGroup(req: UserGroupRequest!): [User]
+    getUserGroup(req: UserGroupRequest): [User]
     getUserSummery(loginId: String!): User
     getUserDetail(loginId: String!): UserDetail
 }

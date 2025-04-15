@@ -39,11 +39,8 @@ class NoticeService(
 
         return from
             ?.let { noticeRepo.findAllByCreateDateBetweenAndFlagActiveIsTrue(from, to!!) }
-            ?: run { noticeRepo.findAll() }
-            .filter {
-                validatePriorityLevel(loginUser.priorityLevel, it)
-                && if (core.isDeveloper(loginUser)) true else it.flagActive
-            }
+            ?: run { noticeRepo.findAllByFlagActiveIsTrue() }
+            .filter { validatePriorityLevel(loginUser.priorityLevel, it) }
     }
 
     @AuthLevel(minLevel = 5)
@@ -98,9 +95,7 @@ class NoticeService(
 
     @Transactional
     fun upReadCountForNotice(noticeId: Long): Unit {
-        val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        if (noticeRepo.updateReadCount(noticeId, loginUser.priorityLevel) == 0)
-            throw IllegalArgumentException("공지사항이 없거나 권한 레벨이 부족합니다. ")
+        noticeRepo.updateReadCount(noticeId, SecurityUtils.getCurrentUserPrincipal().priorityLevel)
     }
 
     private fun validatePriorityLevel(compareLevel: Int, notice: Notice): Boolean {

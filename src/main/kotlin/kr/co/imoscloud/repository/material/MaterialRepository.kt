@@ -18,9 +18,9 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         AND (:materialType = '' OR m.materialType LIKE CONCAT('%', :materialType, '%'))
         AND (:userMaterialId = '' OR m.userMaterialId LIKE CONCAT('%', :userMaterialId, '%'))
         AND (:materialName = '' OR m.materialName LIKE CONCAT('%', :materialName, '%'))
-        AND (:flagActive IS NULL OR m.flagActive = :flagActive)
         AND (:fromDate IS NULL OR m.createDate >= :fromDate)
         AND (:toDate IS NULL OR m.createDate <= :toDate)
+        AND m.flagActive IS true 
         """
     )
     fun getMaterialList(
@@ -29,7 +29,7 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         materialType: String?,
         userMaterialId: String?,
         materialName: String?,
-        flagActive: Boolean?,
+//        flagActive: Boolean?,
         fromDate: LocalDateTime?,
         toDate: LocalDateTime?
     ): List<MaterialMaster?>
@@ -44,9 +44,9 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         AND (:materialType = '' OR m.materialType = :materialType)
         AND (:userMaterialId = '' OR m.userMaterialId LIKE CONCAT('%', :userMaterialId, '%'))
         AND (:materialName = '' OR m.materialName LIKE CONCAT('%', :materialName, '%'))
-        AND (:flagActive IS NULL OR m.flagActive = :flagActive)
         AND (:fromDate IS NULL OR m.createDate >= :fromDate)
         AND (:toDate IS NULL OR m.createDate <= :toDate)
+        AND m.flagActive IS true 
     """
     )
     fun getRawSubMaterialList(
@@ -55,7 +55,7 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         materialType: String?,
         userMaterialId: String?,
         materialName: String?,
-        flagActive: Boolean?,
+//        flagActive: Boolean?,
         fromDate: LocalDateTime?,
         toDate: LocalDateTime?
     ): List<MaterialMaster?>

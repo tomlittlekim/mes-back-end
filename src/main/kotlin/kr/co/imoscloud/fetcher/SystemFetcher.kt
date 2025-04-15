@@ -23,6 +23,9 @@ class SystemFetcher(
     @DgsMutation
     fun upsertUser(@InputArgument("req") req: UserInput) { userService.upsertUser(req) }
 
+    @DgsMutation
+    fun updateMyInfo(@InputArgument("req") req: UserInput) { userService.updateMyInfo(req) }
+
     @DgsQuery
     fun existLoginId(@InputArgument("req") req: ExistLoginIdRequest): Boolean = userService.existLoginId(req)
 
@@ -33,7 +36,7 @@ class SystemFetcher(
     fun getUserSummery(@InputArgument("loginId") loginId: String): UserSummery = userService.getUserSummery(loginId)
 
     @DgsQuery
-    fun getUserDetail(@InputArgument("loginId") loginId: String): UserDetail = userService.getUserDetail(loginId)
+    fun getUserDetail(@InputArgument("id") id: Long): UserDetail = userService.getUserDetail(id)
 
     @DgsMutation
     fun deleteUser(@InputArgument("id") id: Long) = userService.deleteUser(id)
@@ -41,6 +44,12 @@ class SystemFetcher(
     @DgsMutation
     fun resetPwd(@InputArgument("id")  id: Long) = userService.resetPassword(id)
 
+    @DgsMutation
+    fun changePwd(
+        @InputArgument("id") id: Long,
+        @InputArgument("currentPassword") currentPassword: String,
+        @InputArgument("newPassword") newPassword: String
+    ): String = userService.changePassword(id, currentPassword, newPassword)
 
 
 

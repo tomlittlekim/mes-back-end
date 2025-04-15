@@ -9,6 +9,7 @@ data class UserInput(
     var compCd: String?=null,
     var loginId: String?=null,
     var userPwd: String?=null,
+    var imagePath: String?=null,
     var userName: String?=null,
     var userEmail: String?=null,
     var roleId: Long?=null,

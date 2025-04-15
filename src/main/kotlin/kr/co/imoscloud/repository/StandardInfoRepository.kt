@@ -488,6 +488,7 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
                 e.equipmentType,
                 e.equipmentName,
                 e.equipmentStatus,
+                e.remark,
                 e.createUser,
                 e.createDate,
                 e.updateUser,

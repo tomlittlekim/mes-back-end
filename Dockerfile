@@ -17,6 +17,9 @@ RUN ./gradlew --no-daemon bootJar
 FROM amazoncorretto:21
 WORKDIR /app
 
+ENV TZ=Asia/Seoul
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # 빌드 스테이지에서 생성된 jar 파일 복사
 COPY --from=builder /app/build/libs/*.jar app.jar
 

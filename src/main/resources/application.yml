@@ -26,6 +26,8 @@ spring:
         show_sql: false
         format_sql: false
         use_sql_comments: false
+        jdbc:
+          time_zone: Asia/Seoul
     open-in-view: false
 
   jackson:

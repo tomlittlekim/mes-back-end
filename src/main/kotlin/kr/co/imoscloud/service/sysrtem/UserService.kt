@@ -27,7 +27,7 @@ class UserService(
     private val core: Core,
     private val jwtProvider: JwtTokenProvider,
     private val codeRep: CodeRep
-): IUser {
+) : IUser {
 
     fun signIn(
         loginReq: LoginRequest,
@@ -59,7 +59,7 @@ class UserService(
                     userToUserOutput()
                 }
             }
-            ?:throw IllegalArgumentException("유저가 존재하지 않습니다. ")
+            ?: throw IllegalArgumentException("유저가 존재하지 않습니다. ")
 
         return userRes
     }
@@ -80,11 +80,38 @@ class UserService(
                 val target = core.userRepo.findBySiteAndLoginIdForSignUp(site, user.loginId)!!
                 modifyUser(target, req, loginUser)
             }
-            ?:run { generateUser(req, loginUser) }
+            ?: run { generateUser(req, loginUser) }
 
         core.userRepo.save(upsertUser)
         core.upsertFromInMemory(upsertUser)
         return upsertUser.let { "${req.loginId} 로그인 성공" }
+    }
+
+    /** 본인 정보만 수정 가능한 메서드 */
+    @AuthLevel(minLevel = 2)
+    fun updateMyInfo(req: UserInput): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        // 본인의 정보만 수정 가능하도록 검증
+        if (req.id != loginUser.getId()) {
+            throw IllegalArgumentException("본인의 정보만 수정할 수 있습니다.")
+        }
+
+        val user = core.userRepo.findByIdAndFlagActiveIsTrue(req.id)
+            ?: throw IllegalArgumentException("사용자 정보를 찾을 수 없습니다.")
+
+        // 수정 가능한 필드만 업데이트
+        user.apply {
+            loginId = req.loginId ?: this.loginId
+            userName = req.userName ?: this.userName
+            userEmail = req.userEmail ?: this.userEmail
+            phoneNum = req.phoneNum ?: this.phoneNum
+            updateCommonCol(loginUser)
+        }
+
+        core.userRepo.save(user)
+        core.upsertFromInMemory(user)
+        return "개인정보 수정이 완료되었습니다."
     }
 
     fun existLoginId(req: ExistLoginIdRequest): Boolean = core.getUserFromInMemory(req.loginId) != null
@@ -108,40 +135,40 @@ class UserService(
         return target ?: throw IllegalArgumentException("조회 하려는 유저의 정보가 존재하지 않습니다. ")
     }
 
-    // 업테, 종목, 권한이 id 값이 아닌 name으로 맵핑되어 반환
-    fun getUserDetail(loginId: String): UserDetail {
+    // id 기반으로 사용자 상세 정보 조회
+    fun getUserDetail(id: Long): UserDetail {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        val target = core.getUserFromInMemory(loginId)
-        if (!core.isDeveloper(loginUser) && target?.compCd != loginUser.compCd)
+        val target = core.userRepo.findByIdAndFlagActiveIsTrue(id)
+            ?: throw IllegalArgumentException("사용자 정보를 찾을 수 없습니다.")
+
+        if (!core.isDeveloper(loginUser) && target.compCd != loginUser.compCd)
             throw IllegalArgumentException("소속이 달라서 조회할 수 없습니다. ")
 
-        val codeClassIds = listOf("DEPARTMENT","POSITION")
+        val codeClassIds = listOf("DEPARTMENT", "POSITION")
         val codeMap = codeRep.findAllByCodeClassIdIn(codeClassIds).associate { it?.codeId to it?.codeName }
 
-        val roleSummery = core.getUserRoleFromInMemory(loginUser.roleId ?: 0)
+        val roleSummery = core.getUserRoleFromInMemory(target.roleId)
             ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
-        return target?.let { 
-            UserDetail(
-                id = it.id,
-                site = it.site,
-                compCd = it.compCd,
-                userName = it.userName ?: "",
-                loginId = it.loginId,
-                userPwd = it.userPwd,
-                imagePath = it.imagePath,
-                roleId = it.roleId,
-                userEmail = it.userEmail,
-                phoneNum = it.phoneNum,
-                departmentId = it.departmentId,
-                departmentName = codeMap[it.departmentId],
-                positionId = it.positionId,
-                positionName = codeMap[it.positionId],
-                authorityName = roleSummery.roleName,
-                flagActive = it.flagActive
-            )
-        } ?: throw UsernameNotFoundException("유저가 존재하지 않습니다. ")
+        return UserDetail(
+            id = target.id,
+            site = target.site,
+            compCd = target.compCd,
+            userName = target.userName ?: "",
+            loginId = target.loginId,
+            userPwd = target.userPwd,
+            imagePath = target.imagePath,
+            roleId = target.roleId,
+            userEmail = target.userEmail,
+            phoneNum = target.phoneNum,
+            departmentId = target.departmentId,
+            departmentName = codeMap[target.departmentId],
+            positionId = target.positionId,
+            positionName = codeMap[target.positionId],
+            authorityName = roleSummery.roleName,
+            flagActive = target.flagActive
+        )
     }
 
     @AuthLevel(minLevel = 3)
@@ -171,6 +198,29 @@ class UserService(
                 "${user.userName} 사용자의 비밀번호 초기화 완료"
             }
             .orElseThrow { throw IllegalArgumentException("비밀번호를 초기화할 대상이 존재하지 않습니다. ") }
+    }
+
+    @AuthLevel(minLevel = 2)
+    fun changePassword(id: Long, currentPassword: String, newPassword: String): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        val encoder = BCryptPasswordEncoder()
+
+        val user = core.userRepo.findByIdAndFlagActiveIsTrue(id)
+            ?: throw IllegalArgumentException("비밀번호를 변경할 대상이 존재하지 않습니다.")
+
+        if (!encoder.matches(currentPassword, user.userPwd)) {
+            throw IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.")
+        }
+
+        user.apply {
+            userPwd = encoder.encode(newPassword)
+            updateCommonCol(loginUser)
+        }.also { updatedUser ->
+            core.userRepo.save(updatedUser)
+            core.upsertFromInMemory(updatedUser)
+        }
+
+        return "${user.userName ?: user.loginId} 사용자의 비밀번호 변경 완료"
     }
 
     @AuthLevel(minLevel = 5)
@@ -235,10 +285,10 @@ class UserService(
 //    }
 
     private fun userGroupFilter(req: UserGroupRequest?, it: UserSummery?) =
-        (req?.roleId?.let { r ->  it?.roleId == r } ?: true)
-        && (req?.userName?.let { un -> (un.isBlank() || it?.userName == un) } ?: true)
-        && (req?.departmentId?.let { dp -> (dp.isBlank() || it?.departmentId == dp) } ?: true)
-        && (req?.positionId?.let { p -> (p.isBlank() || it?.positionId == p) } ?: true)
+        (req?.roleId?.let { r -> it?.roleId == r } ?: true)
+                && (req?.userName?.let { un -> (un.isBlank() || it?.userName == un) } ?: true)
+                && (req?.departmentId?.let { dp -> (dp.isBlank() || it?.departmentId == dp) } ?: true)
+                && (req?.positionId?.let { p -> (p.isBlank() || it?.positionId == p) } ?: true)
 
     private fun modifyUser(target: User, req: UserInput, loginUser: UserPrincipal): User {
         return target.apply {
@@ -259,9 +309,9 @@ class UserService(
         }
     }
 
-    private fun createLoginId(id: String?=null): String =
+    private fun createLoginId(id: String? = null): String =
         StringBuilder()
-            .append(id ?: UUID.randomUUID().toString().replace("-","").substring(0,8))
+            .append(id ?: UUID.randomUUID().toString().replace("-", "").substring(0, 8))
             .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")))
             .toString()
 }

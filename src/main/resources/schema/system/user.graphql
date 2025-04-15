@@ -55,20 +55,22 @@ type User {
 }
 
 type UserDetail {
-    id: Int                      # Primary Key
-    site: String                # 사이트 식별자
-    compCd: String             # 회사 코드
-    userName: String             # 사용자 이름
-    loginId: String!             # 로그인 ID
-    userPwd: String             # 사용자 비밀번호 (노출 주의)
-    imagePath: String            # 프로필 이미지 경로
-    roleName: String                # 권한 ID
-    userEmail: String            # 이메일
-    phoneNum: String             # 전화번호
-    departmentName: String         # 부서 ID
-    positionName: String           # 직급 ID
-    flagLock: Boolean           # 잠금 여부
-    flagActive: Boolean
+    id: Int!                  # Primary Key (Long → Int 변환 필요)
+    site: String!             # 사이트 식별자
+    compCd: String!           # 회사 코드
+    userName: String!         # 사용자 이름
+    loginId: String!          # 로그인 ID
+    userPwd: String!          # 사용자 비밀번호
+    imagePath: String         # 프로필 이미지 경로 (nullable)
+    roleId: Int!              # 권한 ID
+    userEmail: String         # 이메일 (nullable)
+    phoneNum: String          # 전화번호 (nullable)
+    departmentId: String      # 부서 ID (nullable)
+    departmentName: String    # 부서 이름 (nullable)
+    positionId: String        # 직급 ID (nullable)
+    positionName: String      # 직급 이름 (nullable)
+    authorityName: String!    # 권한 이름
+    flagActive: Boolean!      # 활성화 여부
 }
 
 extend type Mutation {

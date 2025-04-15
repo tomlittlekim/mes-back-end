@@ -66,15 +66,22 @@ data class UserSummery(
 
 data class UserDetail(
     val id: Long,
-    override val loginId: String,
+    val site: String,
+    override val compCd: String,
     val userName: String,
-    var departmentName: String?,
-    var position: String?,
-    val authorityName: String,
+    override val loginId: String,
+    val userPwd: String,
+    val imagePath: String?=null,
+    override val roleId: Long,
     val userEmail: String?,
-    val phoneNumber: String?,
-    val flagActive: String?="Y"
-): DtoLoginIdBase
+    val phoneNum: String?,
+    val departmentId: String?=null,
+    var departmentName: String?,
+    val positionId: String?=null,
+    var positionName: String?,
+    val authorityName: String,
+    val flagActive: Boolean,
+): DtoAllInOneBase
 
 data class UserGroupRequest(
     var userName: String? = null,

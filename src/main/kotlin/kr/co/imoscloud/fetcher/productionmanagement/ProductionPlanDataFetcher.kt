@@ -1,14 +1,13 @@
 package kr.co.imoscloud.fetcher.productionmanagement
 
 import com.netflix.graphql.dgs.*
-import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
-import kr.co.imoscloud.entity.productionmanagement.WorkOrder
 import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.entity.productionmanagement.WorkOrder
+import kr.co.imoscloud.model.productionmanagement.ProductionPlanDTO
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
-import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
@@ -18,13 +17,12 @@ import org.slf4j.LoggerFactory
 class ProductionPlanDataFetcher(
     private val productionPlanService: ProductionPlanService,
     private val workOrderRepository: WorkOrderRepository,
-    private val materialMasterRepository: MaterialRepository
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanDataFetcher::class.java)
 
-    // 생산계획 목록 조회
+    // 생산계획 목록 조회 - DTO를 직접 GraphQL 응답으로 사용
     @DgsQuery
-    fun productionPlans(@InputArgument("filter") filterInput: Map<String, Any>?): List<ProductionPlan> {
+    fun productionPlans(@InputArgument("filter") filterInput: Map<String, Any>?): List<ProductionPlanDTO> {
         try {
             // Map으로 받은 입력값을 ProductionPlanFilter로 변환
             val filter = ProductionPlanFilter()
@@ -34,10 +32,11 @@ class ProductionPlanDataFetcher(
                 filter.prodPlanId = input["prodPlanId"] as? String
                 filter.orderId = input["orderId"] as? String
                 filter.productId = input["productId"] as? String
-                filter.productName = input["productName"] as? String  // 제품명 필드 추가
-                filter.shiftType = input["shiftType"] as? String  // 주/야간 유형 필드 설정
+                filter.productName = input["productName"] as? String
+                filter.materialCategory = input["materialCategory"] as? String
+                filter.shiftType = input["shiftType"] as? String
 
-                // 날짜 필드 변환
+                // 계획시작일 날짜 필드 변환
                 if (input.containsKey("planStartDateFrom")) {
                     val startDateFromStr = input["planStartDateFrom"] as? String
                     filter.planStartDateFrom = DateUtils.parseDate(startDateFromStr)
@@ -48,10 +47,22 @@ class ProductionPlanDataFetcher(
                     filter.planStartDateTo = DateUtils.parseDate(startDateToStr)
                 }
 
+                // 계획종료일 날짜 필드 변환
+                if (input.containsKey("planEndDateFrom")) {
+                    val endDateFromStr = input["planEndDateFrom"] as? String
+                    filter.planEndDateFrom = DateUtils.parseDate(endDateFromStr)
+                }
+
+                if (input.containsKey("planEndDateTo")) {
+                    val endDateToStr = input["planEndDateTo"] as? String
+                    filter.planEndDateTo = DateUtils.parseDate(endDateToStr)
+                }
+
                 // Boolean 필드 설정
                 filter.flagActive = input["flagActive"] as? Boolean ?: true
             }
 
+            // DTO를 직접 반환
             return productionPlanService.getProductionPlans(filter)
         } catch (e: SecurityException) {
             log.error("인증 오류: {}", e.message)
@@ -112,7 +123,7 @@ class ProductionPlanDataFetcher(
     // 생산계획에 속한 작업지시 목록 조회 (GraphQL 리졸버)
     @DgsData(parentType = "ProductionPlan", field = "workOrders")
     fun workOrders(dfe: DgsDataFetchingEnvironment): List<WorkOrder> {
-        val productionPlan = dfe.getSource<ProductionPlan>()
+        val productionPlan = dfe.getSource<ProductionPlanDTO>()
         val prodPlanId = productionPlan?.prodPlanId ?: return emptyList()
 
         try {

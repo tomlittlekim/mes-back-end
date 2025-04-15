@@ -119,12 +119,29 @@ class UserService(
         val codeClassIds = listOf("DEPARTMENT","POSITION")
         val codeMap = codeRep.findAllByCodeClassIdIn(codeClassIds).associate { it?.codeId to it?.codeName }
 
-        val roleSummery = core.getUserRoleFromInMemory(loginUser.roleId)
+        val roleSummery = core.getUserRoleFromInMemory(loginUser.roleId ?: 0)
             ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
 
-        return target
-            ?.let { UserDetail(it.id,it.loginId,it.userName?:"",codeMap[it.departmentId],codeMap[it.positionId],roleSummery.roleName,it.userEmail,it.phoneNum) }
-            ?:throw UsernameNotFoundException("유저가 존재하지 않습니다. ")
+        return target?.let { 
+            UserDetail(
+                id = it.id,
+                site = it.site,
+                compCd = it.compCd,
+                userName = it.userName ?: "",
+                loginId = it.loginId,
+                userPwd = it.userPwd,
+                imagePath = it.imagePath,
+                roleId = it.roleId,
+                userEmail = it.userEmail,
+                phoneNum = it.phoneNum,
+                departmentId = it.departmentId,
+                departmentName = codeMap[it.departmentId],
+                positionId = it.positionId,
+                positionName = codeMap[it.positionId],
+                authorityName = roleSummery.roleName,
+                flagActive = it.flagActive
+            )
+        } ?: throw UsernameNotFoundException("유저가 존재하지 않습니다. ")
     }
 
     @AuthLevel(minLevel = 3)
@@ -204,18 +221,18 @@ class UserService(
         val passwordEncoder = BCryptPasswordEncoder()
         if (matchedPWD == null) throw NullPointerException("비밀번호를 입력해주세요. ")
 
-        if (!(passwordEncoder.matches(target.userPwd, matchedPWD) || target.userPwd == matchedPWD))
+        if (!passwordEncoder.matches(matchedPWD, target.userPwd) && target.userPwd != matchedPWD)
             throw IllegalArgumentException("비밀번호가 일치하지 않습니다. ")
     }
 
-    private fun userToUserDetail(us: UserSummery?, codeMap: Map<String?, String?>): UserDetail? {
-        us ?: return null
-        val r = core.getUserRoleFromInMemory(us.roleId) ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
-        val departmentNm = codeMap[us.departmentId]
-        val positionNm = codeMap[us.positionId]
-        val isActive = if(us.flagActive) "Y" else "N"
-        return UserDetail(us.id,us.loginId,us.userName?:"",departmentNm,positionNm,r.roleName,us.userEmail,us.phoneNum,isActive)
-    }
+//    private fun userToUserDetail(us: UserSummery?, codeMap: Map<String?, String?>): UserDetail? {
+//        us ?: return null
+//        val r = core.getUserRoleFromInMemory(us.roleId) ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
+//        val departmentNm = codeMap[us.departmentId]
+//        val positionNm = codeMap[us.positionId]
+//        val isActive = if(us.flagActive) "Y" else "N"
+//        return UserDetail(us.id,us.loginId,us.userName?:"",departmentNm!! ,positionNm!! ,r.roleName, us.userEmail, us.phoneNum,isActive)
+//    }
 
     private fun userGroupFilter(req: UserGroupRequest?, it: UserSummery?) =
         (req?.roleId?.let { r ->  it?.roleId == r } ?: true)

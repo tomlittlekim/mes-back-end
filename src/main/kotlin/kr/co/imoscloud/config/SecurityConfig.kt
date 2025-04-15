@@ -1,6 +1,7 @@
 package kr.co.imoscloud.config
 
 import jakarta.annotation.PostConstruct
+import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.security.ExceptionHandlerFilter
 import kr.co.imoscloud.security.JwtAuthenticationFilter
 import kr.co.imoscloud.security.JwtTokenProvider
@@ -57,7 +58,14 @@ class SecurityConfig(
                     // 그 외 모든 요청은 인증 필요
                     .anyRequest().authenticated()
             }
-
+            .exceptionHandling {
+                it.authenticationEntryPoint { request, response, authException ->
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
+                }
+                it.accessDeniedHandler { request, response, accessDeniedException ->
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden")
+                }
+            }
             // 중요: 필터 순서 설정 (JwtFilter가 AnonymousAuthenticationFilter보다 먼저 실행)
             .addFilterBefore(jwtFilter, AnonymousAuthenticationFilter::class.java)
             // 예외 처리 필터 등록
@@ -68,11 +76,13 @@ class SecurityConfig(
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
-        val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf("http://localhost:3000", "http://imos-cloud.co.kr", "http://pems-cloud.co.kr")
-        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        configuration.allowedHeaders = listOf("*")
-        configuration.allowCredentials = true
+        val configuration = CorsConfiguration().apply {
+            allowedOrigins = listOf("http://localhost:3000", "http://imos-cloud.co.kr", "http://pems-cloud.co.kr")
+            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            allowedHeaders = listOf("*")
+            exposedHeaders = listOf("X-Token-Expired")
+            allowCredentials = true
+        }
         
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)

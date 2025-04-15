@@ -26,14 +26,7 @@ spring:
         show_sql: false
         format_sql: false
         use_sql_comments: false
-        jdbc:
-          time_zone: Asia/Seoul
     open-in-view: false
-
-  jackson:
-      time-zone: Asia/Seoul
-
-
 
 jwt:
   secret: your_jwt_secret_key_should_be_very_long_and_secure_at_least_256_bits

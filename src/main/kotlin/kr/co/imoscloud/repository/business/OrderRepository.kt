@@ -23,6 +23,14 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
         toDate: LocalDateTime?,
         customerId: String?=null,
     ): List<OrderHeader>
+
+    @Query("""
+        select oh.orderNo
+        from OrderHeader oh
+        where oh.compCd = :compcd
+        order by oh.createDate desc limit 1
+    """)
+    fun getLatestOrderNo(compCd: String): String?
 }
 
 interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
@@ -46,5 +54,5 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
         materialId: String?=null,
     ): List<OrderHeader>
 
-    fun findByOrderNoAndCompCdAndFlagActiveIsTrue(compCd: String, orderNo: String?): OrderDetail?
+    fun findAllByOrderNoAndCompCdAndFlagActiveIsTrue(compCd: String, orderNo: String?): List<OrderDetail>
 }

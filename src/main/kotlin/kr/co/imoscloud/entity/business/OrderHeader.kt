@@ -31,16 +31,16 @@ class OrderHeader(
     var customerId: String? = null,
 
     @Column(name = "TOTAL_AMOUNT")
-    var totalAmount: Int? = null,
+    var totalAmount: Int? = 0,
 
     @Column(name = "VAT_AMOUNT", length = 100)
-    var vatAmount: String? = null,
+    var vatAmount: Int? = 0,
 
     @Column(name = "FLAG_VAT_AMOUNT")
     var flagVatAmount: Boolean = false,  // 부가세 여부
 
     @Column(name = "FINAL_AMOUNT")
-    var finalAmount: Int? = null,
+    var finalAmount: Int? = 0,
 
     @Column(name = "DELIVERY_DATE")
     var deliveryDate: LocalDateTime? = null,

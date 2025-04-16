@@ -7,6 +7,9 @@ import kr.co.imoscloud.repository.business.OrderHeaderRepository
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Service
 class OrderService(
@@ -24,9 +27,34 @@ class OrderService(
             ?:run { headerRepo.findAllBySearchCondition(loginUser.compCd, req.orderNo, from, to, req.customerId) }
     }
 
-    fun getDetailsByOrderNo(orderNo: String): OrderDetail? {
+    fun addHeader(): OrderHeaderNullableDto {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        return detailRepo.findByOrderNoAndCompCdAndFlagActiveIsTrue(loginUser.compCd, orderNo)
+        val latestNo = headerRepo.getLatestOrderNo(loginUser.compCd)
+
+        val nextVersion = latestNo
+            ?.takeLast(3)
+            ?.trim()
+            ?.toIntOrNull()
+            ?.plus(1)
+            ?.let { "%03d".format(it) }
+            ?: "001"
+
+        val prefix = "${loginUser.compCd}${LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"))}"
+
+        return OrderHeaderNullableDto(
+            site = loginUser.getSite(),
+            compCd = loginUser.compCd,
+            orderNo = "$prefix$nextVersion",
+        )
+    }
+
+
+
+
+
+    fun getDetailsByOrderNo(orderNo: String): List<OrderDetail> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        return detailRepo.findAllByOrderNoAndCompCdAndFlagActiveIsTrue(loginUser.compCd, orderNo)
     }
 
     data class OrderHeaderSearchRequest(
@@ -40,5 +68,38 @@ class OrderService(
     data class OrderResponse(
         val header: List<OrderHeader> = listOf(),
         val details: List<OrderDetail>? = emptyList()
+    )
+
+    data class OrderHeaderNullableDto(
+        val id: Long? = null,
+        val site: String? = null,
+        val compCd: String? = null,
+        val orderNo: String? = null,
+        val orderDate: LocalDate? = null,
+        val customerId: String? = null,
+        val totalAmount: Int? = 0,
+        val vatAmount: Int? = 0,
+        val flagVatAmount: Boolean? = true,
+        val finalAmount: Int? = 0,
+        val deliveryDate: LocalDateTime? = null,
+        val paymentMethod: String? = null,
+        val deliveryAddr: String? = null,
+        val remark: String? = null
+    )
+
+    data class OrderDetailNullableDto(
+        val id: Long? = null,
+        val site: String?=null,
+        val compCd: String? = null,
+        val orderNo: String? = null,
+        val orderSubNo: String? = null,
+        val systemMaterialId: String? = null,
+        val deliveryDate: LocalDate? = null,
+        val quantity: Int? = null,
+        val unitPrice: Int? = null,
+        val supplyPrice: Int? = null,
+        val vatPrice: Int? = null,
+        val totalPrice: Int? = null,
+        val remark: String? = null
     )
 }

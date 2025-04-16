@@ -135,8 +135,8 @@ class OrderService(
             orderSubNo = detail.orderSubNo,
             systemMaterialId = materialInfo?.systemMaterialId,
             materialName = materialInfo?.materialName,
-            materialSpec = materialInfo?.materialStandard,
-            materialUnit = materialInfo?.unit,
+            materialStandard = materialInfo?.materialStandard,
+            unit = materialInfo?.unit,
             deliveryDate = detail.deliveryDate,
             quantity = detail.quantity,
             unitPrice = detail.unitPrice,
@@ -159,11 +159,6 @@ class OrderService(
         val toDate: String?=null,
         val customerId: String?=null,
         val materialId: String?=null,
-    )
-
-    data class OrderResponse(
-        val header: List<OrderHeader> = listOf(),
-        val details: List<OrderDetail>? = emptyList()
     )
 
     data class OrderHeaderNullableDto(
@@ -198,8 +193,8 @@ class OrderService(
         val orderSubNo: String? = null,
         val systemMaterialId: String? = null,
         val materialName: String? = null,
-        val materialSpec: String? = null,
-        val materialUnit: String? = null,
+        val materialStandard: String? = null,
+        val unit: String? = null,
         val deliveryDate: LocalDate? = null,
         val quantity: Int? = null,
         val unitPrice: Int? = null,

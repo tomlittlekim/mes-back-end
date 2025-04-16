@@ -31,11 +31,7 @@ class OrderService(
             ?.let { detailRepo.findAllBySearchCondition(loginUser.compCd, req.orderNo, from, to, req.customerId, req.materialId) }
             ?:run { headerRepo.findAllBySearchCondition(loginUser.compCd, req.orderNo, from, to, req.customerId) }
 
-        val indies = headerList.map { it.customerId }
-        val vendorMap = vendorRepo.getVendorListByIds(loginUser.getSite(), loginUser.compCd, indies)
-            .associate { it?.vendorId to it?.vendorName }
-
-        return headerList.map { headerToResponse(it, vendorMap) }
+        return headerList.map { headerToResponse(it) }
     }
 
     fun addHeader(): OrderHeaderNullableDto {
@@ -70,7 +66,50 @@ class OrderService(
         return "${header.orderNo} 삭제 성공"
     }
 
+    fun upsertHeader(req: OrderHeaderRequest): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
+        var upsertStr: String? = null
+        val header: OrderHeader = req.id
+            ?.let { id ->
+                headerRepo.findBySiteAndCompCdAndIdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, id)
+                    ?.apply {
+                        orderDate = DateUtils.parseDate(req.orderDate)
+                        customerId = req.customerId
+                        ordererId = req.orderer
+                        flagVatAmount = req.flagVatAmount ?: this.flagVatAmount
+                        deliveryDate = DateUtils.parseDateTime(req.deliveryDate)
+                        paymentMethod = req.paymentMethod
+                        deliveryAddr = req.deliveryAddr
+                        remark = req.remark
+                        updateCommonCol(loginUser)
+                    }
+                    ?.let { upsertStr = "수정"; it }
+                    ?: throw IllegalArgumentException("기분 주문정보가 존재하지 않습니다. ")
+            }
+            ?:run {
+                try {
+                    upsertStr = "생성"
+                    OrderHeader(
+                        site = req.site!!,
+                        compCd = req.compCd!!,
+                        orderNo = req.orderNo!!,
+                        orderDate = DateUtils.parseDate(req.orderDate),
+                        customerId = req.customerId,
+                        flagVatAmount = req.flagVatAmount!!,
+                        deliveryDate = DateUtils.parseDateTime(req.deliveryDate),
+                        paymentMethod = req.paymentMethod,
+                        deliveryAddr = req.deliveryAddr,
+                        remark = req.remark,
+                    )
+                } catch (e: NullPointerException) {
+                    throw IllegalArgumentException("기본 주문정보를 생성할 필드값이 부족합니다. ")
+                }
+            }
+
+        headerRepo.save(header)
+        return "${header.orderNo} $upsertStr 성공"
+    }
 
 
 
@@ -117,16 +156,12 @@ class OrderService(
         return "${detail.orderNo} - ${detail.orderSubNo} 삭제 성공"
     }
 
-    private fun headerToResponse(
-        header: OrderHeader,
-        map: Map<String?, String?>
-    ): OrderHeaderNullableDto = OrderHeaderNullableDto(
+    private fun headerToResponse(header: OrderHeader): OrderHeaderNullableDto = OrderHeaderNullableDto(
         id = header.id,
         site = header.site,
         compCd = header.compCd,
         orderNo = header.orderNo,
         customerId = header.customerId,
-        customerName = map[header.customerId],
         totalAmount = header.totalAmount,
         vatAmount = header.vatAmount,
         flagVatAmount = header.flagVatAmount,
@@ -190,7 +225,6 @@ class OrderService(
         val orderNo: String? = null,
         val orderDate: LocalDate? = null,
         val customerId: String? = null,
-        val customerName: String? = null,
         val totalAmount: Int? = 0,
         val vatAmount: Int? = 0,
         val flagVatAmount: Boolean? = true,
@@ -230,5 +264,39 @@ class OrderService(
         val createDate: LocalDateTime? = null,
         val createUser: String? = null,
         val flagActive: Boolean? = null
+    )
+
+    data class OrderHeaderRequest(
+        val id: Long? = null,
+        val site: String? = null,
+        val compCd: String? = null,
+        val orderNo: String? = null,
+        val orderDate: String,
+        val customerId: String,
+        val orderer: String? = null,
+        val flagVatAmount: Boolean? = true,
+        val deliveryDate: String? = null,
+        val paymentMethod: String? = null,
+        val deliveryAddr: String? = null,
+        val remark: String? = null
+    )
+
+    data class OrderDetailRequest(
+        val id: Long? = null,
+        val site: String?=null,
+        val compCd: String? = null,
+        val orderNo: String? = null,
+        val orderSubNo: String? = null,
+        val systemMaterialId: String? = null,
+        val materialName: String? = null,
+        val materialStandard: String? = null,
+        val unit: String? = null,
+        val deliveryDate: LocalDate? = null,
+        val quantity: Int? = null,
+        val unitPrice: Int? = null,
+        val supplyPrice: Int? = null,
+        val vatPrice: Int? = null,
+        val totalPrice: Int? = null,
+        val remark: String? = null
     )
 }

@@ -146,11 +146,21 @@ class OrderService(
         )
     }
 
+    @Transactional
     fun deleteDetail(id: Long): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         val detail = detailRepo.findBySiteAndCompCdAndIdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, id)
-            ?.apply { flagActive = false; updateCommonCol(loginUser) }
+            ?.let {
+                val deleteIt = it.apply { flagActive = false;updateCommonCol(loginUser) }
+
+                val totalPrice = deleteIt.totalPrice?.let { p -> p * -1 } ?:0
+                val vatPrice = deleteIt.vatPrice?.let { p -> p * -1 } ?:0
+                if (totalPrice != 0 || vatPrice != 0) {
+                    headerRepo.updateAmountsByDetailPrice(deleteIt.orderNo, totalPrice, vatPrice)
+                }
+                deleteIt
+            }
             ?: throw IllegalArgumentException("주문상세정보가 존재하지 않습니다. ")
 
         detailRepo.save(detail)

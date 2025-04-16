@@ -65,4 +65,6 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
         order by od.createDate desc limit 1
     """)
     fun getLatestOrderSubNo(compCd: String): String?
+
+    fun findBySiteAndCompCdAndIdAndFlagActiveIsTrue(site: String, compCd: String, id: Long): OrderDetail?
 }

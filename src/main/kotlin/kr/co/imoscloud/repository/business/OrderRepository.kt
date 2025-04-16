@@ -55,4 +55,12 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
     ): List<OrderHeader>
 
     fun findAllByOrderNoAndCompCdAndFlagActiveIsTrue(compCd: String, orderNo: String?): List<OrderDetail>
+
+    @Query("""
+        select od.orderSubNo
+        from OrderDetail od
+        where od.compCd = :compcd
+        order by od.createDate desc limit 1
+    """)
+    fun getLatestOrderSubNo(compCd: String): String?
 }

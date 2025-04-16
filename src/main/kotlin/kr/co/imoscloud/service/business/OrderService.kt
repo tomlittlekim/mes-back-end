@@ -22,9 +22,11 @@ class OrderService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val (from, to) = DateUtils.getSearchDateRange(req.fromDate, req.toDate)
 
-        return req.materialId
+        val headerList = req.materialId
             ?.let { detailRepo.findAllBySearchCondition(loginUser.compCd, req.orderNo, from, to, req.customerId, req.materialId) }
             ?:run { headerRepo.findAllBySearchCondition(loginUser.compCd, req.orderNo, from, to, req.customerId) }
+
+        return headerList
     }
 
     fun addHeader(): OrderHeaderNullableDto {
@@ -57,6 +59,27 @@ class OrderService(
         return detailRepo.findAllByOrderNoAndCompCdAndFlagActiveIsTrue(loginUser.compCd, orderNo)
     }
 
+    fun addDetail(header: OrderHeaderNullableDto): OrderDetailNullableDto {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        if (!header.compCd.equals(loginUser.compCd)) throw IllegalArgumentException("다른 회사의 정보를 조회할 수 없습니다. ")
+
+        val latestSubOrderNo = detailRepo.getLatestOrderSubNo(header.compCd!!)
+        val nextVersion = latestSubOrderNo
+            ?.takeLast(3)
+            ?.trim()
+            ?.toIntOrNull()
+            ?.plus(1)
+            ?.let { "%03d".format(it) }
+            ?: "001"
+
+        return OrderDetailNullableDto(
+            site = header.site,
+            compCd = header.compCd,
+            orderNo = header.orderNo,
+            orderSubNo = nextVersion,
+        )
+    }
+
     data class OrderHeaderSearchRequest(
         val orderNo: String?=null,
         val fromDate: String?=null,
@@ -77,6 +100,7 @@ class OrderService(
         val orderNo: String? = null,
         val orderDate: LocalDate? = null,
         val customerId: String? = null,
+        val customerName: String? = null,
         val totalAmount: Int? = 0,
         val vatAmount: Int? = 0,
         val flagVatAmount: Boolean? = true,
@@ -94,6 +118,9 @@ class OrderService(
         val orderNo: String? = null,
         val orderSubNo: String? = null,
         val systemMaterialId: String? = null,
+        val materialName: String? = null,
+        val materialSpec: String? = null,
+        val materialUnit: String? = null,
         val deliveryDate: LocalDate? = null,
         val quantity: Int? = null,
         val unitPrice: Int? = null,

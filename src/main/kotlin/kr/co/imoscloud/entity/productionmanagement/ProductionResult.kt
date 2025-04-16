@@ -17,7 +17,7 @@ class ProductionResult : CommonCol() {
     @Column(name = "COMP_CD", nullable = false, length = 20)
     var compCd: String? = null
 
-    @Column(name = "WORK_ORDER_ID", nullable = false, length = 50)
+    @Column(name = "WORK_ORDER_ID", length = 50)
     var workOrderId: String? = null
 
     @Column(name = "PROD_RESULT_ID", nullable = false, length = 50)

@@ -145,6 +145,9 @@ class ProductionResultDataFetcher(
             val productionResult = dfe.getSource<ProductionResult>()
             val workOrderId = productionResult?.workOrderId ?: return null
 
+            // 작업지시 ID가 없는 경우 null 반환
+            if (workOrderId.isBlank()) return null
+
             // 활성화된 작업지시만 조회
             return workOrderRepository.findByWorkOrderId(workOrderId)?.let {
                 if (it.flagActive == true) it else null

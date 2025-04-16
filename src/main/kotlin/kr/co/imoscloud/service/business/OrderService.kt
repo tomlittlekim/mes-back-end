@@ -2,8 +2,11 @@ package kr.co.imoscloud.service.business
 
 import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.business.OrderHeader
+import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.repository.VendorRep
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.OrderHeaderRepository
+import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
@@ -14,11 +17,13 @@ import java.time.format.DateTimeFormatter
 @Service
 class OrderService(
     val headerRepo: OrderHeaderRepository,
-    val detailRepo: OrderDetailRepository
+    private val vendorRepo: VendorRep,
+    val detailRepo: OrderDetailRepository,
+    private val materialRepo: MaterialRepository
 ) {
 
     // orderHeader 조회
-    fun getHeadersBySearchRequestByCompCd(req: OrderHeaderSearchRequest): List<OrderHeader> {
+    fun getHeadersBySearchRequestByCompCd(req: OrderHeaderSearchRequest): List<OrderHeaderNullableDto> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val (from, to) = DateUtils.getSearchDateRange(req.fromDate, req.toDate)
 
@@ -26,7 +31,11 @@ class OrderService(
             ?.let { detailRepo.findAllBySearchCondition(loginUser.compCd, req.orderNo, from, to, req.customerId, req.materialId) }
             ?:run { headerRepo.findAllBySearchCondition(loginUser.compCd, req.orderNo, from, to, req.customerId) }
 
-        return headerList
+        val indies = headerList.map { it.customerId }
+        val vendorMap = vendorRepo.getVendorListByIds(loginUser.getSite(), loginUser.compCd, indies)
+            .associate { it?.vendorId to it?.vendorName }
+
+        return headerList.map { headerToResponse(it, vendorMap) }
     }
 
     fun addHeader(): OrderHeaderNullableDto {
@@ -54,9 +63,15 @@ class OrderService(
 
 
 
-    fun getDetailsByOrderNo(orderNo: String): List<OrderDetail> {
+    fun getDetailsByOrderNo(orderNo: String): List<OrderDetailNullableDto> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        return detailRepo.findAllByOrderNoAndCompCdAndFlagActiveIsTrue(loginUser.compCd, orderNo)
+        val detailList = detailRepo.findAllByOrderNoAndCompCdAndFlagActiveIsTrue(loginUser.compCd, orderNo)
+
+        val indies = detailList.map { it.systemMaterialId }
+        val materialMap = materialRepo.getMaterialListByIds(loginUser.getSite(), loginUser.compCd, indies)
+            .associateBy { it?.systemMaterialId }
+
+        return detailList.map { detailToResponse(it, materialMap) }
     }
 
     fun addDetail(header: OrderHeaderNullableDto): OrderDetailNullableDto {
@@ -77,6 +92,64 @@ class OrderService(
             compCd = header.compCd,
             orderNo = header.orderNo,
             orderSubNo = nextVersion,
+        )
+    }
+
+    private fun headerToResponse(
+        header: OrderHeader,
+        map: Map<String?, String?>
+    ): OrderHeaderNullableDto = OrderHeaderNullableDto(
+        id = header.id,
+        site = header.site,
+        compCd = header.compCd,
+        orderNo = header.orderNo,
+        customerId = header.customerId,
+        customerName = map[header.customerId],
+        totalAmount = header.totalAmount,
+        vatAmount = header.vatAmount,
+        flagVatAmount = header.flagVatAmount,
+        finalAmount = header.finalAmount,
+        deliveryDate = header.deliveryDate,
+        paymentMethod = header.paymentMethod,
+        deliveryAddr = header.deliveryAddr,
+        remark = header.remark,
+
+        createUser = header.createUser,
+        createDate = header.createDate,
+        updateUser = header.updateUser,
+        updateDate = header.updateDate,
+        flagActive = header.flagActive,
+    )
+
+    private fun detailToResponse(
+        detail: OrderDetail,
+        map: Map<String?, MaterialMaster?>
+    ): OrderDetailNullableDto {
+        val materialInfo = map[detail.systemMaterialId]
+
+        return OrderDetailNullableDto(
+            id = detail.id,
+            site = detail.site,
+            compCd = detail.compCd,
+            orderNo = detail.orderNo,
+            orderSubNo = detail.orderSubNo,
+            systemMaterialId = materialInfo?.systemMaterialId,
+            materialName = materialInfo?.materialName,
+            materialSpec = materialInfo?.materialStandard,
+            materialUnit = materialInfo?.unit,
+            deliveryDate = detail.deliveryDate,
+            quantity = detail.quantity,
+            unitPrice = detail.unitPrice,
+            supplyPrice = detail.supplyPrice,
+            vatPrice = detail.vatPrice,
+            totalPrice = detail.totalPrice,
+            remark = detail.remark,
+
+            createUser = detail.createUser,
+            createDate = detail.createDate,
+            updateUser = detail.updateUser,
+            updateDate = detail.updateDate,
+            flagActive = detail.flagActive,
         )
     }
 
@@ -108,7 +181,13 @@ class OrderService(
         val deliveryDate: LocalDateTime? = null,
         val paymentMethod: String? = null,
         val deliveryAddr: String? = null,
-        val remark: String? = null
+        val remark: String? = null,
+
+        val updateDate: LocalDateTime? = null,
+        val updateUser: String? = null,
+        val createDate: LocalDateTime? = null,
+        val createUser: String? = null,
+        val flagActive: Boolean? = null
     )
 
     data class OrderDetailNullableDto(
@@ -127,6 +206,12 @@ class OrderService(
         val supplyPrice: Int? = null,
         val vatPrice: Int? = null,
         val totalPrice: Int? = null,
-        val remark: String? = null
+        val remark: String? = null,
+
+        val updateDate: LocalDateTime? = null,
+        val updateUser: String? = null,
+        val createDate: LocalDateTime? = null,
+        val createUser: String? = null,
+        val flagActive: Boolean? = null
     )
 }

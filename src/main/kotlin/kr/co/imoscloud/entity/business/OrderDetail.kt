@@ -38,6 +38,9 @@ data class OrderDetail(
     @Column(name = "UNIT_PRICE", nullable = false)
     var unitPrice: Int,
 
+    @Column(name = "DISCOUNT_AMOUNT")
+    var discountedAmount: Int? = null,
+
     @Column(name = "SUPPLY_PRICE")
     var supplyPrice: Int? = null,
 

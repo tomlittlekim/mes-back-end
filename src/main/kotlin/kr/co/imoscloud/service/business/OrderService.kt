@@ -1,9 +1,10 @@
 package kr.co.imoscloud.service.business
 
+import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.business.OrderHeader
 import kr.co.imoscloud.entity.material.MaterialMaster
-import kr.co.imoscloud.repository.VendorRep
+import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.OrderHeaderRepository
 import kr.co.imoscloud.repository.material.MaterialRepository
@@ -17,9 +18,9 @@ import java.time.format.DateTimeFormatter
 @Service
 class OrderService(
     val headerRepo: OrderHeaderRepository,
-    private val vendorRepo: VendorRep,
     val detailRepo: OrderDetailRepository,
-    private val materialRepo: MaterialRepository
+    private val materialRepo: MaterialRepository,
+    private val codeRep: CodeRep
 ) {
 
     // orderHeader 조회
@@ -77,14 +78,14 @@ class OrderService(
         val headerList: List<OrderHeader> = list.map { req ->
             headerMap[req.id]
                 ?.apply {
-                    orderDate = DateUtils.parseDate(req.orderDate)
-                    customerId = req.customerId
-                    ordererId = req.orderer
+                    orderDate = DateUtils.parseDate(req.orderDate) ?: this.orderDate
+                    customerId = req.customerId ?: this.customerId
+                    ordererId = req.orderer ?: this.ordererId
                     flagVatAmount = req.flagVatAmount ?: this.flagVatAmount
-                    deliveryDate = DateUtils.parseDateTime(req.deliveryDate)
-                    paymentMethod = req.paymentMethod
-                    deliveryAddr = req.deliveryAddr
-                    remark = req.remark
+                    deliveryDate = DateUtils.parseDateTime(req.deliveryDate) ?: this.deliveryDate
+                    paymentMethod = req.paymentMethod ?: this.paymentMethod
+                    deliveryAddr = req.deliveryAddr ?: this.deliveryAddr
+                    remark = req.remark ?: this.remark
                     updateCommonCol(loginUser)
                 }
                 ?:run {
@@ -94,7 +95,7 @@ class OrderService(
                             compCd = req.compCd!!,
                             orderNo = req.orderNo!!,
                             orderDate = DateUtils.parseDate(req.orderDate),
-                            customerId = req.customerId,
+                            customerId = req.customerId!!,
                             flagVatAmount = req.flagVatAmount!!,
                             deliveryDate = DateUtils.parseDateTime(req.deliveryDate),
                             paymentMethod = req.paymentMethod,
@@ -156,6 +157,84 @@ class OrderService(
         return "${detail.orderNo} - ${detail.orderSubNo} 삭제 성공"
     }
 
+    @Transactional
+    fun upsertDetails(list: List<OrderDetailRequest>): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        val indies = list.mapNotNull { it.id }
+        val detailMap = detailRepo
+            .findAllBySiteAndCompCdAndIdInAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, indies)
+            .associateBy { it.id }
+
+        val systemVat= codeRep.getInitialCodes("VAT").first()?.codeName?.split(" ")?.first()?.toInt()?:10
+
+        val amountMap: MutableMap<String, TotalPriceWithVat> = mutableMapOf()
+        val detailList: List<OrderDetail> = list.map { req ->
+            detailMap[req.id]
+                ?.let { detail ->
+                    val oldPrice = TotalPriceWithVat(detail.vatPrice!!, detail.totalPrice!!)
+
+                    var modifyDetail = detail.apply {
+                        supplyPrice = req.supplyPrice ?: this.supplyPrice
+                        discountedAmount = req.discountedAmount ?: this.discountedAmount
+                        systemMaterialId = req.systemMaterialId ?: this.systemMaterialId
+                        deliveryDate = DateUtils.parseDate(req.deliveryDate) ?: this.deliveryDate
+                        quantity = req.quantity ?: this.quantity
+                        unitPrice = req.unitPrice ?: this.unitPrice
+                        supplyPrice = req.supplyPrice ?: this.supplyPrice
+                        remark = req.remark ?: this.remark
+                        updateCommonCol(loginUser)
+                    }
+
+                    modifyDetail = calculatePrice(modifyDetail, systemVat)
+                    val newVat = oldPrice.vat - modifyDetail.vatPrice!!
+                    val newTotal = oldPrice.total - modifyDetail.totalPrice!!
+                    val existsPrice = amountMap[detail.orderNo] ?: TotalPriceWithVat()
+                    amountMap[detail.orderNo] = TotalPriceWithVat(existsPrice.total + newTotal, existsPrice.vat + newVat)
+                    modifyDetail
+                }
+                ?:run {
+                    var detail = OrderDetail(
+                        site = req.site ?: loginUser.getSite(),
+                        compCd = req.compCd ?: loginUser.compCd,
+                        orderNo = req.orderNo!!,
+                        orderSubNo = req.orderSubNo!!,
+                        systemMaterialId = req.systemMaterialId,
+                        deliveryDate = DateUtils.parseDate(req.deliveryDate),
+                        quantity = req.quantity!!,
+                        unitPrice = req.unitPrice!!,
+                        discountedAmount = req.discountedAmount,
+                        supplyPrice = req.supplyPrice,
+                        remark = req.remark,
+                    ).apply { createCommonCol(loginUser) }
+
+                    detail = calculatePrice(detail, systemVat)
+                    val existsPrice = amountMap[detail.orderNo] ?: TotalPriceWithVat()
+                    val finalTotal = existsPrice.total + detail.totalPrice!!
+                    val finalVat = existsPrice.vat + detail.vatPrice!!
+                    amountMap[detail.orderNo] = TotalPriceWithVat(finalTotal, finalVat)
+                    detail
+                }
+        }
+
+        detailRepo.saveAll(detailList)
+        amountMap.entries.forEach { (key, value) ->
+            // 반환값이 0인 경우에 대한 처리 추가 필요
+            headerRepo.updateAmountsByDetailPrice(key, value.total, value.vat)
+        }
+        return "주문상세정보 생성 및 수정 성공"
+    }
+
+    private fun calculatePrice(modifyDetail: OrderDetail, systemVat: Int): OrderDetail {
+        var modifyDetail1 = modifyDetail
+        modifyDetail1 = modifyDetail1.apply {
+            vatPrice = supplyPrice?.let { it / systemVat } ?: run { (unitPrice * quantity) / systemVat }
+            totalPrice = supplyPrice
+                ?.let { it - (this.discountedAmount ?: 0) }
+                ?: run { (unitPrice * quantity) - (this.discountedAmount ?: 0) }
+        }
+        return modifyDetail1
+    }
 
     private fun headerToResponse(header: OrderHeader): OrderHeaderNullableDto = OrderHeaderNullableDto(
         id = header.id,
@@ -272,8 +351,8 @@ class OrderService(
         val site: String? = null,
         val compCd: String? = null,
         val orderNo: String? = null,
-        val orderDate: String,
-        val customerId: String,
+        val orderDate: String? = null,
+        val customerId: String? = null,
         val orderer: String? = null,
         val flagVatAmount: Boolean? = true,
         val deliveryDate: String? = null,
@@ -289,15 +368,16 @@ class OrderService(
         val orderNo: String? = null,
         val orderSubNo: String? = null,
         val systemMaterialId: String? = null,
-        val materialName: String? = null,
-        val materialStandard: String? = null,
-        val unit: String? = null,
-        val deliveryDate: LocalDate? = null,
+        val deliveryDate: String? = null,
         val quantity: Int? = null,
         val unitPrice: Int? = null,
         val supplyPrice: Int? = null,
-        val vatPrice: Int? = null,
-        val totalPrice: Int? = null,
+        val discountedAmount: Int? = null,
         val remark: String? = null
+    )
+
+    data class TotalPriceWithVat(
+        var total: Int = 0,
+        var vat: Int = 0
     )
 }

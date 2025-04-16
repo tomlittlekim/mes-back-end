@@ -3,6 +3,7 @@ package kr.co.imoscloud.repository.business
 import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.business.OrderHeader
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
 
@@ -34,6 +35,22 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
 
     fun findBySiteAndCompCdAndIdAndFlagActiveIsTrue(site:String, compCd: String, id: Long): OrderHeader?
     fun findAllBySiteAndCompCdAndIdInAndFlagActiveIsTrue(site:String, compCd: String, id: List<Long>): List<OrderHeader>
+
+    @Modifying
+    @Query("""
+        UPDATE ORDER_HEADER
+        SET 
+            TOTAL_AMOUNT = TOTAL_AMOUNT + :totalAmount,
+            VAT_AMOUNT = VAT_AMOUNT + :vatAmount,
+            FINAL_AMOUNT = 
+                CASE 
+                    WHEN FLAG_VAT_AMOUNT = true THEN TOTAL_AMOUNT + VAT_AMOUNT
+                    ELSE TOTAL_AMOUNT
+                END
+        WHERE ORDER_NO = :orderNo
+          AND FLAG_ACTIVE = true
+    """, nativeQuery = true)
+    fun updateAmountsByDetailPrice(orderNo: String, totalAmount: Int, vatAmount: Int): Int
 }
 
 interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
@@ -68,4 +85,5 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
     fun getLatestOrderSubNo(compCd: String): String?
 
     fun findBySiteAndCompCdAndIdAndFlagActiveIsTrue(site: String, compCd: String, id: Long): OrderDetail?
+    fun findAllBySiteAndCompCdAndIdInAndFlagActiveIsTrue(site: String, compCd: String, id: List<Long>): List<OrderDetail>
 }

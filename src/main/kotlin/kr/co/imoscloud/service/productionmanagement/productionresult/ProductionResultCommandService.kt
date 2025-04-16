@@ -38,33 +38,37 @@ class ProductionResultCommandService(
             // 새로운 생산실적 저장
             createdRows?.forEach { input ->
                 try {
-                    // 작업지시 정보 조회
+                    // 작업지시 정보 조회 (선택 사항으로 변경)
                     val workOrder = input.workOrderId?.let {
                         workOrderRepository.findBySiteAndCompCdAndWorkOrderId(
                             site = currentUser.getSite(),
                             compCd = currentUser.compCd,
                             workOrderId = it
                         )
-                    } ?: throw IllegalArgumentException("작업지시를 찾을 수 없습니다: ${input.workOrderId}")
+                    }
 
-                    // 기존 등록된 양품수량 합계 조회
-                    val existingTotalGoodQty = productionResultQueryService.getTotalGoodQtyByWorkOrderId(workOrder.workOrderId!!)
+                    // 작업지시가 있는 경우에만 기존 등록된 양품수량 합계 조회
+                    val existingTotalGoodQty = if (workOrder != null) {
+                        productionResultQueryService.getTotalGoodQtyByWorkOrderId(workOrder.workOrderId!!)
+                    } else 0.0
 
                     // 양품과 불량품 수량 준비
                     val goodQty = input.goodQty ?: 0.0
                     val defectQty = input.defectQty ?: 0.0
                     val totalQty = goodQty + defectQty
 
-                    // 작업지시 수량 검증
-                    val orderQty = workOrder.orderQty ?: 0.0
-                    if (existingTotalGoodQty + goodQty > orderQty) {
-                        throw IllegalArgumentException("총 생산 양품수량이 작업지시수량(${orderQty})을 초과할 수 없습니다. 현재 등록된 양품수량: ${existingTotalGoodQty}")
+                    // 작업지시가 있는 경우에만 작업지시 수량 검증
+                    if (workOrder != null) {
+                        val orderQty = workOrder.orderQty ?: 0.0
+                        if (existingTotalGoodQty + goodQty > orderQty) {
+                            throw IllegalArgumentException("총 생산 양품수량이 작업지시수량(${orderQty})을 초과할 수 없습니다. 현재 등록된 양품수량: ${existingTotalGoodQty}")
+                        }
                     }
 
-                    // 수정된 진척률 계산 - 양품수량만 사용하고 누적 값 고려
-                    val progressRate = if (orderQty > 0) {
+                    // 수정된 진척률 계산 - 작업지시가 있는 경우에만 계산
+                    val progressRate = if (workOrder != null && workOrder.orderQty != null && workOrder.orderQty!! > 0) {
                         // 기존 생산실적의 양품수량 + 현재 생산실적의 양품수량으로 누적 진척률 계산
-                        String.format("%.1f", ((existingTotalGoodQty + goodQty) / orderQty) * 100.0)
+                        String.format("%.1f", ((existingTotalGoodQty + goodQty) / workOrder.orderQty!!) * 100.0)
                     } else "0.0"
 
                     // 불량률 계산 - 불량수량이 있는 경우만 계산
@@ -81,7 +85,7 @@ class ProductionResultCommandService(
                         site = currentUser.getSite()
                         compCd = currentUser.compCd
                         this.prodResultId = prodResultId
-                        workOrderId = input.workOrderId
+                        workOrderId = input.workOrderId // null 허용
                         this.goodQty = goodQty
                         this.defectQty = defectQty
                         this.progressRate = progressRate
@@ -115,8 +119,10 @@ class ProductionResultCommandService(
                         )
                     }
 
-                    // 작업지시 상태 업데이트
-                    updateWorkOrderStatus(workOrder, goodQty, existingTotalGoodQty, orderQty, totalQty)
+                    // 작업지시가 있는 경우에만 작업지시 상태 업데이트
+                    if (workOrder != null) {
+                        updateWorkOrderStatus(workOrder, goodQty, existingTotalGoodQty, workOrder.orderQty ?: 0.0, totalQty)
+                    }
                 } catch (e: Exception) {
                     throw e  // 트랜잭션 롤백을 위해 예외를 다시 던짐
                 }
@@ -132,34 +138,40 @@ class ProductionResultCommandService(
                         update.prodResultId
                     ) ?: throw IllegalArgumentException("수정할 생산실적을 찾을 수 없습니다: ${update.prodResultId}")
 
-                    // 작업지시 정보 조회
+                    // 작업지시 정보 조회 (선택 사항으로 변경)
                     val workOrder = existingResult.workOrderId?.let {
                         workOrderRepository.findBySiteAndCompCdAndWorkOrderId(
                             site = currentUser.getSite(),
                             compCd = currentUser.compCd,
                             workOrderId = it
                         )
-                    } ?: throw IllegalArgumentException("작업지시를 찾을 수 없습니다: ${existingResult.workOrderId}")
+                    }
 
                     // 기존 양품수량
                     val oldGoodQty = existingResult.goodQty ?: 0.0
                     // 새 양품수량
                     val newGoodQty = update.goodQty ?: oldGoodQty
-                    // 현재 편집중인 생산실적을 제외한 다른 생산실적의 양품수량 합계
-                    val otherGoodQty = productionResultQueryService.getTotalGoodQtyByWorkOrderId(workOrder.workOrderId!!) - oldGoodQty
+
+                    // 작업지시가 있는 경우에만 다른 생산실적의 양품수량 합계 조회
+                    var otherGoodQty = 0.0
+                    var orderQty = 0.0
+
+                    if (workOrder != null) {
+                        otherGoodQty = productionResultQueryService.getTotalGoodQtyByWorkOrderId(workOrder.workOrderId!!) - oldGoodQty
+                        orderQty = workOrder.orderQty ?: 0.0
+
+                        // 양품수량 검증 - 변경 후 총 양품수량이 작업지시수량을 초과하는지 확인
+                        if (otherGoodQty + newGoodQty > orderQty) {
+                            throw IllegalArgumentException("총 생산 양품수량이 작업지시수량(${orderQty})을 초과할 수 없습니다. 현재 등록된 양품수량: ${otherGoodQty}")
+                        }
+                    }
 
                     // Qty 관련 계산
-                    val orderQty = workOrder.orderQty ?: 0.0
                     val defectQty = update.defectQty ?: existingResult.defectQty ?: 0.0
                     val totalQty = newGoodQty + defectQty
 
-                    // 양품수량 검증 - 변경 후 총 양품수량이 작업지시수량을 초과하는지 확인
-                    if (otherGoodQty + newGoodQty > orderQty) {
-                        throw IllegalArgumentException("총 생산 양품수량이 작업지시수량(${orderQty})을 초과할 수 없습니다. 현재 등록된 양품수량: ${otherGoodQty}")
-                    }
-
-                    // 수정된 진척률 계산 - 양품수량만 사용하고 누적 값 고려
-                    val progressRate = if (orderQty > 0) {
+                    // 수정된 진척률 계산 - 작업지시가 있는 경우에만 계산
+                    val progressRate = if (workOrder != null && orderQty > 0) {
                         // 다른 생산실적의 양품수량 + 현재 생산실적의 양품수량으로 누적 진척률 계산
                         String.format("%.1f", ((otherGoodQty + newGoodQty) / orderQty) * 100.0)
                     } else "0.0"
@@ -217,8 +229,10 @@ class ProductionResultCommandService(
                         )
                     }
 
-                    // 작업지시 상태 업데이트
-                    updateWorkOrderStatus(workOrder, newGoodQty, otherGoodQty, orderQty, totalQty)
+                    // 작업지시가 있는 경우에만 작업지시 상태 업데이트
+                    if (workOrder != null) {
+                        updateWorkOrderStatus(workOrder, newGoodQty, otherGoodQty, orderQty, totalQty)
+                    }
                 } catch (e: Exception) {
                     throw e  // 트랜잭션 롤백을 위해 예외를 다시 던짐
                 }

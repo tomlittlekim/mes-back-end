@@ -66,49 +66,49 @@ class OrderService(
         return "${header.orderNo} 삭제 성공"
     }
 
-    fun upsertHeader(req: OrderHeaderRequest): String {
+    fun upsertHeader(list: List<OrderHeaderRequest>): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        var upsertStr: String? = null
-        val header: OrderHeader = req.id
-            ?.let { id ->
-                headerRepo.findBySiteAndCompCdAndIdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, id)
-                    ?.apply {
-                        orderDate = DateUtils.parseDate(req.orderDate)
-                        customerId = req.customerId
-                        ordererId = req.orderer
-                        flagVatAmount = req.flagVatAmount ?: this.flagVatAmount
-                        deliveryDate = DateUtils.parseDateTime(req.deliveryDate)
-                        paymentMethod = req.paymentMethod
-                        deliveryAddr = req.deliveryAddr
-                        remark = req.remark
-                        updateCommonCol(loginUser)
+        val indies = list.mapNotNull { it.id }
+        val headerMap = headerRepo
+            .findAllBySiteAndCompCdAndIdInAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, indies)
+            .associateBy { it.id }
+
+        val headerList: List<OrderHeader> = list.map { req ->
+            headerMap[req.id]
+                ?.apply {
+                    orderDate = DateUtils.parseDate(req.orderDate)
+                    customerId = req.customerId
+                    ordererId = req.orderer
+                    flagVatAmount = req.flagVatAmount ?: this.flagVatAmount
+                    deliveryDate = DateUtils.parseDateTime(req.deliveryDate)
+                    paymentMethod = req.paymentMethod
+                    deliveryAddr = req.deliveryAddr
+                    remark = req.remark
+                    updateCommonCol(loginUser)
+                }
+                ?:run {
+                    try {
+                        OrderHeader(
+                            site = req.site!!,
+                            compCd = req.compCd!!,
+                            orderNo = req.orderNo!!,
+                            orderDate = DateUtils.parseDate(req.orderDate),
+                            customerId = req.customerId,
+                            flagVatAmount = req.flagVatAmount!!,
+                            deliveryDate = DateUtils.parseDateTime(req.deliveryDate),
+                            paymentMethod = req.paymentMethod,
+                            deliveryAddr = req.deliveryAddr,
+                            remark = req.remark,
+                        )
+                    } catch (e: NullPointerException) {
+                        throw IllegalArgumentException("기본 주문정보를 생성할 필드값이 부족합니다. ")
                     }
-                    ?.let { upsertStr = "수정"; it }
-                    ?: throw IllegalArgumentException("기분 주문정보가 존재하지 않습니다. ")
-            }
-            ?:run {
-                try {
-                    upsertStr = "생성"
-                    OrderHeader(
-                        site = req.site!!,
-                        compCd = req.compCd!!,
-                        orderNo = req.orderNo!!,
-                        orderDate = DateUtils.parseDate(req.orderDate),
-                        customerId = req.customerId,
-                        flagVatAmount = req.flagVatAmount!!,
-                        deliveryDate = DateUtils.parseDateTime(req.deliveryDate),
-                        paymentMethod = req.paymentMethod,
-                        deliveryAddr = req.deliveryAddr,
-                        remark = req.remark,
-                    )
-                } catch (e: NullPointerException) {
-                    throw IllegalArgumentException("기본 주문정보를 생성할 필드값이 부족합니다. ")
                 }
             }
 
-        headerRepo.save(header)
-        return "${header.orderNo} $upsertStr 성공"
+        headerRepo.saveAll(headerList)
+        return "기본 주문정보 생성 및 수정 성공"
     }
 
 
@@ -155,6 +155,7 @@ class OrderService(
         detailRepo.save(detail)
         return "${detail.orderNo} - ${detail.orderSubNo} 삭제 성공"
     }
+
 
     private fun headerToResponse(header: OrderHeader): OrderHeaderNullableDto = OrderHeaderNullableDto(
         id = header.id,

@@ -33,6 +33,7 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
     fun getLatestOrderNo(compCd: String): String?
 
     fun findBySiteAndCompCdAndIdAndFlagActiveIsTrue(site:String, compCd: String, id: Long): OrderHeader?
+    fun findAllBySiteAndCompCdAndIdInAndFlagActiveIsTrue(site:String, compCd: String, id: List<Long>): List<OrderHeader>
 }
 
 interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {

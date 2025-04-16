@@ -59,6 +59,17 @@ class OrderService(
         )
     }
 
+    fun deleteHeader(id: Long): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        val orderHeader = headerRepo.findBySiteAndCompCdAndIdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, id)
+            ?.apply { flagActive = false; updateCommonCol(loginUser) }
+            ?: throw IllegalArgumentException("주문정보가 존재하지 않습니다. ")
+
+        headerRepo.save(orderHeader)
+        return "${orderHeader.orderNo} 삭제 성공"
+    }
+
 
 
 

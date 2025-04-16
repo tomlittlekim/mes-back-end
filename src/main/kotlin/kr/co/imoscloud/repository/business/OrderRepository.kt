@@ -31,6 +31,8 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
         order by oh.createDate desc limit 1
     """)
     fun getLatestOrderNo(compCd: String): String?
+
+    fun findBySiteAndCompCdAndIdAndFlagActiveIsTrue(site:String, compCd: String, id: Long): OrderHeader?
 }
 
 interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {

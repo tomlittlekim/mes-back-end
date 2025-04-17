@@ -111,7 +111,7 @@ data class InventoryHistoryFilter(
     var inOutType : String? = null,
     var supplierName : String? = null,
     var manufacturerName : String? = null,
-    var materialName : String? = null,
+    var materialNames : List<String>? = null,
     var startDate : String? = null,
     var endDate : String? = null,
 )

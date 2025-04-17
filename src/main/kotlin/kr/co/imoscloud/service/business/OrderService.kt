@@ -298,100 +298,100 @@ class OrderService(
             flagActive = detail.flagActive,
         )
     }
-
-    data class OrderHeaderSearchRequest(
-        val orderNo: String?=null,
-        val fromDate: String?=null,
-        val toDate: String?=null,
-        val customerId: String?=null,
-        val materialId: String?=null,
-    )
-
-    data class OrderHeaderNullableDto(
-        val id: Long? = null,
-        val site: String? = null,
-        val compCd: String? = null,
-        val orderNo: String? = null,
-        val orderDate: LocalDate? = null,
-        val customerId: String? = null,
-        val totalAmount: Int? = 0,
-        val vatAmount: Int? = 0,
-        val flagVatAmount: Boolean? = true,
-        val finalAmount: Int? = 0,
-        val deliveryDate: LocalDateTime? = null,
-        val paymentMethod: String? = null,
-        val deliveryAddr: String? = null,
-        val remark: String? = null,
-
-        val updateDate: LocalDateTime? = null,
-        val updateUser: String? = null,
-        val createDate: LocalDateTime? = null,
-        val createUser: String? = null,
-        val flagActive: Boolean? = null
-    )
-
-    data class OrderDetailNullableDto(
-        val id: Long? = null,
-        val site: String?=null,
-        val compCd: String? = null,
-        val orderNo: String? = null,
-        val orderSubNo: String? = null,
-        val systemMaterialId: String? = null,
-        val materialName: String? = null,
-        val materialStandard: String? = null,
-        val unit: String? = null,
-        val deliveryDate: LocalDate? = null,
-        val quantity: Int? = null,
-        val unitPrice: Int? = null,
-        val supplyPrice: Int? = null,
-        val vatPrice: Int? = null,
-        val totalPrice: Int? = null,
-        val remark: String? = null,
-
-        val updateDate: LocalDateTime? = null,
-        val updateUser: String? = null,
-        val createDate: LocalDateTime? = null,
-        val createUser: String? = null,
-        val flagActive: Boolean? = null
-    )
-
-    data class OrderHeaderRequest(
-        val id: Long? = null,
-        val site: String? = null,
-        val compCd: String? = null,
-        val orderNo: String? = null,
-        val orderDate: String? = null,
-        val customerId: String? = null,
-        val orderer: String? = null,
-        val flagVatAmount: Boolean? = true,
-        val deliveryDate: String? = null,
-        val paymentMethod: String? = null,
-        val deliveryAddr: String? = null,
-        val remark: String? = null
-    )
-
-    data class OrderDetailRequest(
-        val id: Long? = null,
-        val site: String?=null,
-        val compCd: String? = null,
-        val orderNo: String? = null,
-        val orderSubNo: String? = null,
-        val systemMaterialId: String? = null,
-        val deliveryDate: String? = null,
-        val quantity: Int? = null,
-        val unitPrice: Int? = null,
-        val supplyPrice: Int? = null,
-        val discountedAmount: Int? = null,
-        val remark: String? = null
-    )
-
-    data class TotalPriceWithVat(
-        var total: Int = 0,
-        var vat: Int = 0
-    )
-
-    data class NewDetailRequest(
-        val no: Int,
-        val orderNo: String
-    )
 }
+
+data class OrderHeaderSearchRequest(
+    val orderNo: String?=null,
+    val fromDate: String?=null,
+    val toDate: String?=null,
+    val customerId: String?=null,
+    val materialId: String?=null,
+)
+
+data class OrderHeaderNullableDto(
+    val id: Long? = null,
+    val site: String? = null,
+    val compCd: String? = null,
+    val orderNo: String? = null,
+    val orderDate: LocalDate? = null,
+    val customerId: String? = null,
+    val totalAmount: Int? = 0,
+    val vatAmount: Int? = 0,
+    val flagVatAmount: Boolean? = true,
+    val finalAmount: Int? = 0,
+    val deliveryDate: LocalDateTime? = null,
+    val paymentMethod: String? = null,
+    val deliveryAddr: String? = null,
+    val remark: String? = null,
+
+    val updateDate: LocalDateTime? = null,
+    val updateUser: String? = null,
+    val createDate: LocalDateTime? = null,
+    val createUser: String? = null,
+    val flagActive: Boolean? = null
+)
+
+data class OrderDetailNullableDto(
+    val id: Long? = null,
+    val site: String?=null,
+    val compCd: String? = null,
+    val orderNo: String? = null,
+    val orderSubNo: String? = null,
+    val systemMaterialId: String? = null,
+    val materialName: String? = null,
+    val materialStandard: String? = null,
+    val unit: String? = null,
+    val deliveryDate: LocalDate? = null,
+    val quantity: Int? = null,
+    val unitPrice: Int? = null,
+    val supplyPrice: Int? = null,
+    val vatPrice: Int? = null,
+    val totalPrice: Int? = null,
+    val remark: String? = null,
+
+    val updateDate: LocalDateTime? = null,
+    val updateUser: String? = null,
+    val createDate: LocalDateTime? = null,
+    val createUser: String? = null,
+    val flagActive: Boolean? = null
+)
+
+data class OrderHeaderRequest(
+    val id: Long? = null,
+    val site: String? = null,
+    val compCd: String? = null,
+    val orderNo: String? = null,
+    val orderDate: String? = null,
+    val customerId: String? = null,
+    val orderer: String? = null,
+    val flagVatAmount: Boolean? = true,
+    val deliveryDate: String? = null,
+    val paymentMethod: String? = null,
+    val deliveryAddr: String? = null,
+    val remark: String? = null
+)
+
+data class OrderDetailRequest(
+    val id: Long? = null,
+    val site: String?=null,
+    val compCd: String? = null,
+    val orderNo: String? = null,
+    val orderSubNo: String? = null,
+    val systemMaterialId: String? = null,
+    val deliveryDate: String? = null,
+    val quantity: Int? = null,
+    val unitPrice: Int? = null,
+    val supplyPrice: Int? = null,
+    val discountedAmount: Int? = null,
+    val remark: String? = null
+)
+
+data class TotalPriceWithVat(
+    var total: Int = 0,
+    var vat: Int = 0
+)
+
+data class NewDetailRequest(
+    val no: Int,
+    val orderNo: String
+)

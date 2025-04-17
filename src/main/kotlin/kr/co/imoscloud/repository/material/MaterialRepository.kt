@@ -157,7 +157,7 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         where m.site = :site
             and m.compCd = :compCd
             and m.materialType in ('HALF_PRODUCT','COMPLETE_PRODUCT')
-            and m.flagActive = :flagActive
+            and m.flagActive is true 
     """)
     fun getProductsBySameCompany(site:String, compCd:String): List<MaterialMaster>
 }

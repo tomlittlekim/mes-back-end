@@ -11,7 +11,7 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
     @Query("""
         select oh
         from OrderHeader oh
-        where oh.compCd = :compcd
+        where oh.compCd = :compCd
             and (:orderNo is null or oh.orderNo = :orderNo)
             and (:fromDate is null or (oh.createDate between :fromDate and :toDate))
             and (:customerId is null or oh.customerId = :customerId)
@@ -28,7 +28,7 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
     @Query("""
         select oh.orderNo
         from OrderHeader oh
-        where oh.compCd = :compcd
+        where oh.compCd = :compCd
         order by oh.createDate desc limit 1
     """)
     fun getLatestOrderNo(compCd: String): String?
@@ -72,7 +72,7 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
         select oh
         from OrderDetail od
         left join OrderHeader oh on od.orderNo = oh.orderNo
-        where od.compCd = :compcd
+        where od.compCd = :compCd
             and (:orderNo is null or od.orderNo = :orderNo)
             and (:fromDate is null or (od.createDate between :fromDate and :toDate))
             and (:customerId is null or oh.customerId = :customerId)
@@ -93,7 +93,7 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
     @Query("""
         select od.orderSubNo
         from OrderDetail od
-        where od.compCd = :compcd
+        where od.compCd = :compCd
         order by od.createDate desc limit 1
     """)
     fun getLatestOrderSubNo(compCd: String): String?
@@ -110,7 +110,7 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
             od.UPDATE_DATE = NOW(),
             od.UPDATE_USER = :updateUserId
         WHERE oh.SITE = :site
-            AND oh.COMP_CD = :compcd
+            AND oh.COMP_CD = :compCd
             AND oh.ID = :id
             AND od.FLAG_ACTIVE is true
     """, nativeQuery = true)

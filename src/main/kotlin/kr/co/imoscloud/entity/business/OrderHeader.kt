@@ -30,7 +30,7 @@ class OrderHeader(
     @Column(name = "CUSTOMER_ID", length = 100, nullable = false)
     var customerId: String? = null,
 
-    @Column(name = "ODERER_ID", length = 100, nullable = false)
+    @Column(name = "ORDERER_ID", length = 100, nullable = false)
     var ordererId: String? = null,
 
     @Column(name = "TOTAL_AMOUNT")

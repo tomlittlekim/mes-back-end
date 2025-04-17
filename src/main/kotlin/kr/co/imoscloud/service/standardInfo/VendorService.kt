@@ -124,6 +124,10 @@ class VendorService(
         ) > 0
     }
 
+    fun getVendorsBySameCompany(): List<Vendor> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        return vendorRep.findAllBySiteAndCompCd(loginUser.getSite(), loginUser.compCd);
+    }
 }
 
 data class VendorResponse(

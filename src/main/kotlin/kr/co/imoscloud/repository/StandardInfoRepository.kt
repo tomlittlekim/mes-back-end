@@ -271,6 +271,8 @@ interface VendorRep : JpaRepository<Vendor,Long>{
         updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
 
+    fun findAllBySiteAndCompCd(site:String,compCd:String):List<Vendor>
+
 }
 
 interface LineRep : JpaRepository<Line,Long>{

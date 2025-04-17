@@ -59,12 +59,12 @@ class OrderService(
     fun deleteHeader(id: Long): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        val header = headerRepo.findBySiteAndCompCdAndIdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, id)
-            ?.apply { flagActive = false; updateCommonCol(loginUser) }
-            ?: throw IllegalArgumentException("기본 주문정보가 존재하지 않습니다. ")
+        headerRepo.deleteOrderHeader(loginUser.getSite(), loginUser.compCd, id, loginUser.loginId)
+            .let { if (it == 0) throw IllegalArgumentException("기본 주문정보가 존재하지 않습니다. ") }
+        detailRepo.deleteAllByOrderHeaderId(loginUser.getSite(), loginUser.compCd, id, loginUser.loginId)
+            .let { if (it == 0) throw IllegalArgumentException("주문상세정보가 존재하지 않습니다. ") }
 
-        headerRepo.save(header)
-        return "${header.orderNo} 삭제 성공"
+        return "삭제 성공"
     }
 
     fun upsertHeader(list: List<OrderHeaderRequest>): String {

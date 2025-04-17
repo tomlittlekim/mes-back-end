@@ -51,6 +51,20 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
           AND FLAG_ACTIVE = true
     """, nativeQuery = true)
     fun updateAmountsByDetailPrice(orderNo: String, totalAmount: Int, vatAmount: Int): Int
+
+    @Modifying
+    @Query("""
+        update OrderHeader oh
+        set 
+            oh.flagActive = false,
+            oh.updateDate = now(),
+            oh.updateUser = : updateUserId
+        where oh.site = :site
+            and oh.compCd = :compCd
+            and oh.id = :id
+            and oh.flagActive is true
+    """)
+    fun deleteOrderHeader(site:String, compCd:String, id: Long, updateUserId: String): Int
 }
 
 interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
@@ -86,4 +100,19 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
 
     fun findBySiteAndCompCdAndIdAndFlagActiveIsTrue(site: String, compCd: String, id: Long): OrderDetail?
     fun findAllBySiteAndCompCdAndIdInAndFlagActiveIsTrue(site: String, compCd: String, id: List<Long>): List<OrderDetail>
+
+    @Modifying
+    @Query("""
+        UPDATE ORDER_HEADER oh
+        JOIN ORDER_DETAIL od ON oh.ORDER_NO = od.ORDER_NO
+        SET 
+            od.FLAG_ACTIVE = FALSE,
+            od.UPDATE_DATE = NOW(),
+            od.UPDATE_USER = :updateUserId
+        WHERE oh.SITE = :site
+            AND oh.COMP_CD = :compcd
+            AND oh.ID = :id
+            AND od.FLAG_ACTIVE is true
+    """, nativeQuery = true)
+    fun deleteAllByOrderHeaderId(site: String, compCd: String, id: Long, updateUserId: String): Int
 }

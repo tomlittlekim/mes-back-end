@@ -2,6 +2,7 @@ package kr.co.imoscloud.entity.productionmanagement
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "PRODUCTION_RESULT")
@@ -46,4 +47,10 @@ class ProductionResult : CommonCol() {
 
     @Column(name = "DEFECT_CAUSE", columnDefinition = "TEXT")
     var defectCause: String? = null
+
+    @Column(name = "PROD_START_TIME")
+    var prodStartTime: LocalDateTime? = null
+
+    @Column(name = "PROD_END_TIME")
+    var prodEndTime: LocalDateTime? = null
 }

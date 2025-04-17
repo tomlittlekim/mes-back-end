@@ -86,6 +86,7 @@ class ProductionResultCommandService(
                         compCd = currentUser.compCd
                         this.prodResultId = prodResultId
                         workOrderId = input.workOrderId // null 허용
+                        productId = input.productId
                         this.goodQty = goodQty
                         this.defectQty = defectQty
                         this.progressRate = progressRate
@@ -93,6 +94,8 @@ class ProductionResultCommandService(
                         equipmentId = input.equipmentId
                         resultInfo = input.resultInfo
                         defectCause = input.defectCause
+                        prodStartTime = input.prodStartTime
+                        prodEndTime = input.prodEndTime
                         flagActive = true
                         createCommonCol(currentUser)
                     }
@@ -184,6 +187,7 @@ class ProductionResultCommandService(
                     // 생산실적 업데이트
                     existingResult.apply {
                         update.workOrderId?.let { workOrderId = it }
+                        update.productId?.let { productId = it }
                         update.goodQty?.let { this.goodQty = it }
                         update.defectQty?.let { this.defectQty = it }
                         this.progressRate = progressRate
@@ -191,6 +195,8 @@ class ProductionResultCommandService(
                         update.equipmentId?.let { equipmentId = it }
                         update.resultInfo?.let { resultInfo = it }
                         update.defectCause?.let { defectCause = it }
+                        update.prodStartTime?.let { prodStartTime = it }
+                        update.prodEndTime?.let { prodEndTime = it }
                         updateCommonCol(currentUser)
                     }
 

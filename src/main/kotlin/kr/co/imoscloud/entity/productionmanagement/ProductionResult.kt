@@ -23,6 +23,9 @@ class ProductionResult : CommonCol() {
     @Column(name = "PROD_RESULT_ID", nullable = false, length = 50)
     var prodResultId: String? = null
 
+    @Column(name = "PRODUCT_ID", length = 100)
+    var productId: String? = null
+
     @Column(name = "GOOD_QTY")
     var goodQty: Double? = null
 

@@ -48,6 +48,7 @@ type ProductionResult {
     compCd: String
     workOrderId: String
     prodResultId: String
+    productId: String
     goodQty: Float
     defectQty: Float
     progressRate: String

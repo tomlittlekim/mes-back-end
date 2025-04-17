@@ -46,6 +46,7 @@ type InventoryHistory {
     manufacturerName: String
     materialName: String
     unit: String
+    changeQty: Int
     currentQty: Int
     createDate: String
 }
@@ -73,7 +74,7 @@ input InventoryHistoryFilter{
     inOutType : String
     supplierName : String
     manufacturerName : String
-    materialName : String
+    materialNames : [String]
     startDate : String
     endDate : String
 }

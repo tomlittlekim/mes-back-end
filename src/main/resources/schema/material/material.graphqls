@@ -83,7 +83,7 @@ extend type Query {
 
     #드롭다운용 코드 조회
     getMaterialCode: [Material]
-    getProductsForSelectBox: [Material]
+    getProductsBySelectBox: [Material]
 }
 
 extend type Mutation {

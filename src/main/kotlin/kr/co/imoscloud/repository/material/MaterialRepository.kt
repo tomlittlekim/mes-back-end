@@ -2,7 +2,6 @@ package kr.co.imoscloud.repository.material
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.material.MaterialMaster
-import kr.co.imoscloud.entity.standardInfo.Factory
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -145,9 +144,10 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
     ): List<MaterialMaster>
 
     // 사이트, 회사코드, 활성화 여부로 조회 (정렬 포함)
-    fun findBySiteAndCompCdAndFlagActiveOrderByMaterialNameAsc(
+    fun findBySiteAndCompCdAndMaterialTypeInAndFlagActiveOrderByMaterialNameAsc(
         site: String,
         compCd: String,
+        materialTypes: List<String>,
         flagActive: Boolean
     ): List<MaterialMaster?>
 

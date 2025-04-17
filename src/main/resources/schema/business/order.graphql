@@ -1,0 +1,111 @@
+type OrderHeader {
+    id: Int
+    site: String
+    compCd: String
+    orderNo: String
+    orderDate: String
+    customerId: String
+    totalAmount: Int
+    vatAmount: Int
+    flagVatAmount: Boolean
+    finalAmount: Int
+    deliveryDate: String
+    paymentMethod: String
+    deliveryAddr: String
+    remark: String
+    updateDate: String
+    updateUser: String
+    createDate: String
+    createUser: String
+    flagActive: Boolean
+}
+
+type OrderDetail {
+    id: Int
+    site: String
+    compCd: String
+    orderNo: String
+    orderSubNo: String
+    systemMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    deliveryDate: String
+    quantity: Int
+    unitPrice: Int
+    supplyPrice: Int
+    vatPrice: Int
+    totalPrice: Int
+    remark: String
+    updateDate: String
+    updateUser: String
+    createDate: String
+    createUser: String
+    flagActive: Boolean
+}
+
+input OrderHeaderRequest {
+    id: Int
+    site: String
+    compCd: String
+    orderNo: String
+    orderDate: String
+    customerId: String
+    orderer: String
+    flagVatAmount: Boolean
+    deliveryDate: String
+    paymentMethod: String
+    deliveryAddr: String
+    remark: String
+}
+
+input OrderDetailRequest {
+    id: Int
+    site: String
+    compCd: String
+    orderNo: String
+    orderSubNo: String
+    systemMaterialId: String
+    deliveryDate: String
+    quantity: Int
+    unitPrice: Int
+    supplyPrice: Int
+    discountedAmount: Int
+    remark: String
+}
+
+input OrderHeaderSearchRequest {
+    orderNo: String
+    fromDate: String
+    toDate: String
+    customerId: String
+    materialId: String
+}
+
+extend type Mutation {
+    # 주문헤더 저장 및 수정
+    upsertOrderHeaders(list: [OrderHeaderRequest]!): String
+
+    # 주문상세 저장 및 수정
+    upsertOrderDetails(list: [OrderDetailRequest]!): String
+
+    # 주문헤더 삭제
+    deleteOrderHeader(id: Int!): String
+
+    # 주문상세 삭제
+    deleteOrderDetail(id: Int!): String
+}
+
+extend type Query {
+    # 주문헤더 목록 조회 (검색 조건 포함)
+    orderHeaders(req: OrderHeaderSearchRequest): [OrderHeader]
+
+    # 주문헤더 단건 생성용 기본값 생성 (orderNo 자동생성용)
+    newOrderHeader: OrderHeader
+
+    # 주문상세 단건 생성용 기본값 생성
+    newOrderDetail(req: OrderHeaderRequest): OrderDetail
+
+    # 주문상세 목록 조회
+    orderDetails(orderNo: String): [OrderDetail]
+}

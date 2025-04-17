@@ -229,8 +229,8 @@ class OrderService(
 
         detailRepo.saveAll(detailList)
         amountMap.entries.forEach { (key, value) ->
-            // 반환값이 0인 경우에 대한 처리 추가 필요
             headerRepo.updateAmountsByDetailPrice(key, value.total, value.vat)
+                .let { if (it == 0) throw IllegalArgumentException("기본 주문정보가 존재하지 않습니다. ") }
         }
         return "주문상세정보 생성 및 수정 성공"
     }

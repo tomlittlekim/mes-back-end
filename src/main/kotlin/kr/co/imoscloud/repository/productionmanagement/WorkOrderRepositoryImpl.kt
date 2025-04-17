@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.QWorkOrder
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
+import java.time.LocalDateTime
 
 class WorkOrderRepositoryImpl(
     private val queryFactory: JPAQueryFactory
@@ -37,7 +38,9 @@ class WorkOrderRepositoryImpl(
         productId: String?,
         shiftType: String?,
         state: List<String>?,
-        flagActive: Boolean?
+        flagActive: Boolean?,
+        planStartDateFrom: LocalDateTime?,
+        planStartDateTo: LocalDateTime?,
     ): List<WorkOrder> {
         val workOrder = QWorkOrder.workOrder
 
@@ -85,6 +88,10 @@ class WorkOrderRepositoryImpl(
 
         // flagActive 필터링 (기본값은 true)
         query.where(workOrder.flagActive.eq(flagActive ?: true))
+
+        if(planStartDateFrom != null && planStartDateTo != null) {
+            query.where(workOrder.createDate.between(planStartDateFrom, planStartDateTo))
+        }
 
         return query.fetch()
     }

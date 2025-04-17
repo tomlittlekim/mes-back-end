@@ -17,6 +17,8 @@ input WorkOrderFilter {
     shiftType: String
     state: [String]
     flagActive: Boolean
+    planStartDateFrom: String
+    planStartDateTo: String
 }
 
 type WorkOrder {

@@ -83,6 +83,11 @@ class MaterialService(
         return entityToResponse(materialList)
     }
 
+    fun getProductsBySameCompany(): List<MaterialMaster> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        return materialRep.getProductsBySameCompany(loginUser.getSite(), loginUser.compCd)
+    }
+
     private fun entityToResponse(materialList: List<MaterialMaster?>): List<MaterialResponseModel?> {
         return materialList.map {
             MaterialResponseModel(

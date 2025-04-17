@@ -2,7 +2,6 @@ package kr.co.imoscloud.repository.material
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.material.MaterialMaster
-import kr.co.imoscloud.entity.standardInfo.Factory
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -151,4 +150,14 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         flagActive: Boolean
     ): List<MaterialMaster?>
 
+
+    @Query("""
+        select m
+        from MaterialMaster m
+        where m.site = :site
+            and m.compCd = :compCd
+            and m.materialType in ('HALF_PRODUCT','COMPLETE_PRODUCT')
+            and m.flagActive = :flagActive
+    """)
+    fun getProductsBySameCompany(site:String, compCd:String): List<MaterialMaster>
 }

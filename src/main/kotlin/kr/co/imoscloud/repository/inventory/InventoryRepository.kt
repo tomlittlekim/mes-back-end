@@ -176,6 +176,9 @@ interface InventoryInRep : JpaRepository<InventoryIn, Long> {
         site: String,
         compCd: String
     ): InventoryIn?
+
+    @Query("SELECT SUM(i.totalPrice) FROM InventoryIn i WHERE i.site = :site AND i.compCd = :compCd AND i.inManagementId = :inManagementId AND i.flagActive = true")
+    fun calculateTotalSumByInManagementId(@Param("site") site: String, @Param("compCd") compCd: String, @Param("inManagementId") inManagementId: String): Int?
 }
 
 interface InventoryOutManagementRep : JpaRepository<InventoryOutManagement, Long> {
@@ -346,6 +349,9 @@ interface InventoryOutRep : JpaRepository<InventoryOut, Long> {
         site: String,
         compCd: String
     ): InventoryOut?
+
+    @Query("SELECT SUM(o.totalPrice) FROM InventoryOut o WHERE o.site = :site AND o.compCd = :compCd AND o.outManagementId = :outManagementId AND o.flagActive = true")
+    fun calculateTotalSumByOutManagementId(@Param("site") site: String, @Param("compCd") compCd: String, @Param("outManagementId") outManagementId: String): Int?
 }
 
 interface InventoryStatusRep : JpaRepository<InventoryStatus, Long> {
@@ -400,22 +406,19 @@ interface InventoryStatusRep : JpaRepository<InventoryStatus, Long> {
 }
 
 interface InventoryHistoryRep : JpaRepository<InventoryHistory, Long> {
-    @Query(
-        nativeQuery = true,
-        value = """
-        SELECT * FROM INVENTORY_HISTORY ih
-        WHERE ih.IN_OUT_TYPE IN ('IN', 'OUT') 
-            AND (:site IS NULL OR :site = '' OR ih.SITE = :site)
-          AND (:compCd IS NULL OR :compCd = '' OR ih.COMP_CD = :compCd)
-          AND (:warehouseName IS NULL OR :warehouseName = '' OR ih.WAREHOUSE_NAME LIKE CONCAT('%', :warehouseName, '%'))
-          AND (:inOutType IS NULL OR :inOutType = '' OR ih.IN_OUT_TYPE LIKE CONCAT('%', :inOutType, '%'))
-          AND (:supplierName IS NULL OR :supplierName = '' OR ih.SUPPLIER_NAME LIKE CONCAT('%', :supplierName, '%'))
-          AND (:manufacturerName IS NULL OR :manufacturerName = '' OR ih.MANUFACTURER_NAME LIKE CONCAT('%', :manufacturerName, '%'))
-          AND (:materialName IS NULL OR :materialName = '' OR ih.MATERIAL_NAME LIKE CONCAT('%', :materialName, '%'))
-          AND (:startDate IS NULL OR :startDate = '' OR ih.CREATE_DATE >= STR_TO_DATE(:startDate, '%Y-%m-%d'))
-          AND (:endDate IS NULL OR :endDate = '' OR ih.CREATE_DATE <= STR_TO_DATE(:endDate, '%Y-%m-%d 23:59:59'))
-        """
-    )
+    @Query("""
+    SELECT ih FROM InventoryHistory ih
+    WHERE ih.inOutType IN ('IN', 'OUT')
+    AND (:site IS NULL OR ih.site = :site)
+    AND (:compCd IS NULL OR ih.compCd = :compCd)
+    AND (:warehouseName IS NULL OR ih.warehouseName LIKE CONCAT('%', :warehouseName, '%'))
+    AND (:inOutType IS NULL OR ih.inOutType LIKE CONCAT('%', :inOutType, '%'))
+    AND (:supplierName IS NULL OR ih.supplierName LIKE CONCAT('%', :supplierName, '%'))
+    AND (:manufacturerName IS NULL OR ih.manufacturerName LIKE CONCAT('%', :manufacturerName, '%'))
+    AND ((:materialNames) IS NULL OR ih.materialName IN :materialNames)
+    AND (:startDate IS NULL OR ih.createDate >= FUNCTION('STR_TO_DATE', :startDate, '%Y-%m-%d'))
+    AND (:endDate IS NULL OR ih.createDate <= FUNCTION('STR_TO_DATE', :endDate, '%Y-%m-%d'))
+""")
     fun searchInventoryHistory(
         @Param("site") site: String?,
         @Param("compCd") compCd: String?,
@@ -423,10 +426,10 @@ interface InventoryHistoryRep : JpaRepository<InventoryHistory, Long> {
         @Param("inOutType") inOutType: String?,
         @Param("supplierName") supplierName: String?,
         @Param("manufacturerName") manufacturerName: String?,
-        @Param("materialName") materialName: String?,
+        @Param("materialNames") materialNames: List<String>?,
         @Param("startDate") startDate: String?,
         @Param("endDate") endDate: String?
-    ): List<InventoryHistory?>
+    ): List<InventoryHistory>
 }
 
 

@@ -59,6 +59,7 @@ class EquipmentService(
                 equipmentType = it.equipmentType,
                 equipmentName = it.equipmentName,
                 equipmentStatus = it.equipmentStatus,
+                remark = it.remark,
             ).apply {
                 createCommonCol(userPrincipal)
             }
@@ -93,6 +94,7 @@ class EquipmentService(
                 it.equipmentType = x.equipmentType
                 it.equipmentName = x.equipmentName
                 it.equipmentStatus = x.equipmentStatus
+                it.remark = x.remark
                 it.updateCommonCol(userPrincipal)
             }
         }
@@ -125,7 +127,7 @@ data class EquipmentResponseModel(
     val equipmentType: String?,
     val equipmentName: String?,
     val equipmentStatus: String?,
-//    val flagActive: String? = null,
+    val remark: String? = "",
     val createUser: String?,
     val createDate: LocalDateTime?,
     val updateUser: String?,

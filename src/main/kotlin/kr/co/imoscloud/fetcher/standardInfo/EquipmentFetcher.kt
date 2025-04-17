@@ -53,7 +53,7 @@ data class EquipmentInput(
     val equipmentType: String,
     val equipmentName: String,
     val equipmentStatus: String,
-//    val flagActive: String ?= null
+    val remark: String?="",
 )
 
 data class EquipmentUpdate(
@@ -66,5 +66,5 @@ data class EquipmentUpdate(
     val equipmentType: String,
     val equipmentName: String,
     val equipmentStatus: String,
-//    val flagActive: String ?= null
+    val remark: String?="",
 )

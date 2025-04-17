@@ -300,6 +300,11 @@ class InventoryService(
         // 재고 현황 등록
         updateInventory(inventoryInList)
         // 재고 이력 등록
+
+        // Management totalPrice 업데이트
+        inventoryInList.map { it.inManagementId }.distinct().forEach { inManagementId ->
+            inManagementId?.let { updateInManagementTotalPrice(it) }
+        }
     }
 
     fun updateInventory(items: List<Any?>) {
@@ -525,8 +530,10 @@ class InventoryService(
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-        val detailedInInventoryListIds = updatedRows.map {
-            it?.inInventoryId
+        val detailedInInventoryListIds = updatedRows.mapNotNull { it?.inInventoryId }
+
+        if (detailedInInventoryListIds.isEmpty()) {
+            return // 업데이트할 항목이 없으면 종료
         }
 
         // 기존 인벤토리 항목 조회
@@ -536,158 +543,171 @@ class InventoryService(
             inInventoryId = detailedInInventoryListIds
         )
 
-        val updateList = inventoryInList.associateBy { it?.inInventoryId }
+        val updateMap = updatedRows.filterNotNull().associateBy { it.inInventoryId }
+        val originalQtyMap = inventoryInList.associate { (it?.inInventoryId ?: "") to (it?.qty ?: 0) } // 원래 수량 저장
 
-        // 품목 변경을 추적하기 위한 맵
-        val materialChanges = mutableMapOf<String?, Pair<String?, String?>>() // inInventoryId -> (oldMaterialId, newMaterialId)
-        val qtyChanges = mutableMapOf<String?, Pair<Int?, Int?>>() // systemMaterialId -> (oldQty, newQty)
+        val changedManagementIds = mutableSetOf<String>() // totalPrice 업데이트 필요한 Management ID
 
-        // 변경 사항 추적
-        updatedRows.forEach { x ->
-            val inInventoryId = x?.inInventoryId
-            val inInventory = updateList[inInventoryId]
+        inventoryInList.forEach { inventoryIn ->
+            inventoryIn?.inInventoryId?.let { id ->
+                updateMap[id]?.let { updateData ->
+                    inventoryIn.inManagementId?.let { changedManagementIds.add(it) } // Management ID 추가
 
-            inInventory?.let {
-                // 품목 변경 추적
-                if (it.systemMaterialId != x?.systemMaterialId) {
-                    materialChanges[inInventoryId] = Pair(it.systemMaterialId, x?.systemMaterialId)
+                    // 값 업데이트 로직 (기존 로직 유지 또는 필요시 수정)
+                    val oldQty = inventoryIn.qty ?: 0
+                    val newQty = updateData.qty?.toIntOrNull() ?: 0
+                    val oldMaterialId = inventoryIn.systemMaterialId
+                    val newMaterialId = updateData.systemMaterialId
+
+                    inventoryIn.systemMaterialId = newMaterialId
+                    inventoryIn.qty = newQty
+                    inventoryIn.unitPrice = updateData.unitPrice?.toIntOrNull()
+                    inventoryIn.unitVat = updateData.unitVat?.toIntOrNull()
+                    inventoryIn.totalPrice = updateData.totalPrice?.toIntOrNull() // 상세 항목 totalPrice 업데이트
+                    inventoryIn.updateUser = currentUser.loginId
+                    inventoryIn.updateDate = LocalDateTime.now()
+
+                    // 재고 및 이력 업데이트 로직 (수정 필요 시)
+                    // updateInventoryStatusAndLogForUpdate(inventoryIn, oldQty, newQty, oldMaterialId, newMaterialId, currentUser)
                 }
-
-                // 수량 변경 추적
-                if (it.qty != x?.qty?.toInt()) {
-                    // 기존 품목에 대한 수량 변경
-                    val oldMaterialId = it.systemMaterialId
-                    if (oldMaterialId != null) {
-                        val oldChange = qtyChanges[oldMaterialId] ?: Pair(0, 0)
-                        qtyChanges[oldMaterialId] = Pair(oldChange.first?.plus(it.qty ?: 0), oldChange.second)
-                    }
-
-                    // 새 품목에 대한 수량 변경
-                    val newMaterialId = x?.systemMaterialId
-                    if (newMaterialId != null) {
-                        val newChange = qtyChanges[newMaterialId] ?: Pair(0, 0)
-                        qtyChanges[newMaterialId] = Pair(newChange.first, newChange.second?.plus(x.qty?.toInt() ?: 0))
-                    }
-                }
-
-                // 값 업데이트
-                it.qty = x?.qty?.toInt()
-                it.unitPrice = x?.unitPrice?.toInt()
-                it.unitVat = x?.unitVat?.toInt()
-                it.totalPrice = x?.totalPrice?.toInt()
-                it.systemMaterialId = x?.systemMaterialId
             }
         }
 
         // 변경된 인벤토리 저장
-        inventoryInRep.saveAll(inventoryInList)
+        inventoryInRep.saveAll(inventoryInList.filterNotNull())
 
-        // 재고 현황 업데이트
-        // 품목 변경이 있는 경우 해당 품목들의 재고를 조정
-        if (materialChanges.isNotEmpty() || qtyChanges.isNotEmpty()) {
-            // 영향 받는 모든 품목 ID 추출
-            val affectedMaterialIds = (materialChanges.values.flatMap { listOf(it.first, it.second) } +
-                                     qtyChanges.keys).filterNotNull().distinct()
+        // 재고 현황 및 이력 업데이트 (별도 함수 호출 또는 여기에 로직 통합)
+        // 이 부분은 updateInventory 함수 로직과 유사하게 처리 필요 (품목 변경, 수량 변경 고려)
+        updateInventoryStatusAndLogForDetailedUpdate(inventoryInList, originalQtyMap, currentUser)
 
-            // 현재 재고 상태 조회
-            val currentInventoryStatus = inventoryStatusRep.findByCompCdAndSiteAndSystemMaterialIdIn(
-                currentUser.compCd,
-                currentUser.getSite(),
-                affectedMaterialIds
-            ).associateBy { it.systemMaterialId }
+        // Management totalPrice 업데이트
+        changedManagementIds.forEach { updateInManagementTotalPrice(it) }
+    }
 
-            // 변경 사항 반영
-            val statusesToUpdate = mutableListOf<InventoryStatus>()
-            val logsToSave = mutableListOf<InventoryHistory>()
+    // 재고 현황 및 이력 업데이트 로직 (상세 업데이트용)
+    private fun updateInventoryStatusAndLogForDetailedUpdate(
+        updatedInventoryInList: List<InventoryIn?>,
+        originalQtyMap: Map<String, Int>,
+        currentUser: kr.co.imoscloud.security.UserPrincipal
+    ) {
+        val affectedMaterialIds = mutableSetOf<String>()
+        val qtyChanges = mutableMapOf<String, Pair<Int, Int>>() // materialId -> (totalOldQty, totalNewQty)
 
-            // 수량 변경 처리
-            qtyChanges.forEach { (materialId, qtyChange) ->
-                val oldQty = qtyChange.first ?: 0
-                val newQty = qtyChange.second ?: 0
-                val status = currentInventoryStatus[materialId]
+        updatedInventoryInList.filterNotNull().forEach { item ->
+            val inInventoryId = item.inInventoryId ?: return@forEach
+            val originalQty = originalQtyMap[inInventoryId] ?: 0
+            val newQty = item.qty ?: 0
+            val materialId = item.systemMaterialId ?: return@forEach // systemMaterialId 없으면 스킵
 
-                if (status != null) {
-                    // 기존 재고 조정
-                    val statusCurrentQty = status.qty ?: 0
-                    status.qty = statusCurrentQty - oldQty + newQty
-                    status.updateUser = currentUser.loginId
-                    status.updateDate = LocalDateTime.now()
-                    statusesToUpdate.add(status)
+            affectedMaterialIds.add(materialId)
 
-                    val materialInfo = getMaterialInfo(status.systemMaterialId)
-                    val warehouseInfo = getWareHouseInfo(status.warehouseId)
-                    val factoryInfo = getFactoryInfo(status.factoryId)
-
-                    // 로그 추가
-                    logsToSave.add(InventoryHistory().apply {
-                        site = currentUser.getSite()
-                        compCd = currentUser.compCd
-                        warehouseName = warehouseInfo?.warehouseName
-                        factoryName = factoryInfo?.factoryName
-                        supplierName = materialInfo?.supplierName
-                        manufacturerName = materialInfo?.manufacturerName
-                        materialName = materialInfo?.materialName
-                        unit = materialInfo?.unit
-                        prevQty = statusCurrentQty
-                        changeQty = newQty - oldQty
-                        currentQty = statusCurrentQty - oldQty + newQty
-                        inOutType = "UPDATE"
-                        reason = "품목 수정: 수량 변경"
-                        createUser = currentUser.loginId
-                        createDate = LocalDateTime.now()
-                    })
-                } else if (newQty > 0) {
-                    // 새 품목에 대한 재고 생성
-                    val newStatus = InventoryStatus().apply {
-                        site = currentUser.getSite()
-                        compCd = currentUser.compCd
-                        systemMaterialId = materialId
-                        this.qty = newQty
-                        flagActive = true
-                        createUser = currentUser.loginId
-                        createDate = LocalDateTime.now()
-                        updateUser = currentUser.loginId
-                        updateDate = LocalDateTime.now()
-                    }
-                    statusesToUpdate.add(newStatus)
-
-                    val materialInfo = getMaterialInfo(newStatus.systemMaterialId)
-                    val warehouseInfo = getWareHouseInfo(newStatus.warehouseId)
-                    val factoryInfo = getFactoryInfo(newStatus.factoryId)
-
-                    // 로그 추가
-                    logsToSave.add(InventoryHistory().apply {
-                        site = currentUser.getSite()
-                        compCd = currentUser.compCd
-                        warehouseName = warehouseInfo?.warehouseName
-                        factoryName = factoryInfo?.factoryName
-                        supplierName = materialInfo?.supplierName
-                        manufacturerName = materialInfo?.manufacturerName
-                        materialName = materialInfo?.materialName
-                        unit = materialInfo?.unit
-                        prevQty = 0
-                        changeQty = newQty
-                        currentQty = newQty
-                        inOutType = "UPDATE"
-                        reason = "품목 수정: 새 품목 추가"
-                        createUser = currentUser.loginId
-                        createDate = LocalDateTime.now()
-                    })
-                }
-            }
-
-            // 상태 및 로그 저장
-            if (statusesToUpdate.isNotEmpty()) {
-                inventoryStatusRep.saveAll(statusesToUpdate)
-            }
-
-            if (logsToSave.isNotEmpty()) {
-                inventoryHistoryRep.saveAll(logsToSave)
-            }
-        } else {
-            // 단순 수량 변경인 경우 기존 메서드 활용
-            updateInventory(inventoryInList)
+            val change = qtyChanges.getOrPut(materialId) { Pair(0, 0) }
+            qtyChanges[materialId] = Pair(change.first + originalQty, change.second + newQty)
         }
+
+        if (affectedMaterialIds.isEmpty()) return
+
+        // --- 기존 updateInventory 와 유사한 로직 시작 ---
+        val currentSite = currentUser.getSite()
+        val currentCompCd = currentUser.compCd
+
+        // Management 정보 조회 (필요 시)
+        val inManagementInfoMap = updatedInventoryInList
+            .filterNotNull()
+            .mapNotNull { it.inManagementId }
+            .distinct()
+            .associateWith {
+                inventoryInManagementRep.findByCompCdAndSiteAndInManagementId(currentCompCd, currentSite, it)
+            }
+
+
+        val existingInventoryList = inventoryStatusRep.findByCompCdAndSiteAndSystemMaterialIdIn(
+            currentCompCd,
+            currentSite,
+            affectedMaterialIds.toList()
+        )
+        val existingInventoryMap = existingInventoryList.associateBy { it.systemMaterialId }
+
+        val inventoryStatusToUpdate = mutableListOf<InventoryStatus>()
+        val inventoryLogsToSave = mutableListOf<InventoryHistory>()
+        val now = LocalDateTime.now()
+
+        qtyChanges.forEach { (materialId, change) ->
+            val totalOldQty = change.first
+            val totalNewQty = change.second
+            val netChange = totalNewQty - totalOldQty // 순 변화량
+
+            if (netChange == 0) return@forEach // 변화 없으면 스킵
+
+            val existingStatus = existingInventoryMap[materialId]
+            val prevQty = existingStatus?.qty ?: 0
+
+            if (existingStatus != null) {
+                existingStatus.qty = prevQty + netChange
+                existingStatus.updateUser = currentUser.loginId
+                existingStatus.updateDate = now
+                inventoryStatusToUpdate.add(existingStatus)
+            } else if (netChange > 0) { // 재고가 없는데 증가하는 경우 (새 품목 추가 등)
+                 // Management 정보 찾아야 함
+                val representativeItem = updatedInventoryInList.firstOrNull { it?.systemMaterialId == materialId }
+                val managementInfo = representativeItem?.inManagementId?.let { inManagementInfoMap[it] }
+
+                val newStatus = InventoryStatus().apply {
+                    site = currentSite
+                    compCd = currentCompCd
+                    factoryId = managementInfo?.factoryId
+                    warehouseId = managementInfo?.warehouseId
+                    systemMaterialId = materialId
+                    qty = netChange
+                    flagActive = true
+                    createUser = currentUser.loginId
+                    createDate = now
+                    updateUser = currentUser.loginId
+                    updateDate = now
+                }
+                inventoryStatusToUpdate.add(newStatus)
+            } else {
+                 // 재고가 없는데 감소하는 경우 (이론상 발생 어려움 or 음수 재고 허용 시 처리)
+                 println("Warning: Trying to decrease stock for non-existing material $materialId")
+                 // 필요 시 음수 재고 처리 로직 추가
+            }
+
+             // 로그 생성
+            val representativeItem = updatedInventoryInList.firstOrNull { it?.systemMaterialId == materialId } // 대표 항목 정보 사용
+            val managementInfo = representativeItem?.inManagementId?.let { inManagementInfoMap[it] }
+            val materialInfo = getMaterialInfo(materialId)
+            val warehouseInfo = getWareHouseInfo(managementInfo?.warehouseId ?: existingStatus?.warehouseId)
+            val factoryInfo = getFactoryInfo(managementInfo?.factoryId ?: existingStatus?.factoryId)
+
+
+            inventoryLogsToSave.add(InventoryHistory().apply {
+                site = currentSite
+                compCd = currentCompCd
+//                this.systemMaterialId = materialId // 이력 테이블에 systemMaterialId 추가 필요 시
+                warehouseName = warehouseInfo?.warehouseName
+                factoryName = factoryInfo?.factoryName
+                supplierName = materialInfo?.supplierName // 실제로는 representativeItem에서 가져오는게 더 정확할 수 있음
+                manufacturerName = materialInfo?.manufacturerName
+                materialName = materialInfo?.materialName
+                unit = materialInfo?.unit
+                this.prevQty = prevQty
+                changeQty = netChange
+                currentQty = prevQty + netChange
+                inOutType = "UPDATE" // 또는 "IN_UPDATE" 등 구분
+                reason = "입고 수정: ${representativeItem?.inManagementId ?: "N/A"}"
+                createUser = currentUser.loginId
+                createDate = now
+            })
+        }
+
+
+        if (inventoryStatusToUpdate.isNotEmpty()) {
+            inventoryStatusRep.saveAll(inventoryStatusToUpdate)
+        }
+        if (inventoryLogsToSave.isNotEmpty()) {
+            inventoryHistoryRep.saveAll(inventoryLogsToSave)
+        }
+        // --- 기존 updateInventory 와 유사한 로직 끝 ---
     }
 
     // 출고관리 기능
@@ -727,8 +747,9 @@ class InventoryService(
         createdRows: List<InventoryOutSaveInput?>,
         updatedRows:List<InventoryOutUpdateInput?>
     ){
+        val nonNullUpdatedRows = updatedRows ?: emptyList() // Null이면 빈 리스트 사용
         createDetailedOutInventory(createdRows)
-        updateDetailedOutInventory(updatedRows)
+        updateDetailedOutInventory(nonNullUpdatedRows)
     }
 
     @Transactional
@@ -909,21 +930,20 @@ class InventoryService(
             param.outInventoryId,
             currentUser.getSite(),
             currentUser.compCd
-        )
+        ) ?: return // 삭제할 항목 없으면 종료
+
+        val outManagementId = inventoryOut.outManagementId
+        val qtyToAdd = inventoryOut.qty ?: 0 // 출고 삭제는 재고 증가
+        val systemMaterialId = inventoryOut.systemMaterialId
 
         // 재고 조정
-        if (inventoryOut != null && inventoryOut.systemMaterialId != null) {
-            var systemMaterialId = inventoryOut.systemMaterialId
-            val qtyToAdd = inventoryOut.qty ?: 0 // 출고 삭제는 재고 증가
-
+        if (systemMaterialId != null) {
             // 현재 재고 상태 조회
-            val inventoryStatus = systemMaterialId?.let {
-                inventoryStatusRep.findByCompCdAndSiteAndSystemMaterialId(
+            val inventoryStatus = inventoryStatusRep.findByCompCdAndSiteAndSystemMaterialId(
                     currentUser.compCd,
                     currentUser.getSite(),
-                    it
+                    systemMaterialId
                 )
-            }
 
             if (inventoryStatus != null) {
                 // 재고 증가
@@ -933,29 +953,87 @@ class InventoryService(
                 inventoryStatus.updateDate = LocalDateTime.now()
                 inventoryStatusRep.save(inventoryStatus)
 
+                 // Management 정보 조회 (로그용)
+                val managementInfo = outManagementId?.let { inventoryOutManagementRep.findByOutManagementIdAndSiteAndCompCd(it, currentUser.getSite(), currentUser.compCd) }
+                val materialInfo = getMaterialInfo(systemMaterialId)
+                val warehouseInfo = getWareHouseInfo(managementInfo?.warehouseId ?: inventoryStatus.warehouseId)
+                val factoryInfo = getFactoryInfo(managementInfo?.factoryId ?: inventoryStatus.factoryId)
+
                 // 로그 추가
                 val log = InventoryHistory().apply {
                     site = currentUser.getSite()
                     compCd = currentUser.compCd
-                    systemMaterialId = inventoryOut.systemMaterialId
+//                    this.systemMaterialId = systemMaterialId // systemMaterialId 필드 추가 필요 시
+                    warehouseName = warehouseInfo?.warehouseName
+                    factoryName = factoryInfo?.factoryName
+                    supplierName = materialInfo?.supplierName
+                    manufacturerName = materialInfo?.manufacturerName
+                    materialName = materialInfo?.materialName
+                    unit = materialInfo?.unit
                     prevQty = currentQty
-                    changeQty = qtyToAdd
-                    currentQty = currentQty + qtyToAdd
-                    inOutType = "DELETE"
+                    changeQty = qtyToAdd // 출고 삭제는 양수
+                    this.currentQty = currentQty + qtyToAdd
+                    inOutType = "DELETE" // 또는 "OUT_DELETE"
                     reason = "개별 출고 삭제: ${inventoryOut.outInventoryId}"
                     createUser = currentUser.loginId
                     createDate = LocalDateTime.now()
                 }
                 inventoryHistoryRep.save(log)
+            } else {
+                 // 재고가 없는데 출고가 삭제된 경우 (음수 재고였거나 오류 상황)
+                 // 필요 시 재고를 생성하고 양수 값으로 설정
+                 val managementInfo = outManagementId?.let { inventoryOutManagementRep.findByOutManagementIdAndSiteAndCompCd(it, currentUser.getSite(), currentUser.compCd) }
+                 val newStatus = InventoryStatus().apply {
+                    site = currentUser.getSite()
+                    compCd = currentUser.compCd
+                    factoryId = managementInfo?.factoryId
+                    warehouseId = managementInfo?.warehouseId
+                    this.systemMaterialId = systemMaterialId
+                    qty = qtyToAdd // 삭제된 출고량만큼 재고 생성
+                    flagActive = true
+                    createUser = currentUser.loginId
+                    createDate = LocalDateTime.now()
+                    updateUser = currentUser.loginId
+                    updateDate = LocalDateTime.now()
+                }
+                 inventoryStatusRep.save(newStatus)
+                 println("Info: Created new inventory status for material $systemMaterialId due to OUT delete.")
+                  // 로그 추가 (재고 신규 생성)
+                 val materialInfo = getMaterialInfo(systemMaterialId)
+                 val warehouseInfo = getWareHouseInfo(newStatus.warehouseId)
+                 val factoryInfo = getFactoryInfo(newStatus.factoryId)
+
+                 val log = InventoryHistory().apply {
+                     site = currentUser.getSite()
+                     compCd = currentUser.compCd
+//                     this.systemMaterialId = systemMaterialId
+                     warehouseName = warehouseInfo?.warehouseName
+                     factoryName = factoryInfo?.factoryName
+                     supplierName = materialInfo?.supplierName
+                     manufacturerName = materialInfo?.manufacturerName
+                     materialName = materialInfo?.materialName
+                     unit = materialInfo?.unit
+                     prevQty = 0
+                     changeQty = qtyToAdd
+                     currentQty = qtyToAdd
+                     inOutType = "DELETE"
+                     reason = "개별 출고 삭제 (재고 생성): ${inventoryOut.outInventoryId}"
+                     createUser = currentUser.loginId
+                     createDate = LocalDateTime.now()
+                 }
+                 inventoryHistoryRep.save(log)
             }
         }
 
-        // 출고 항목 삭제
+        // 출고 항목 삭제 실행
         inventoryOutRep.deleteByOutInventoryIdAndSiteAndCompCd(
             param.outInventoryId,
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
         )
+
+        // Management totalPrice 업데이트 (삭제 후 호출)
+        outManagementId?.let { updateOutManagementTotalPrice(it) }
     }
 
     fun createDetailedOutInventory(createdRows: List<InventoryOutSaveInput?>){
@@ -964,40 +1042,47 @@ class InventoryService(
 
         // 1. 마지막 출고 번호 조회
         val lastOutManagementId = inventoryOutRep.findTopByOrderByOutManagementIdDesc()?.outManagementId
+        val nextOutManagementBase = if (lastOutManagementId == null) 1 else lastOutManagementId.removePrefix("OUT").toLongOrNull()?.plus(1) ?: 1
 
-        // 2. 다음 출고 번호 생성
-        val nextOutManagementBase = if (lastOutManagementId == null) {
-            1
-        } else {
-            lastOutManagementId.removePrefix("OUT").toLongOrNull()?.plus(1) ?: 1
-        }
 
         // 3. inventoryOutList 생성
         val now = LocalDateTime.now()
-        val inventoryOutList = createdRows.mapIndexed { index, it ->
-            InventoryOut().apply {
-                site = currentUser.getSite()
-                compCd = currentUser.compCd
-                outManagementId = it?.outManagementId ?: "OUT${nextOutManagementBase + index}"
-                systemMaterialId = it?.systemMaterialId
-                outType = it?.outType
-                qty = it?.qty?.toInt()
-                unitPrice = it?.unitPrice?.toInt()
-                unitVat = it?.unitVat?.toInt()
-                totalPrice = it?.totalPrice?.toInt()
-                flagActive = true
-                createUser = currentUser.loginId
-                createDate = now
-                updateUser = currentUser.loginId
-                updateDate = now
-                outInventoryId = UUID.randomUUID().toString()
-            }
+        val inventoryOutList = createdRows.mapIndexedNotNull { index, it ->
+            it?.let { // null 체크 추가
+                 InventoryOut().apply {
+                     site = currentUser.getSite()
+                     compCd = currentUser.compCd
+                     // outManagementId는 입력값 우선 사용, 없으면 생성
+                     outManagementId = it.outManagementId.ifBlank { "OUT${nextOutManagementBase + index}" }
+                     systemMaterialId = it.systemMaterialId
+                     outType = it.outType
+                     qty = it.qty?.toIntOrNull() // 안전한 형변환
+                     unitPrice = it.unitPrice?.toIntOrNull()
+                     unitVat = it.unitVat?.toIntOrNull()
+                     totalPrice = it.totalPrice?.toIntOrNull() // 상세 항목 totalPrice 저장
+                     flagActive = true
+                     createUser = currentUser.loginId
+                     createDate = now
+                     updateUser = currentUser.loginId
+                     updateDate = now
+                     outInventoryId = UUID.randomUUID().toString()
+                 }
+             }
         }
+
+        if(inventoryOutList.isEmpty()){
+             return // 생성할 항목 없으면 종료
+         }
 
         inventoryOutRep.saveAll(inventoryOutList)
 
         //재고현황 업데이트
         updateInventory(inventoryOutList)
+
+        // Management totalPrice 업데이트
+        inventoryOutList.map { it.outManagementId }.distinct().forEach { outManagementId ->
+            outManagementId?.let { updateOutManagementTotalPrice(it) }
+        }
     }
 
     @Transactional
@@ -1005,9 +1090,12 @@ class InventoryService(
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-        val detailedOutInventoryListIds = updatedRows.map {
-            it?.outInventoryId
+        val detailedOutInventoryListIds = updatedRows.mapNotNull { it?.outInventoryId }
+
+        if (detailedOutInventoryListIds.isEmpty()) {
+            return // 업데이트할 항목 없으면 종료
         }
+
 
         // 기존 출고 항목 조회
         val inventoryOutList = inventoryOutRep.getDetailedInventoryOutListByIds(
@@ -1016,159 +1104,169 @@ class InventoryService(
             outInventoryId = detailedOutInventoryListIds
         )
 
-        val updateList = inventoryOutList.associateBy { it?.outInventoryId }
+        val updateMap = updatedRows.filterNotNull().associateBy { it.outInventoryId }
+        val originalQtyMap = inventoryOutList.associate { (it?.outInventoryId ?: "") to (it?.qty ?: 0) } // 원래 수량 저장
 
-        // 품목 변경을 추적하기 위한 맵
-        val materialChanges = mutableMapOf<String?, Pair<String?, String?>>() // outInventoryId -> (oldMaterialId, newMaterialId)
-        val qtyChanges = mutableMapOf<String?, Pair<Int?, Int?>>() // systemMaterialId -> (oldQty, newQty)
 
-        // 변경 사항 추적
-        updatedRows.forEach { x ->
-            val outInventoryId = x?.outInventoryId
-            val outInventory = updateList[outInventoryId]
+        val changedManagementIds = mutableSetOf<String>() // totalPrice 업데이트 필요한 Management ID
 
-            outInventory?.let {
-                // 품목 변경 추적
-                if (it.systemMaterialId != x?.systemMaterialId) {
-                    materialChanges[outInventoryId] = Pair(it.systemMaterialId, x?.systemMaterialId)
+        inventoryOutList.forEach { inventoryOut ->
+            inventoryOut?.outInventoryId?.let { id ->
+                updateMap[id]?.let { updateData ->
+                    inventoryOut.outManagementId?.let { changedManagementIds.add(it) } // Management ID 추가
+
+                     // 값 업데이트 로직 (기존 로직 유지 또는 필요시 수정)
+                    val oldQty = inventoryOut.qty ?: 0
+                    val newQty = updateData.qty?.toIntOrNull() ?: 0
+                    val oldMaterialId = inventoryOut.systemMaterialId
+                    val newMaterialId = updateData.systemMaterialId
+
+                    inventoryOut.systemMaterialId = newMaterialId
+                    inventoryOut.qty = newQty
+                    inventoryOut.unitPrice = updateData.unitPrice?.toIntOrNull()
+                    inventoryOut.unitVat = updateData.unitVat?.toIntOrNull()
+                    inventoryOut.totalPrice = updateData.totalPrice?.toIntOrNull() // 상세 항목 totalPrice 업데이트
+                    inventoryOut.updateUser = currentUser.loginId
+                    inventoryOut.updateDate = LocalDateTime.now()
+
+                     // 재고 및 이력 업데이트 로직 (수정 필요 시)
+                     // updateInventoryStatusAndLogForOutUpdate(inventoryOut, oldQty, newQty, oldMaterialId, newMaterialId, currentUser)
                 }
-
-                // 수량 변경 추적
-                if (it.qty != x?.qty?.toInt()) {
-                    // 기존 품목에 대한 수량 변경 (출고는 재고 감소)
-                    val oldMaterialId = it.systemMaterialId
-                    if (oldMaterialId != null) {
-                        val oldChange = qtyChanges[oldMaterialId] ?: Pair(0, 0)
-                        qtyChanges[oldMaterialId] = Pair(oldChange.first?.plus(it.qty ?: 0), oldChange.second)
-                    }
-
-                    // 새 품목에 대한 수량 변경
-                    val newMaterialId = x?.systemMaterialId
-                    if (newMaterialId != null) {
-                        val newChange = qtyChanges[newMaterialId] ?: Pair(0, 0)
-                        qtyChanges[newMaterialId] = Pair(newChange.first, newChange.second?.plus(x.qty?.toInt() ?: 0))
-                    }
-                }
-
-                // 값 업데이트
-                it.qty = x?.qty?.toInt()
-                it.unitPrice = x?.unitPrice?.toInt()
-                it.unitVat = x?.unitVat?.toInt()
-                it.totalPrice = x?.totalPrice?.toInt()
-                it.systemMaterialId = x?.systemMaterialId
             }
         }
 
         // 변경된 출고 인벤토리 저장
-        inventoryOutRep.saveAll(inventoryOutList)
+        inventoryOutRep.saveAll(inventoryOutList.filterNotNull())
 
-        // 재고 현황 업데이트
-        // 품목 변경이 있는 경우 해당 품목들의 재고를 조정
-        if (materialChanges.isNotEmpty() || qtyChanges.isNotEmpty()) {
-            // 영향 받는 모든 품목 ID 추출
-            val affectedMaterialIds = (materialChanges.values.flatMap { listOf(it.first, it.second) } +
-                                     qtyChanges.keys).filterNotNull().distinct()
+        // 재고 현황 및 이력 업데이트 (별도 함수 호출 또는 여기에 로직 통합)
+        updateInventoryStatusAndLogForDetailedOutUpdate(inventoryOutList, originalQtyMap, currentUser)
 
-            // 현재 재고 상태 조회
-            val currentInventoryStatus = inventoryStatusRep.findByCompCdAndSiteAndSystemMaterialIdIn(
-                currentUser.compCd,
-                currentUser.getSite(),
-                affectedMaterialIds
-            ).associateBy { it.systemMaterialId }
 
-            // 변경 사항 반영
-            val statusesToUpdate = mutableListOf<InventoryStatus>()
-            val logsToSave = mutableListOf<InventoryHistory>()
-
-            // 수량 변경 처리 (출고는 재고 감소)
-            qtyChanges.forEach { (materialId, qtyChange) ->
-                val oldQty = qtyChange.first ?: 0
-                val newQty = qtyChange.second ?: 0
-                val status = currentInventoryStatus[materialId]
-
-                if (status != null) {
-                    // 기존 재고 조정 (출고는 재고에서 빼기 때문에 oldQty는 더하고 newQty는 뺌)
-                    var currentQty = status.qty ?: 0
-                    status.qty = currentQty + oldQty - newQty
-                    status.updateUser = currentUser.loginId
-                    status.updateDate = LocalDateTime.now()
-                    statusesToUpdate.add(status)
-
-                    val materialInfo = getMaterialInfo(status.systemMaterialId)
-                    val warehouseInfo = getWareHouseInfo(status.warehouseId)
-                    val factoryInfo = getFactoryInfo(status.factoryId)
-
-                    // 로그 추가
-                    logsToSave.add(InventoryHistory().apply {
-                        site = currentUser.getSite()
-                        compCd = currentUser.compCd
-                        warehouseName = warehouseInfo?.warehouseName
-                        factoryName = factoryInfo?.factoryName
-                        supplierName = materialInfo?.supplierName
-                        manufacturerName = materialInfo?.manufacturerName
-                        materialName = materialInfo?.materialName
-                        unit = materialInfo?.unit
-                        prevQty = currentQty
-                        changeQty = oldQty - newQty
-                        currentQty = currentQty + oldQty - newQty
-                        inOutType = "DELETE"
-                        reason = "출고 수정: 수량 변경"
-                        createUser = currentUser.loginId
-                        createDate = LocalDateTime.now()
-                    })
-                } else if (newQty > 0) {
-                    // 새 품목에 대한 재고 감소 (재고가 없으면 음수 재고)
-                    val newStatus = InventoryStatus().apply {
-                        site = currentUser.getSite()
-                        compCd = currentUser.compCd
-                        systemMaterialId = materialId
-                        this.qty = qty
-                        flagActive = true
-                        createUser = currentUser.loginId
-                        createDate = LocalDateTime.now()
-                        updateUser = currentUser.loginId
-                        updateDate = LocalDateTime.now()
-                    }
-                    statusesToUpdate.add(newStatus)
-
-                    val materialInfo = getMaterialInfo(newStatus.systemMaterialId)
-                    val warehouseInfo = getWareHouseInfo(newStatus.warehouseId)
-                    val factoryInfo = getFactoryInfo(newStatus.factoryId)
-
-                    // 로그 추가
-                    logsToSave.add(InventoryHistory().apply {
-                        site = currentUser.getSite()
-                        compCd = currentUser.compCd
-                        warehouseName = warehouseInfo?.warehouseName
-                        factoryName = factoryInfo?.factoryName
-                        supplierName = materialInfo?.supplierName
-                        manufacturerName = materialInfo?.manufacturerName
-                        materialName = materialInfo?.materialName
-                        unit = materialInfo?.unit
-                        prevQty = 0
-                        changeQty = -newQty
-                        currentQty = -newQty
-                        inOutType = "UPDATE"
-                        reason = "출고 수정: 새 품목 출고"
-                        createUser = currentUser.loginId
-                        createDate = LocalDateTime.now()
-                    })
-                }
-            }
-            
-            // 상태 및 로그 저장
-            if (statusesToUpdate.isNotEmpty()) {
-                inventoryStatusRep.saveAll(statusesToUpdate)
-            }
-            
-            if (logsToSave.isNotEmpty()) {
-                inventoryHistoryRep.saveAll(logsToSave)
-            }
-        } else {
-            // 단순 수량 변경인 경우 기존 메서드 활용
-            updateInventory(inventoryOutList)
-        }
+        // Management totalPrice 업데이트
+        changedManagementIds.forEach { updateOutManagementTotalPrice(it) }
     }
+
+     // 재고 현황 및 이력 업데이트 로직 (출고 상세 업데이트용)
+     private fun updateInventoryStatusAndLogForDetailedOutUpdate(
+         updatedInventoryOutList: List<InventoryOut?>,
+         originalQtyMap: Map<String, Int>,
+         currentUser: kr.co.imoscloud.security.UserPrincipal
+     ) {
+         val affectedMaterialIds = mutableSetOf<String>()
+         val qtyChanges = mutableMapOf<String, Pair<Int, Int>>() // materialId -> (totalOldQty, totalNewQty) - 출고 기준
+
+         updatedInventoryOutList.filterNotNull().forEach { item ->
+             val outInventoryId = item.outInventoryId ?: return@forEach
+             val originalQty = originalQtyMap[outInventoryId] ?: 0 // 이전 출고량
+             val newQty = item.qty ?: 0 // 새 출고량
+             val materialId = item.systemMaterialId ?: return@forEach
+
+             affectedMaterialIds.add(materialId)
+
+             val change = qtyChanges.getOrPut(materialId) { Pair(0, 0) }
+             qtyChanges[materialId] = Pair(change.first + originalQty, change.second + newQty)
+         }
+
+         if (affectedMaterialIds.isEmpty()) return
+
+         // --- 재고 및 이력 업데이트 로직 (출고 버전) ---
+         val currentSite = currentUser.getSite()
+         val currentCompCd = currentUser.compCd
+
+         // Management 정보 조회 (필요 시)
+         val outManagementInfoMap = updatedInventoryOutList
+             .filterNotNull()
+             .mapNotNull { it.outManagementId }
+             .distinct()
+             .associateWith {
+                 inventoryOutManagementRep.findByOutManagementIdAndSiteAndCompCd(it, currentSite, currentCompCd)
+             }
+
+
+         val existingInventoryList = inventoryStatusRep.findByCompCdAndSiteAndSystemMaterialIdIn(
+             currentCompCd,
+             currentSite,
+             affectedMaterialIds.toList()
+         )
+         val existingInventoryMap = existingInventoryList.associateBy { it.systemMaterialId }
+
+         val inventoryStatusToUpdate = mutableListOf<InventoryStatus>()
+         val inventoryLogsToSave = mutableListOf<InventoryHistory>()
+         val now = LocalDateTime.now()
+
+         qtyChanges.forEach { (materialId, change) ->
+             val totalOldOutQty = change.first
+             val totalNewOutQty = change.second
+             val netChange = totalOldOutQty - totalNewOutQty // 재고 변화량 (이전 출고량 - 새 출고량)
+
+             if (netChange == 0) return@forEach
+
+             val existingStatus = existingInventoryMap[materialId]
+             val prevQty = existingStatus?.qty ?: 0 // 이전 재고
+
+             if (existingStatus != null) {
+                 existingStatus.qty = prevQty + netChange
+                 existingStatus.updateUser = currentUser.loginId
+                 existingStatus.updateDate = now
+                 inventoryStatusToUpdate.add(existingStatus)
+             } else {
+                 // 재고가 없는데 출고가 변경되는 경우 (음수 재고였거나, 새 품목 출고 등)
+                 val representativeItem = updatedInventoryOutList.firstOrNull { it?.systemMaterialId == materialId }
+                 val managementInfo = representativeItem?.outManagementId?.let { outManagementInfoMap[it] }
+
+                 val newStatus = InventoryStatus().apply {
+                     site = currentSite
+                     compCd = currentCompCd
+                     factoryId = managementInfo?.factoryId
+                     warehouseId = managementInfo?.warehouseId
+                     systemMaterialId = materialId
+                     qty = netChange // 재고 변화량만큼 설정 (음수일 수 있음)
+                     flagActive = true
+                     createUser = currentUser.loginId
+                     createDate = now
+                     updateUser = currentUser.loginId
+                     updateDate = now
+                 }
+                 inventoryStatusToUpdate.add(newStatus)
+                 println("Info: Created/Updated inventory status for material $materialId with change $netChange due to OUT update.")
+             }
+
+             // 로그 생성
+             val representativeItem = updatedInventoryOutList.firstOrNull { it?.systemMaterialId == materialId }
+             val managementInfo = representativeItem?.outManagementId?.let { outManagementInfoMap[it] }
+             val materialInfo = getMaterialInfo(materialId)
+             val warehouseInfo = getWareHouseInfo(managementInfo?.warehouseId ?: existingStatus?.warehouseId)
+             val factoryInfo = getFactoryInfo(managementInfo?.factoryId ?: existingStatus?.factoryId)
+
+
+             inventoryLogsToSave.add(InventoryHistory().apply {
+                 site = currentSite
+                 compCd = currentCompCd
+//                 this.systemMaterialId = materialId
+                 warehouseName = warehouseInfo?.warehouseName
+                 factoryName = factoryInfo?.factoryName
+                 supplierName = materialInfo?.supplierName
+                 manufacturerName = materialInfo?.manufacturerName
+                 materialName = materialInfo?.materialName
+                 unit = materialInfo?.unit
+                 this.prevQty = prevQty
+                 changeQty = netChange // 재고 변화량 기록
+                 currentQty = prevQty + netChange
+                 inOutType = "UPDATE" // 또는 "OUT_UPDATE"
+                 reason = "출고 수정: ${representativeItem?.outManagementId ?: "N/A"}"
+                 createUser = currentUser.loginId
+                 createDate = now
+             })
+         }
+
+         if (inventoryStatusToUpdate.isNotEmpty()) {
+             inventoryStatusRep.saveAll(inventoryStatusToUpdate)
+         }
+         if (inventoryLogsToSave.isNotEmpty()) {
+             inventoryHistoryRep.saveAll(inventoryLogsToSave)
+         }
+         // --- 재고 및 이력 업데이트 로직 (출고 버전) 끝 ---
+     }
 
     //재고 현황 조회
     fun getInventoryStatusWithJoinInfo(filter: InventoryStatusFilter): List<InventoryStatusResponseModel?> {
@@ -1188,6 +1286,8 @@ class InventoryService(
     //재고 상세 이력 조회
     fun getInventoryHistoryList(filter: InventoryHistoryFilter?) : List<InventoryHistory?>{
 
+        val materialNameList = filter?.materialNames?.filterNotNull()
+
         val currentUser = getCurrentUserPrincipal()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
@@ -1198,7 +1298,7 @@ class InventoryService(
              inOutType = filter?.inOutType,
              supplierName = filter?.supplierName,
              manufacturerName = filter?.manufacturerName,
-             materialName = filter?.materialName,
+             materialNames = materialNameList,
              startDate = filter?.startDate,
              endDate = filter?.endDate,
         )
@@ -1209,6 +1309,50 @@ class InventoryService(
     fun getWareHouseInfo(warehouseId: String?): Warehouse? = warehouseRep.findByWarehouseId(warehouseId)
     fun getFactoryInfo(factoryId: String?): Factory? = factoryRep.findByFactoryId(factoryId)
     fun getMaterialInfo(systemMaterialId: String?): MaterialMaster? = materialMasterRep.findBySystemMaterialId(systemMaterialId)
+
+    // --- Private helper functions for updating management total price ---
+    private fun updateInManagementTotalPrice(inManagementId: String) {
+        val currentUser = getCurrentUserPrincipalOrNull() ?: return // 사용자 정보 없으면 종료
+
+        val management = inventoryInManagementRep.findByCompCdAndSiteAndInManagementId(
+            currentUser.compCd,
+            currentUser.getSite(),
+            inManagementId
+        ) ?: return // Management 정보 없으면 종료
+
+        val total = inventoryInRep.calculateTotalSumByInManagementId(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            inManagementId = inManagementId
+        ) ?: 0 // 합계가 null이면 0으로 처리
+
+        management.totalPrice = total
+        management.updateUser = currentUser.loginId
+        management.updateDate = LocalDateTime.now()
+        inventoryInManagementRep.save(management)
+    }
+
+    private fun updateOutManagementTotalPrice(outManagementId: String) {
+        val currentUser = getCurrentUserPrincipalOrNull() ?: return
+
+        val management = inventoryOutManagementRep.findByOutManagementIdAndSiteAndCompCd(
+            outManagementId,
+            currentUser.getSite(),
+            currentUser.compCd
+        ) ?: return
+
+        val total = inventoryOutRep.calculateTotalSumByOutManagementId(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            outManagementId = outManagementId
+        ) ?: 0
+
+        management.totalPrice = total
+        management.updateUser = currentUser.loginId
+        management.updateDate = LocalDateTime.now()
+        inventoryOutManagementRep.save(management)
+    }
+
 }
 
 //DTO

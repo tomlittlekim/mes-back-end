@@ -63,7 +63,7 @@ data class MaterialFilter(
     var materialType: String? = null,
     var userMaterialId: String? = null,
     var materialName: String? = null,
-    var flagActive: String? = null,
+//    var flagActive: String? = null,
     var fromDate: String? = null,
     var toDate: String? = null
 )
@@ -81,7 +81,7 @@ data class MaterialInput(
     var manufacturerName: String? = null,
     var supplierId: String? = null,
     var materialStorage: String? = null,
-    var flagActive: String? = null
+//    var flagActive: String? = null
 )
 
 data class MaterialUpdate(
@@ -98,5 +98,5 @@ data class MaterialUpdate(
     var manufacturerName: String? = null,
     var supplierId: String? = null,
     var materialStorage: String? = null,
-    var flagActive: String? = null
+//    var flagActive: String? = null
 )

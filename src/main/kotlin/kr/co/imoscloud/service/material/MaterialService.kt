@@ -34,7 +34,7 @@ class MaterialService(
             materialType = filter.materialType,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
-            flagActive = filter.flagActive?.let { it == "Y" },
+//            flagActive = filter.flagActive?.let { it == "Y" },
             fromDate = DateUtils.parseDateTime(filter.fromDate),
             toDate = DateUtils.parseDateTime(filter.toDate)
         )
@@ -50,7 +50,7 @@ class MaterialService(
             materialType = CoreEnum.MaterialType.COMPLETE_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
-            flagActive = filter.flagActive?.let { it == "Y" },
+//            flagActive = filter.flagActive?.let { it == "Y" },
             fromDate = DateUtils.parseDateTime(filter.fromDate),
             toDate = DateUtils.parseDateTime(filter.toDate)
         )
@@ -65,7 +65,7 @@ class MaterialService(
             materialType = CoreEnum.MaterialType.HALF_PRODUCT.key,
             userMaterialId = filter.userMaterialId,
             materialName = filter.materialName,
-            flagActive = filter.flagActive?.let { it == "Y" },
+//            flagActive = filter.flagActive?.let { it == "Y" },
             fromDate = DateUtils.parseDateTime(filter.fromDate),
             toDate = DateUtils.parseDateTime(filter.toDate)
         )
@@ -100,7 +100,7 @@ class MaterialService(
                 it?.supplierId,
                 it?.supplierName,
                 it?.materialStorage,
-                if (it?.flagActive == true) "Y" else "N",
+//                if (it?.flagActive == true) "Y" else "N",
                 it?.createUser,
                 DateUtils.formatLocalDate(it?.createDate),
                 it?.updateUser,
@@ -138,7 +138,7 @@ class MaterialService(
                 supplierId = it?.supplierId,
                 materialStorage = it?.materialStorage,
             ).apply {
-                flagActive = it?.flagActive.equals("Y")
+//                flagActive = it?.flagActive.equals("Y")
                 createCommonCol(userPrincipal!!)
             }
         }
@@ -177,7 +177,7 @@ class MaterialService(
                 it.manufacturerName = x?.manufacturerName
                 it.supplierId = x?.supplierId
                 it.materialStorage = x?.materialStorage
-                it.flagActive = x?.flagActive.equals("Y")
+//                it.flagActive = x?.flagActive.equals("Y")
                 it.updateCommonCol(userPrincipal!!)
             }
         }
@@ -269,7 +269,7 @@ data class MaterialResponseModel(
     val supplierId: String? = null,
     val supplierName: String? = null,
     val materialStorage: String? = null,
-    val flagActive: String? = null,
+//    val flagActive: String? = null,
     val createUser: String? = null,
     val createDate: String? = null,
     val updateUser: String? = null,

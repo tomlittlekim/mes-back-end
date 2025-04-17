@@ -35,7 +35,7 @@ class OrderService(
         return headerList.map { headerToResponse(it) }
     }
 
-    fun addHeader(): OrderHeaderNullableDto {
+    fun addHeader(no: Int): OrderHeaderNullableDto {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val latestNo = headerRepo.getLatestOrderNo(loginUser.compCd)
 
@@ -43,7 +43,7 @@ class OrderService(
             ?.takeLast(3)
             ?.trim()
             ?.toIntOrNull()
-            ?.plus(1)
+            ?.plus(no)
             ?.let { "%03d".format(it) }
             ?: "001"
 
@@ -125,11 +125,10 @@ class OrderService(
         return detailList.map { detailToResponse(it, materialMap) }
     }
 
-    fun addDetail(header: OrderHeaderNullableDto): OrderDetailNullableDto {
+    fun addDetail(req: NewDetailRequest): OrderDetailNullableDto {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        if (!header.compCd.equals(loginUser.compCd)) throw IllegalArgumentException("다른 회사의 정보를 조회할 수 없습니다. ")
 
-        val latestSubOrderNo = detailRepo.getLatestOrderSubNo(header.compCd!!)
+        val latestSubOrderNo = detailRepo.getLatestOrderSubNo(loginUser.compCd)
         val nextVersion = latestSubOrderNo
             ?.takeLast(3)
             ?.trim()
@@ -139,9 +138,9 @@ class OrderService(
             ?: "001"
 
         return OrderDetailNullableDto(
-            site = header.site,
-            compCd = header.compCd,
-            orderNo = header.orderNo,
+            site = loginUser.getSite(),
+            compCd = loginUser.compCd,
+            orderNo = req.orderNo,
             orderSubNo = nextVersion,
         )
     }
@@ -389,5 +388,10 @@ class OrderService(
     data class TotalPriceWithVat(
         var total: Int = 0,
         var vat: Int = 0
+    )
+
+    data class NewDetailRequest(
+        val no: Int,
+        val orderNo: String
     )
 }

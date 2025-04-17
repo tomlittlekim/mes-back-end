@@ -18,13 +18,13 @@ class BusinessFetcher(
 
     /** 주문헤더 단건 생성용 기본값 반환 */
     @DgsQuery
-    fun newOrderHeader(): OrderService.OrderHeaderNullableDto {
-        return orderService.addHeader()
+    fun newOrderHeader(@InputArgument no: Int): OrderService.OrderHeaderNullableDto {
+        return orderService.addHeader(no)
     }
 
     /** 주문상세 단건 생성용 기본값 반환 */
     @DgsQuery
-    fun newOrderDetail(@InputArgument req: OrderService.OrderHeaderNullableDto): OrderService.OrderDetailNullableDto {
+    fun newOrderDetail(@InputArgument req: OrderService.NewDetailRequest): OrderService.OrderDetailNullableDto {
         return orderService.addDetail(req)
     }
 

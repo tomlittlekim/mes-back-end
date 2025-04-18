@@ -45,7 +45,7 @@ class OrderService(
             ?.toIntOrNull()
             ?.plus(no)
             ?.let { "%03d".format(it) }
-            ?: "001"
+            ?: "%03d".format(no)
 
         val prefix = "${loginUser.compCd}${LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"))}"
 
@@ -56,13 +56,13 @@ class OrderService(
         )
     }
 
+    @Transactional
     fun deleteHeader(id: Long): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         headerRepo.deleteOrderHeader(loginUser.getSite(), loginUser.compCd, id, loginUser.loginId)
             .let { if (it == 0) throw IllegalArgumentException("기본 주문정보가 존재하지 않습니다. ") }
         detailRepo.deleteAllByOrderHeaderId(loginUser.getSite(), loginUser.compCd, id, loginUser.loginId)
-            .let { if (it == 0) throw IllegalArgumentException("주문상세정보가 존재하지 않습니다. ") }
 
         return "삭제 성공"
     }
@@ -82,7 +82,7 @@ class OrderService(
                     customerId = req.customerId ?: this.customerId
                     ordererId = req.orderer ?: this.ordererId
                     flagVatAmount = req.flagVatAmount ?: this.flagVatAmount
-                    deliveryDate = DateUtils.parseDateTime(req.deliveryDate) ?: this.deliveryDate
+                    deliveryDate = DateUtils.parseDate(req.deliveryDate) ?: this.deliveryDate
                     paymentMethod = req.paymentMethod ?: this.paymentMethod
                     deliveryAddr = req.deliveryAddr ?: this.deliveryAddr
                     remark = req.remark ?: this.remark
@@ -95,13 +95,14 @@ class OrderService(
                             compCd = req.compCd!!,
                             orderNo = req.orderNo!!,
                             orderDate = DateUtils.parseDate(req.orderDate),
+                            ordererId = req.orderer,
                             customerId = req.customerId!!,
                             flagVatAmount = req.flagVatAmount!!,
-                            deliveryDate = DateUtils.parseDateTime(req.deliveryDate),
+                            deliveryDate = DateUtils.parseDate(req.deliveryDate),
                             paymentMethod = req.paymentMethod,
                             deliveryAddr = req.deliveryAddr,
                             remark = req.remark,
-                        )
+                        ).apply { createCommonCol(loginUser) }
                     } catch (e: NullPointerException) {
                         throw IllegalArgumentException("기본 주문정보를 생성할 필드값이 부족합니다. ")
                     }
@@ -116,7 +117,7 @@ class OrderService(
 
     fun getDetailsByOrderNo(orderNo: String): List<OrderDetailNullableDto> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        val detailList = detailRepo.findAllByOrderNoAndCompCdAndFlagActiveIsTrue(loginUser.compCd, orderNo)
+        val detailList = detailRepo.findAllByCompCdAndOrderNoAndFlagActiveIsTrue(loginUser.compCd, orderNo)
 
         val indies = detailList.map { it.systemMaterialId }
         val materialMap = materialRepo.getMaterialListByIds(loginUser.getSite(), loginUser.compCd, indies)
@@ -128,14 +129,12 @@ class OrderService(
     fun addDetail(req: NewDetailRequest): OrderDetailNullableDto {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        val latestSubOrderNo = detailRepo.getLatestOrderSubNo(loginUser.compCd)
+        val latestSubOrderNo = detailRepo.getLatestOrderSubNo(loginUser.compCd, req.orderNo)
         val nextVersion = latestSubOrderNo
-            ?.takeLast(3)
-            ?.trim()
             ?.toIntOrNull()
-            ?.plus(1)
+            ?.plus(req.no)
             ?.let { "%03d".format(it) }
-            ?: "001"
+            ?: "%03d".format(req.no)
 
         return OrderDetailNullableDto(
             site = loginUser.getSite(),
@@ -184,18 +183,20 @@ class OrderService(
                     val oldPrice = TotalPriceWithVat(detail.vatPrice!!, detail.totalPrice!!)
 
                     var modifyDetail = detail.apply {
-                        supplyPrice = req.supplyPrice ?: this.supplyPrice
                         discountedAmount = req.discountedAmount ?: this.discountedAmount
                         systemMaterialId = req.systemMaterialId ?: this.systemMaterialId
                         deliveryDate = DateUtils.parseDate(req.deliveryDate) ?: this.deliveryDate
                         quantity = req.quantity ?: this.quantity
                         unitPrice = req.unitPrice ?: this.unitPrice
-                        supplyPrice = req.supplyPrice ?: this.supplyPrice
+                        supplyPrice = if(req.quantity != null || req.unitPrice != null) {
+                            (req.quantity ?: this.quantity) * (req.unitPrice ?: this.unitPrice)
+                        } else this.supplyPrice
+
                         remark = req.remark ?: this.remark
                         updateCommonCol(loginUser)
                     }
 
-                    modifyDetail = calculatePrice(modifyDetail, systemVat)
+                    modifyDetail = calculatePrice(req.flagVatAmount, modifyDetail, systemVat)
                     val newVat = oldPrice.vat - modifyDetail.vatPrice!!
                     val newTotal = oldPrice.total - modifyDetail.totalPrice!!
                     val existsPrice = amountMap[detail.orderNo] ?: TotalPriceWithVat()
@@ -213,11 +214,11 @@ class OrderService(
                         quantity = req.quantity!!,
                         unitPrice = req.unitPrice!!,
                         discountedAmount = req.discountedAmount,
-                        supplyPrice = req.supplyPrice,
+                        supplyPrice = (req.quantity * req.unitPrice),
                         remark = req.remark,
                     ).apply { createCommonCol(loginUser) }
 
-                    detail = calculatePrice(detail, systemVat)
+                    detail = calculatePrice(req.flagVatAmount, detail, systemVat)
                     val existsPrice = amountMap[detail.orderNo] ?: TotalPriceWithVat()
                     val finalTotal = existsPrice.total + detail.totalPrice!!
                     val finalVat = existsPrice.vat + detail.vatPrice!!
@@ -234,22 +235,19 @@ class OrderService(
         return "주문상세정보 생성 및 수정 성공"
     }
 
-    private fun calculatePrice(modifyDetail: OrderDetail, systemVat: Int): OrderDetail {
-        var modifyDetail1 = modifyDetail
-        modifyDetail1 = modifyDetail1.apply {
-            vatPrice = supplyPrice?.let { it / systemVat } ?: run { (unitPrice * quantity) / systemVat }
-            totalPrice = supplyPrice
-                ?.let { it - (this.discountedAmount ?: 0) }
-                ?: run { (unitPrice * quantity) - (this.discountedAmount ?: 0) }
+    private fun calculatePrice(flagVatAmount: Boolean?, modifyDetail: OrderDetail, systemVat: Int): OrderDetail =
+        modifyDetail.apply {
+            vatPrice = if (flagVatAmount != false) this.supplyPrice!!/systemVat else 0
+            totalPrice = this.supplyPrice!! + this.vatPrice!!
         }
-        return modifyDetail1
-    }
 
     private fun headerToResponse(header: OrderHeader): OrderHeaderNullableDto = OrderHeaderNullableDto(
         id = header.id,
         site = header.site,
         compCd = header.compCd,
         orderNo = header.orderNo,
+        orderer = header.ordererId,
+        orderDate = header.orderDate,
         customerId = header.customerId,
         totalAmount = header.totalAmount,
         vatAmount = header.vatAmount,
@@ -314,12 +312,13 @@ data class OrderHeaderNullableDto(
     val compCd: String? = null,
     val orderNo: String? = null,
     val orderDate: LocalDate? = null,
+    val orderer: String? = null,
     val customerId: String? = null,
     val totalAmount: Int? = 0,
     val vatAmount: Int? = 0,
     val flagVatAmount: Boolean? = true,
     val finalAmount: Int? = 0,
-    val deliveryDate: LocalDateTime? = null,
+    val deliveryDate: LocalDate? = null,
     val paymentMethod: String? = null,
     val deliveryAddr: String? = null,
     val remark: String? = null,
@@ -364,7 +363,7 @@ data class OrderHeaderRequest(
     val orderDate: String? = null,
     val customerId: String? = null,
     val orderer: String? = null,
-    val flagVatAmount: Boolean? = true,
+    val flagVatAmount: Boolean? = false,
     val deliveryDate: String? = null,
     val paymentMethod: String? = null,
     val deliveryAddr: String? = null,
@@ -381,9 +380,9 @@ data class OrderDetailRequest(
     val deliveryDate: String? = null,
     val quantity: Int? = null,
     val unitPrice: Int? = null,
-    val supplyPrice: Int? = null,
     val discountedAmount: Int? = null,
-    val remark: String? = null
+    val remark: String? = null,
+    val flagVatAmount: Boolean? = null
 )
 
 data class TotalPriceWithVat(

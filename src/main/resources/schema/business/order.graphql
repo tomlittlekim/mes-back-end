@@ -4,6 +4,7 @@ type OrderHeader {
     compCd: String
     orderNo: String
     orderDate: String
+    orderer: String
     customerId: String
     totalAmount: Int
     vatAmount: Int
@@ -72,6 +73,7 @@ input OrderDetailRequest {
     supplyPrice: Int
     discountedAmount: Int
     remark: String
+    flagVatAmount: Boolean
 }
 
 input OrderHeaderSearchRequest {

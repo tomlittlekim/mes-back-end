@@ -30,7 +30,7 @@ class OrderHeader(
     @Column(name = "CUSTOMER_ID", length = 100, nullable = false)
     var customerId: String? = null,
 
-    @Column(name = "ORDERER_ID", length = 100, nullable = false)
+    @Column(name = "ORDERER_ID", length = 100)
     var ordererId: String? = null,
 
     @Column(name = "TOTAL_AMOUNT")
@@ -46,7 +46,7 @@ class OrderHeader(
     var finalAmount: Int? = 0,
 
     @Column(name = "DELIVERY_DATE")
-    var deliveryDate: LocalDateTime? = null,
+    var deliveryDate: LocalDate? = null,
 
     @Column(name = "PAYMENT_METHOD", length = 100)
     var paymentMethod: String? = null,

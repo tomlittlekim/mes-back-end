@@ -5,6 +5,7 @@ import kr.co.imoscloud.entity.business.OrderHeader
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
 interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
@@ -29,6 +30,7 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
         select oh.orderNo
         from OrderHeader oh
         where oh.compCd = :compCd
+            and oh.flagActive is true
         order by oh.createDate desc limit 1
     """)
     fun getLatestOrderNo(compCd: String): String?
@@ -54,17 +56,23 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
 
     @Modifying
     @Query("""
-        update OrderHeader oh
-        set 
-            oh.flagActive = false,
-            oh.updateDate = now(),
-            oh.updateUser = : updateUserId
-        where oh.site = :site
-            and oh.compCd = :compCd
-            and oh.id = :id
-            and oh.flagActive is true
-    """)
-    fun deleteOrderHeader(site:String, compCd:String, id: Long, updateUserId: String): Int
+    update OrderHeader oh
+    set 
+        oh.flagActive = false,
+        oh.updateDate = :updateDate,
+        oh.updateUser = :updateUserId
+    where oh.site = :site
+      and oh.compCd = :compCd
+      and oh.id = :id
+      and oh.flagActive = true
+""")
+    fun deleteOrderHeader(
+        @Param("site") site: String,
+        @Param("compCd") compCd: String,
+        @Param("id") id: Long,
+        @Param("updateUserId") updateUserId: String,
+        @Param("updateDate") updateDate: LocalDateTime = LocalDateTime.now() // 기본값도 설정 가능
+    ): Int
 }
 
 interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
@@ -88,15 +96,17 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
         materialId: String?=null,
     ): List<OrderHeader>
 
-    fun findAllByOrderNoAndCompCdAndFlagActiveIsTrue(compCd: String, orderNo: String?): List<OrderDetail>
+    fun findAllByCompCdAndOrderNoAndFlagActiveIsTrue(compCd: String, orderNo: String): List<OrderDetail>
 
     @Query("""
         select od.orderSubNo
         from OrderDetail od
         where od.compCd = :compCd
+            and od.orderNo = :orderNo
+            and od.flagActive is true
         order by od.createDate desc limit 1
     """)
-    fun getLatestOrderSubNo(compCd: String): String?
+    fun getLatestOrderSubNo(compCd: String, orderNo: String): String?
 
     fun findBySiteAndCompCdAndIdAndFlagActiveIsTrue(site: String, compCd: String, id: Long): OrderDetail?
     fun findAllBySiteAndCompCdAndIdInAndFlagActiveIsTrue(site: String, compCd: String, id: List<Long>): List<OrderDetail>

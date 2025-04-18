@@ -1,14 +1,11 @@
 package kr.co.imoscloud.repository.productionmanagement
 
-import com.querydsl.core.BooleanBuilder
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.entity.productionmanagement.QProductionResult
-import kr.co.imoscloud.entity.productionmanagement.QWorkOrder
+import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
 
 class ProductionResultRepositoryImpl(
     private val queryFactory: JPAQueryFactory
@@ -91,6 +88,32 @@ class ProductionResultRepositoryImpl(
 
         // flagActive 필터링 (기본값은 true)
         query.where(productionResult.flagActive.eq(flagActive ?: true))
+
+        // 생산실적ID 역순 정렬 추가
+        query.orderBy(productionResult.prodResultId.desc())
+
+        return query.fetch()
+    }
+
+    override fun getProductionResultsAtMobile(site: String, compCd: String, filter: ProductionResultFilter?): List<ProductionResult> {
+        val productionResult = QProductionResult.productionResult
+
+        val query = queryFactory
+            .selectFrom(productionResult)
+            .where(
+                productionResult.site.eq(site),
+                productionResult.compCd.eq(compCd),
+                productionResult.flagActive.eq(true),
+                productionResult.prodStartTime.isNotNull,
+                productionResult.prodEndTime.isNull
+            )
+
+        // productId 필터링
+        filter?.productId?.let {
+            if (it.isNotBlank()) {
+                query.where(productionResult.productId.like("%$it%"))
+            }
+        }
 
         // 생산실적ID 역순 정렬 추가
         query.orderBy(productionResult.prodResultId.desc())

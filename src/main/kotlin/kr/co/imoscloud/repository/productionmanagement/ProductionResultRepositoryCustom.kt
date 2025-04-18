@@ -1,6 +1,7 @@
 package kr.co.imoscloud.repository.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
+import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -30,5 +31,7 @@ interface ProductionResultRepositoryCustom {
         prodEndTimeTo: LocalDate?,
         flagActive: Boolean?
     ): List<ProductionResult>
+
+    fun getProductionResultsAtMobile(site: String, compCd: String, filter: ProductionResultFilter?): List<ProductionResult>
 
 }

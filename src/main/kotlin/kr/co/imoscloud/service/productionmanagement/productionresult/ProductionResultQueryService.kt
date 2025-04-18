@@ -70,4 +70,13 @@ class ProductionResultQueryService(
         return results.sumOf { it.goodQty ?: 0.0 }
     }
 
+    fun getProductionResultsAtMobile(filter: ProductionResultFilter?): List<ProductionResult> {
+        val currentUser = getCurrentUserPrincipal()
+        return productionResultRepository.getProductionResultsAtMobile(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            filter = filter
+        )
+    }
+
 }

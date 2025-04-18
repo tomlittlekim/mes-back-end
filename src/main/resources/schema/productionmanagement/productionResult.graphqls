@@ -2,6 +2,7 @@ extend type Query {
     # 기본 생산실적 조회 쿼리
     productionResults(filter: ProductionResultFilter): [ProductionResult]!
     productionResultsByWorkOrderId(workOrderId: String!): [ProductionResult]!
+    productionResultsAtMobile(filter: ProductionResultFilter): [ProductionResult]!
 }
 
 extend type Mutation {

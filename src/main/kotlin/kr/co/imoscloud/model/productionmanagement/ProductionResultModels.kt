@@ -29,8 +29,9 @@ data class ProductionResultInput(
     val equipmentId: String? = null,
     val resultInfo: String? = null,
     val defectCause: String? = null,
-    val prodStartTime: LocalDateTime? = null,
-    val prodEndTime: LocalDateTime? = null,
+    // 타입을 LocalDateTime에서 String으로 변경
+    val prodStartTime: String? = null,
+    val prodEndTime: String? = null,
     val flagActive: Boolean? = true
 )
 
@@ -46,7 +47,8 @@ data class ProductionResultUpdate(
     val equipmentId: String? = null,
     val resultInfo: String? = null,
     val defectCause: String? = null,
-    val prodStartTime: LocalDateTime? = null,
-    val prodEndTime: LocalDateTime? = null,
+    // 타입을 LocalDateTime에서 String으로 변경
+    val prodStartTime: String? = null,
+    val prodEndTime: String? = null,
     val flagActive: Boolean? = null
 )

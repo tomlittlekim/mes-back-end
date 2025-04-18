@@ -88,13 +88,16 @@ class ProductionResultDataFetcher(
 
             // 불량정보 로깅
             defectInfos?.forEachIndexed { index, defectInfo ->
-                log.info("불량정보[$index] - prodResultId: ${defectInfo.prodResultId}, " +
-                        "defectQty: ${defectInfo.defectQty}, defectType: ${defectInfo.defectType}, " +
-                        "defectCause: ${defectInfo.defectCause}")
+                log.info(
+                    "불량정보[$index] - prodResultId: ${defectInfo.prodResultId}, " +
+                            "defectQty: ${defectInfo.defectQty}, defectType: ${defectInfo.defectType}, " +
+                            "defectCause: ${defectInfo.defectCause}"
+                )
             }
 
             // 서비스 메서드 호출. 예외는 서비스 계층에서 던짐
-            val result = productionResultService.saveProductionResult(createdRows, updatedRows, defectInfos)
+            val result =
+                productionResultService.saveProductionResult(createdRows, updatedRows, defectInfos)
             log.info("GraphQL 응답: saveProductionResult - 결과: $result")
             return result
         } catch (e: IllegalArgumentException) {
@@ -120,5 +123,9 @@ class ProductionResultDataFetcher(
             return false
         }
     }
+
+    @DgsQuery
+    fun productionResultsAtMobile(@InputArgument filter: ProductionResultFilter?): List<ProductionResult> =
+        productionResultService.getProductionResultsAtMobile(filter)
 
 }

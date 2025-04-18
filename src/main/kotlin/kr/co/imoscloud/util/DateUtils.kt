@@ -89,6 +89,22 @@ object DateUtils {
         }
     }
 
+    /**
+     * 문자열을 LocalDateTime으로 변환하는 헬퍼 함수
+     */
+    fun parseDateTimeFromString(dateString: String?): LocalDateTime? {
+        if (dateString.isNullOrBlank()) return null
+
+        return try {
+            // ISO 날짜 형식 (예: 2025-04-18T01:52:00)을 파싱
+            LocalDateTime.parse(dateString)
+        } catch (e: Exception) {
+            // 파싱 실패 시 로깅 및 null 반환
+            println("날짜 파싱 실패: $dateString - ${e.message}")
+            null
+        }
+    }
+
     fun getSearchDateRange(formDateStr: String?, toDateStr: String?): Pair<LocalDateTime?, LocalDateTime?> {
         val fromDateTime: LocalDateTime? = formDateStr
             ?.let { dateStr -> parseDate(dateStr) }

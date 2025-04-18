@@ -2,7 +2,6 @@ package kr.co.imoscloud.service.productionmanagement.productionresult
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.model.productionmanagement.*
-import kr.co.imoscloud.repository.productionmanagement.DefectInfoRepository
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
@@ -18,7 +17,6 @@ class ProductionResultService(
     productionResultRepository: ProductionResultRepository,
     workOrderRepository: WorkOrderRepository,
     defectInfoService: DefectInfoService,
-    defectInfoRepository: DefectInfoRepository
 ) {
     // 쿼리 서비스 - 조회 관련 기능 처리
     private val queryService = ProductionResultQueryService(
@@ -49,13 +47,6 @@ class ProductionResultService(
     }
 
     /**
-     * 생산실적 요약 목록 조회
-     */
-    fun getProductionResultSummaryList(filter: ProductionResultInquiryFilter): List<ProductionResultSummaryDto> {
-        return queryService.getProductionResultSummaryList(filter)
-    }
-
-    /**
      * 생산실적 저장 (생성/수정)
      */
     fun saveProductionResult(
@@ -73,10 +64,4 @@ class ProductionResultService(
         return commandService.softDeleteProductionResult(prodResultId)
     }
 
-    /**
-     * 작업지시별 총 생산 양품수량 조회
-     */
-    fun getTotalGoodQtyByWorkOrderId(workOrderId: String): Double {
-        return queryService.getTotalGoodQtyByWorkOrderId(workOrderId)
-    }
 }

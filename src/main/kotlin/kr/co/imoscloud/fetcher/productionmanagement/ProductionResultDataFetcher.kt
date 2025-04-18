@@ -46,15 +46,23 @@ class ProductionResultDataFetcher(
                 filter.equipmentId = input["equipmentId"] as? String
 
                 // 날짜 필드 변환
-                if (input.containsKey("planStartDateFrom")) {
-                    val startDateFromStr = input["planStartDateFrom"] as? String
-                    filter.planStartDateFrom = DateUtils.parseDate(startDateFromStr)
+                if (input.containsKey("prodStartTimeFrom")) {
+                    val prodStartTimeFrom = input["prodStartTimeFrom"] as? String
+                    filter.prodStartTimeFrom = DateUtils.parseDate(prodStartTimeFrom)
+                }
+                if (input.containsKey("prodStartTimeTo")) {
+                    val prodStartTimeTo = input["prodStartTimeTo"] as? String
+                    filter.prodStartTimeTo = DateUtils.parseDate(prodStartTimeTo)
+                }
+                if (input.containsKey("prodEndTimeFrom")) {
+                    val prodEndTimeFrom = input["prodEndTimeFrom"] as? String
+                    filter.prodEndTimeFrom = DateUtils.parseDate(prodEndTimeFrom)
+                }
+                if (input.containsKey("prodEndTimeTo")) {
+                    val prodEndTimeTo = input["prodEndTimeTo"] as? String
+                    filter.prodEndTimeTo = DateUtils.parseDate(prodEndTimeTo)
                 }
 
-                if (input.containsKey("planStartDateTo")) {
-                    val startDateToStr = input["planStartDateTo"] as? String
-                    filter.planStartDateTo = DateUtils.parseDate(startDateToStr)
-                }
 
                 // Boolean 필드 설정
                 filter.flagActive = input["flagActive"] as? Boolean ?: true
@@ -64,31 +72,6 @@ class ProductionResultDataFetcher(
             return productionResultService.getProductionResults(filter)
         } catch (e: Exception) {
             log.error("생산실적 목록 조회 중 오류 발생", e)
-            return emptyList()
-        }
-    }
-
-    // 생산실적 목록 조회 (변환된 DTO 형식으로 반환)
-    @DgsQuery
-    fun productionResultList(@InputArgument("filter") filter: ProductionResultInquiryFilter?): List<ProductionResultSummaryDto> {
-        try {
-            return productionResultService.getProductionResultSummaryList(filter ?: ProductionResultInquiryFilter())
-        } catch (e: Exception) {
-            log.error("생산실적 요약 목록 조회 중 오류 발생", e)
-            return emptyList()
-        }
-    }
-
-    // 작업지시와 생산실적 통합 조회 (UI에서 필요한 경우)
-    @DgsQuery
-    fun workOrdersWithProductionResults(@InputArgument("filter") filter: WorkOrderFilter): List<WorkOrder> {
-        try {
-            // flagActive가 설정되지 않은 경우 true로 설정하여 활성화된 데이터만 조회
-            val activeFilter = filter.copy(flagActive = filter.flagActive ?: true)
-            // 단순히 작업지시 목록을 반환 (GraphQL 리졸버를 통해 생산실적을 채움)
-            return workOrderService.getWorkOrders(activeFilter)
-        } catch (e: Exception) {
-            log.error("작업지시 목록 조회 중 오류 발생", e)
             return emptyList()
         }
     }
@@ -138,23 +121,4 @@ class ProductionResultDataFetcher(
         }
     }
 
-    // 생산실적에 연결된 작업지시 정보 조회 (GraphQL 리졸버)
-    @DgsData(parentType = "ProductionResult", field = "workOrder")
-    fun workOrder(dfe: DgsDataFetchingEnvironment): WorkOrder? {
-        try {
-            val productionResult = dfe.getSource<ProductionResult>()
-            val workOrderId = productionResult?.workOrderId ?: return null
-
-            // 작업지시 ID가 없는 경우 null 반환
-            if (workOrderId.isBlank()) return null
-
-            // 활성화된 작업지시만 조회
-            return workOrderRepository.findByWorkOrderId(workOrderId)?.let {
-                if (it.flagActive == true) it else null
-            }
-        } catch (e: Exception) {
-            log.error("작업지시 조회 중 오류 발생", e)
-            return null
-        }
-    }
 }

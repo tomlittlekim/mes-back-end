@@ -7,7 +7,9 @@ data class WorkOrderFilter(
     var productId: String? = null,
     var shiftType: String? = null,
     var state: List<String>? = null,
-    var flagActive: Boolean? = null
+    var flagActive: Boolean? = null,
+    var planStartDateFrom: String? = null,
+    var planStartDateTo: String? = null,
 )
 
 data class WorkOrderInput(

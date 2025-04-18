@@ -5,6 +5,7 @@ import kr.co.imoscloud.model.productionmanagement.WorkOrderFilter
 import kr.co.imoscloud.model.productionmanagement.WorkOrderInput
 import kr.co.imoscloud.model.productionmanagement.WorkOrderUpdate
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
+import kr.co.imoscloud.util.DateUtils.getSearchDateRange
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -29,6 +30,7 @@ class WorkOrderService(
         val currentUser = getCurrentUserPrincipal()
         // flagActive가 명시적으로 설정되지 않은 경우 true로 설정하여 활성화된 데이터만 조회
         val activeFilter = filter.copy(flagActive = filter.flagActive ?: true)
+        val (fromDate , toDate) = getSearchDateRange(filter.planStartDateFrom,filter.planStartDateTo)
 
         return workOrderRepository.getWorkOrderList(
             site = currentUser.getSite(),
@@ -38,7 +40,9 @@ class WorkOrderService(
             productId = activeFilter.productId,
             shiftType = activeFilter.shiftType,
             state = activeFilter.state,
-            flagActive = activeFilter.flagActive
+            flagActive = activeFilter.flagActive,
+            planStartDateFrom = fromDate,
+            planStartDateTo = toDate,
         )
     }
 

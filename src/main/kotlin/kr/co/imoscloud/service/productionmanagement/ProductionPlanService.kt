@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.productionmanagement
 
+import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
 import kr.co.imoscloud.model.productionmanagement.ProductionPlanDTO
@@ -26,10 +27,14 @@ class ProductionPlanService(
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
         // 제품 조회
-        return materialMasterRepository.findBySiteAndCompCdAndFlagActiveOrderByMaterialNameAsc(
-            currentUser.getSite(),
-            currentUser.compCd,
-            true      // 활성화된 데이터만
+        return materialMasterRepository.findBySiteAndCompCdAndMaterialTypeInAndFlagActiveOrderByMaterialNameAsc(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            materialTypes = listOf(
+                CoreEnum.MaterialType.HALF_PRODUCT.key,
+                CoreEnum.MaterialType.COMPLETE_PRODUCT.key
+            ),
+            flagActive = true
         )
     }
 

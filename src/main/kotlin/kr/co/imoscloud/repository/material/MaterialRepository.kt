@@ -144,9 +144,10 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
     ): List<MaterialMaster>
 
     // 사이트, 회사코드, 활성화 여부로 조회 (정렬 포함)
-    fun findBySiteAndCompCdAndFlagActiveOrderByMaterialNameAsc(
+    fun findBySiteAndCompCdAndMaterialTypeInAndFlagActiveOrderByMaterialNameAsc(
         site: String,
         compCd: String,
+        materialTypes: List<String>,
         flagActive: Boolean
     ): List<MaterialMaster?>
 

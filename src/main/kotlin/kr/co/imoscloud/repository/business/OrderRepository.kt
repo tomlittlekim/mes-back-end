@@ -44,6 +44,7 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
         SET 
             TOTAL_AMOUNT = TOTAL_AMOUNT + :totalAmount,
             VAT_AMOUNT = VAT_AMOUNT + :vatAmount,
+            ORDER_QUANTITY = ORDER_QUANTITY + :orderQuantity,
             FINAL_AMOUNT = 
                 CASE 
                     WHEN FLAG_VAT_AMOUNT = true THEN TOTAL_AMOUNT + VAT_AMOUNT
@@ -52,7 +53,7 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
         WHERE ORDER_NO = :orderNo
           AND FLAG_ACTIVE = true
     """, nativeQuery = true)
-    fun updateAmountsByDetailPrice(orderNo: String, totalAmount: Int, vatAmount: Int): Int
+    fun updateAmountsByDetailPrice(orderNo: String, totalAmount: Int, vatAmount: Int, orderQuantity: Int): Int
 
     @Modifying
     @Query("""

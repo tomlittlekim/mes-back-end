@@ -155,7 +155,7 @@ class OrderService(
                 val totalPrice = deleteIt.totalPrice?.let { p -> p * -1 } ?:0
                 val vatPrice = deleteIt.vatPrice?.let { p -> p * -1 } ?:0
                 if (totalPrice != 0 || vatPrice != 0) {
-                    headerRepo.updateAmountsByDetailPrice(deleteIt.orderNo, totalPrice, vatPrice)
+                    headerRepo.updateAmountsByDetailPrice(deleteIt.orderNo, totalPrice, vatPrice, (deleteIt.quantity*-1))
                 }
                 deleteIt
             }
@@ -176,13 +176,16 @@ class OrderService(
 
         val systemVat= codeRep.getInitialCodes("VAT").first()?.codeName?.split(" ")?.first()?.toInt()?:10
 
-        val amountMap: MutableMap<String, TotalPriceWithVat> = mutableMapOf()
+        val amountMap: MutableMap<String, CalculateFroOrder> = mutableMapOf()
         val detailList: List<OrderDetail> = list.map { req ->
-            detailMap[req.id]
+            val existing = detailMap[req.id]
+            existing
                 ?.let { detail ->
-                    val oldPrice = TotalPriceWithVat(detail.vatPrice!!, detail.totalPrice!!)
+                    val oldSupplyPrice = existing.supplyPrice ?: 0
+                    val oldVat = existing.vatPrice ?: 0
+                    val oldQty = existing.quantity
 
-                    var modifyDetail = detail.apply {
+                    detail.apply {
                         discountedAmount = req.discountedAmount ?: this.discountedAmount
                         systemMaterialId = req.systemMaterialId ?: this.systemMaterialId
                         deliveryDate = DateUtils.parseDate(req.deliveryDate) ?: this.deliveryDate
@@ -191,17 +194,21 @@ class OrderService(
                         supplyPrice = if(req.quantity != null || req.unitPrice != null) {
                             (req.quantity ?: this.quantity) * (req.unitPrice ?: this.unitPrice)
                         } else this.supplyPrice
-
                         remark = req.remark ?: this.remark
                         updateCommonCol(loginUser)
                     }
 
-                    modifyDetail = calculatePrice(req.flagVatAmount, modifyDetail, systemVat)
-                    val newVat = oldPrice.vat - modifyDetail.vatPrice!!
-                    val newTotal = oldPrice.total - modifyDetail.totalPrice!!
-                    val existsPrice = amountMap[detail.orderNo] ?: TotalPriceWithVat()
-                    amountMap[detail.orderNo] = TotalPriceWithVat(existsPrice.total + newTotal, existsPrice.vat + newVat)
-                    modifyDetail
+                    calculatePrice(req.flagVatAmount, detail, systemVat)
+                    val deltaTotal = (detail.supplyPrice ?: 0) - oldSupplyPrice
+                    val deltaVat = (detail.vatPrice ?: 0) - oldVat
+                    val deltaQty = detail.quantity - oldQty
+                    amountMap[detail.orderNo] = amountMap.getOrDefault(detail.orderNo, CalculateFroOrder())
+                        .apply {
+                            total += deltaTotal
+                            vat += deltaVat
+                            quantity += deltaQty
+                        }
+                    detail
                 }
                 ?:run {
                     var detail = OrderDetail(
@@ -219,17 +226,17 @@ class OrderService(
                     ).apply { createCommonCol(loginUser) }
 
                     detail = calculatePrice(req.flagVatAmount, detail, systemVat)
-                    val existsPrice = amountMap[detail.orderNo] ?: TotalPriceWithVat()
-                    val finalTotal = existsPrice.total + detail.totalPrice!!
+                    val existsPrice = amountMap[detail.orderNo] ?: CalculateFroOrder()
+                    val finalTotal = existsPrice.total + detail.supplyPrice!!
                     val finalVat = existsPrice.vat + detail.vatPrice!!
-                    amountMap[detail.orderNo] = TotalPriceWithVat(finalTotal, finalVat)
+                    amountMap[detail.orderNo] = CalculateFroOrder(finalTotal, finalVat, detail.quantity)
                     detail
                 }
         }
 
         detailRepo.saveAll(detailList)
         amountMap.entries.forEach { (key, value) ->
-            headerRepo.updateAmountsByDetailPrice(key, value.total, value.vat)
+            headerRepo.updateAmountsByDetailPrice(key, value.total, value.vat, value.quantity)
                 .let { if (it == 0) throw IllegalArgumentException("기본 주문정보가 존재하지 않습니다. ") }
         }
         return "주문상세정보 생성 및 수정 성공"
@@ -237,8 +244,9 @@ class OrderService(
 
     private fun calculatePrice(flagVatAmount: Boolean?, modifyDetail: OrderDetail, systemVat: Int): OrderDetail =
         modifyDetail.apply {
-            vatPrice = if (flagVatAmount != false) this.supplyPrice!!/systemVat else 0
-            totalPrice = this.supplyPrice!! + this.vatPrice!!
+            val vat = if (flagVatAmount != false) this.supplyPrice!!/systemVat else 0
+            vatPrice = vat
+            totalPrice = this.supplyPrice!! + vat
         }
 
     private fun headerToResponse(header: OrderHeader): OrderHeaderNullableDto = OrderHeaderNullableDto(
@@ -248,6 +256,7 @@ class OrderService(
         orderNo = header.orderNo,
         orderer = header.ordererId,
         orderDate = header.orderDate,
+        orderQuantity = header.orderQuantity,
         customerId = header.customerId,
         totalAmount = header.totalAmount,
         vatAmount = header.vatAmount,
@@ -313,6 +322,7 @@ data class OrderHeaderNullableDto(
     val orderNo: String? = null,
     val orderDate: LocalDate? = null,
     val orderer: String? = null,
+    val orderQuantity: Int? = null,
     val customerId: String? = null,
     val totalAmount: Int? = 0,
     val vatAmount: Int? = 0,
@@ -384,10 +394,10 @@ data class OrderDetailRequest(
     val remark: String? = null,
     val flagVatAmount: Boolean? = null
 )
-
-data class TotalPriceWithVat(
+data class CalculateFroOrder(
     var total: Int = 0,
-    var vat: Int = 0
+    var vat: Int = 0,
+    var quantity: Int = 0,
 )
 
 data class NewDetailRequest(

@@ -27,6 +27,9 @@ class OrderHeader(
     @Column(name = "ORDER_DATE", nullable = false)
     var orderDate: LocalDate? = null,
 
+    @Column(name = "ORDER_QUANTITY")
+    var orderQuantity: Int? = 0,
+
     @Column(name = "CUSTOMER_ID", length = 100, nullable = false)
     var customerId: String? = null,
 
@@ -36,7 +39,7 @@ class OrderHeader(
     @Column(name = "TOTAL_AMOUNT")
     var totalAmount: Int? = 0,
 
-    @Column(name = "VAT_AMOUNT", length = 100)
+    @Column(name = "VAT_AMOUNT")
     var vatAmount: Int? = 0,
 
     @Column(name = "FLAG_VAT_AMOUNT")

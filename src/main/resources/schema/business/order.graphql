@@ -5,6 +5,7 @@ type OrderHeader {
     orderNo: String
     orderDate: String
     orderer: String
+    orderQuantity: String
     customerId: String
     totalAmount: Int
     vatAmount: Int

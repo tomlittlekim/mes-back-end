@@ -22,9 +22,7 @@ class NoticeService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val (from, to) = DateUtils.getSearchDateRange(req.fromDate, req.toDate)
 
-        return from
-            ?.let { noticeRepo.findAllByCreateDateBetweenAndFlagActiveIsTrue(from, to!!) }
-            ?: run { noticeRepo.findAllByFlagActiveIsTrue() }
+        return noticeRepo.findAllByCreateDateBetweenAndFlagActiveIsTrue(from!!, to!!)
             .filter { validatePriorityLevel(loginUser.priorityLevel, it) }
     }
 

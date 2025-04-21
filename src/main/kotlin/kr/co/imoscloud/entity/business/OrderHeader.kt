@@ -59,4 +59,5 @@ class OrderHeader(
 
     @Column(name = "REMARK", length = 100)
     var remark: String? = null
+
 ): CommonCol(), DtoCompCdBase

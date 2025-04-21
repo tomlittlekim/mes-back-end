@@ -26,6 +26,11 @@ class ShipmentService(
             from, to
         )
     }
+
+    fun getDetailsByShipmentId(id: Long): List<ShipmentDetailNullableDto> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        return detailRepo.findAllByCompCdAndShipmentIdAndFlagActiveIsTrue(loginUser.compCd, id)
+    }
 }
 
 data class ShipmentHeaderNullableDto(

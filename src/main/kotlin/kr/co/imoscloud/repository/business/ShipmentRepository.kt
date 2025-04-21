@@ -45,4 +45,37 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
 }
 
 interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
+    @Query("""
+        select new kr.co.imoscloud.service.business.ShipmentDetailNullableDto(
+            sd.id as id,
+            sd.site as site,
+            sd.compCd as compCd,
+            sd.orderNo as orderNo,
+            sd.orderSubNo as orderSubNo,
+            od.systemMaterialId as systemMaterialId,
+            mm.materialName as materialName,
+            mm.materialStandard as materialStandard,
+            mm.unit as unit,
+            od.quantity as quantity,
+            100 as stockQuantity,
+            sd.shipmentId as shipmentId,
+            sd.shipmentDate as shipmentDate,
+            sd. shippedQuantity as shippedQuantity,
+            sd.unshippedQuantity as unshippedQuantity,
+            sd.cumulativeShipmentQuantity as cumulativeShipmentQuantity,
+            sd.shipmentWarehouse as shipmentWarehouse,
+            sd.shipmentHandler as shipmentHandler,
+            sd.remark as remark
+        )
+        from ShipmentDetail sd
+        left join OrderDetail od on sd.orderNo = od.orderNo 
+            and sd.orderSubNo = od.orderSubNo
+            and od.flagActive is true
+        left join MaterialMaster mm on od.systemMaterialId = mm.systemMaterialId
+            and mm.flagActive is true
+        where sd.compCd = :compCd
+            and sd.shipmentId = :shipmentId
+            and sd.flagActive is true
+    """)
+    fun findAllByCompCdAndShipmentIdAndFlagActiveIsTrue(compCd: String, shipmentId: Long): List<ShipmentDetailNullableDto>
 }

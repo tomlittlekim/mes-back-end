@@ -2,6 +2,7 @@ package kr.co.imoscloud.service.business
 
 import kr.co.imoscloud.repository.business.ShipmentDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentHeaderRepository
+import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.apache.catalina.security.SecurityUtil
@@ -30,6 +31,15 @@ class ShipmentService(
     fun getDetailsByShipmentId(id: Long): List<ShipmentDetailNullableDto> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         return detailRepo.findAllByCompCdAndShipmentIdAndFlagActiveIsTrue(loginUser.compCd, id)
+    }
+
+    @AuthLevel(minLevel = 2)
+    fun softDeleteByShipmentId(id: Long): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        detailRepo.softDelete(loginUser.getSite(), loginUser.compCd, id, loginUser.loginId)
+            .let { if (it==0) throw IllegalArgumentException("삭제할 출하정보가 존재하지 않습니다. ") }
+
+        return "삭제 성공"
     }
 }
 

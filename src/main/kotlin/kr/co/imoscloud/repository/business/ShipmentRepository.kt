@@ -1,10 +1,12 @@
 package kr.co.imoscloud.repository.business
 
+import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.business.ShipmentDetail
 import kr.co.imoscloud.entity.business.ShipmentHeader
 import kr.co.imoscloud.service.business.ShipmentDetailNullableDto
 import kr.co.imoscloud.service.business.ShipmentHeaderNullableDto
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
 
@@ -78,4 +80,28 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
             and sd.flagActive is true
     """)
     fun findAllByCompCdAndShipmentIdAndFlagActiveIsTrue(compCd: String, shipmentId: Long): List<ShipmentDetailNullableDto>
+
+    @Transactional
+    @Modifying
+    @Query("""
+        UPDATE SHIPMENT_DETAIL sd
+        JOIN SHIPMENT_HEADER sh ON sh.SHIPMENT_ID = sd.SHIPMENT_ID
+        SET 
+            sd.FLAG_ACTIVE = FALSE,
+            sd.UPDATE_USER = :loginUser,
+            sd.UPDATE_DATE = :updateDate,
+            sh.SHIPPED_QUANTITY = sh.SHIPPED_QUANTITY - sd.CUMULATIVE_SHIPMENT_QUANTITY,
+            sh.UNSHIPPED_QUANTITY = sh.UNSHIPPED_QUANTITY + sd.CUMULATIVE_SHIPMENT_QUANTITY
+        WHERE sd.SITE = :site
+          AND sd.COMP_CD = :compCd
+          AND sd.SHIPMENT_ID = :shipmentId
+          AND sd.FLAG_ACTIVE = TRUE
+    """, nativeQuery = true)
+    fun softDelete(
+        site: String,
+        compCd: String,
+        shipmentId: Long,
+        loginUser: String,
+        updateDate: LocalDateTime?= LocalDateTime.now()
+    ): Int
 }

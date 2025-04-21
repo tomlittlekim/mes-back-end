@@ -29,6 +29,9 @@ class ShipmentDetail(
     @Column(name = "PRODUCT_WAREHOUSE_ID", length = 100)
     var productWarehouseId: String? = null,
 
+    @Column(name = "SYSTEM_MATERIAL_ID", length = 50, nullable = false)
+    var systemMaterialId: String? = null,
+
     @Column(name = "SHIPMENT_ID", nullable = false)
     var shipmentId: Long,
 

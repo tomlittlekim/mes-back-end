@@ -44,6 +44,27 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
         from: LocalDateTime,
         to: LocalDateTime,
     ): List<ShipmentHeaderNullableDto>
+
+    @Modifying
+    @Query("""
+        update ShipmentHeader sh
+        set 
+            sh.shippedQuantity = (sh.shippedQuantity + :quantity),
+            sh.unshippedQuantity = (sh.unshippedQuantity - :quantity),
+            sh.updateUser = :updateUser,
+            sh.updateDate = :updateDate
+        where sh.shipmentId = :shipmentId
+            and sh.orderNo = :orderNo
+            and sh.flagActive is true
+    """)
+    fun updateQuantity(
+        shipmentId: String,
+        orderNo: String?,
+        quantity: Int,
+        updateUser: String,
+        updateDate: LocalDateTime?= LocalDateTime.now()
+    ): Int
+
 }
 
 interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
@@ -104,4 +125,21 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
         loginUser: String,
         updateDate: LocalDateTime?= LocalDateTime.now()
     ): Int
+
+    fun findAllByCompCdAndIdInAndFlagActiveIsTrue(compCd: String, ids: List<Long>): List<ShipmentDetail>
+
+    @Query("""
+        SELECT EXISTS (
+            SELECT 1
+            FROM SHIPMENT_DETAIL sd1
+            JOIN SHIPMENT_DETAIL sd2 ON sd1.SYSTEM_MATERIAL_ID = sd2.SYSTEM_MATERIAL_ID
+            WHERE sd1.ID In :ids
+              AND sd1.COMP_CD = :compCd
+              AND sd1.FLAG_ACTIVE = true
+              AND sd2.ID != sd1.ID
+              AND sd2.CREATE_DATE > sd1.CREATE_DATE
+              AND sd2.FLAG_ACTIVE = true
+        )
+    """, nativeQuery = true)
+    fun existsOlderByMaterialNative(compCd: String, ids: List<Long>): Boolean
 }

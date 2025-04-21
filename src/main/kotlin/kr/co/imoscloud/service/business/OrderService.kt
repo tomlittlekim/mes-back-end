@@ -202,6 +202,7 @@ class OrderService(
                     val deltaTotal = (detail.supplyPrice ?: 0) - oldSupplyPrice
                     val deltaVat = (detail.vatPrice ?: 0) - oldVat
                     val deltaQty = detail.quantity - oldQty
+
                     amountMap[detail.orderNo] = amountMap.getOrDefault(detail.orderNo, CalculateFroOrder())
                         .apply {
                             total += deltaTotal

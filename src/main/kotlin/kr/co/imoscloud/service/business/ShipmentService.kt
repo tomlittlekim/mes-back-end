@@ -1,11 +1,12 @@
 package kr.co.imoscloud.service.business
 
+import jakarta.transaction.Transactional
+import kr.co.imoscloud.entity.business.ShipmentDetail
 import kr.co.imoscloud.repository.business.ShipmentDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentHeaderRepository
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
-import org.apache.catalina.security.SecurityUtil
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -40,6 +41,71 @@ class ShipmentService(
             .let { if (it==0) throw IllegalArgumentException("삭제할 출하정보가 존재하지 않습니다. ") }
 
         return "삭제 성공"
+    }
+
+    @AuthLevel(minLevel = 2)
+    @Transactional
+    fun upsertShipmentDetails(list: List<ShipmentDetailRequest>): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        val indies = list.mapNotNull { it.id }
+
+        if (detailRepo.existsOlderByMaterialNative(loginUser.compCd, indies))
+            throw IllegalArgumentException("각각의 품목별 최신 정보만 편집 기능을 이용할 수 있습니다.")
+
+        val quantityMap: MutableMap<String, Int> = HashMap()
+        val detailMap = detailRepo.findAllByCompCdAndIdInAndFlagActiveIsTrue(loginUser.compCd, indies).associateBy { it.id }
+
+        val detailList = list.map { req ->
+            val existing = detailMap[req.id]
+            existing
+                ?.let { detail ->
+                    val oldCumulativeShipmentQuantity = detail.cumulativeShipmentQuantity
+                    //TODO:: productWarehouseId 로 재고 수량을 조회하고 최대값을 넘는지 유효성 체크 필요
+
+                    detail.apply {
+                        shipmentDate = DateUtils.parseDate(req.shipmentDate) ?: this.shipmentDate
+                        cumulativeShipmentQuantity = req.cumulativeShipmentQuantity ?: this.cumulativeShipmentQuantity
+                        shipmentHandler = req.shipmentHandler ?: this.shipmentHandler
+                    }
+
+                    val newQuantity = (oldCumulativeShipmentQuantity?:0)-(req.cumulativeShipmentQuantity?:0)
+                    val mapIndex = "${req.shipmentId}-${req.orderNo}"
+                    quantityMap[mapIndex] = quantityMap.getOrDefault(mapIndex, 0) + newQuantity
+                    detail
+                }
+                ?:run {
+                    val detail = ShipmentDetail(
+                        site = loginUser.getSite(),
+                        compCd = loginUser.compCd,
+                        orderNo = req.orderNo!!,
+                        orderSubNo = req.orderSubNo!!,
+                        systemMaterialId = req.systemMaterialId,
+                        shipmentId = req.shipmentId,
+                        shipmentDate = DateUtils.parseDate(req.shipmentDate),
+                        shippedQuantity = req.shippedQuantity,
+                        unshippedQuantity = req.unshippedQuantity,
+                        stockQuantity = req.stockQuantity,
+                        cumulativeShipmentQuantity = req.cumulativeShipmentQuantity,
+                        shipmentHandler = req.shipmentHandler,
+                        shipmentWarehouse = "제품창고",
+                        remark = req.remark
+                    )
+
+                    val mapIndex = "${req.shipmentId}-${req.orderNo}"
+                    quantityMap[mapIndex] = quantityMap.getOrDefault(mapIndex, 0) + detail.cumulativeShipmentQuantity!!
+                    detail
+                }
+        }
+
+        quantityMap.entries.forEach { (key, value) ->
+            val split = key.split("-")
+            val shipmentId = split.first()
+            val orderNo = split.last()
+            headerRepo.updateQuantity(shipmentId, orderNo, value, loginUser.compCd)
+        }
+
+        detailRepo.saveAll(detailList)
+        return "출하등록 정보 생성 및 수정 성공"
     }
 }
 
@@ -92,4 +158,21 @@ data class ShipmentSearchRequest(
     val toDate: String?=null,
     val customerId: String?=null,
     val shipmentStatus: String?=null,
+)
+
+data class ShipmentDetailRequest(
+    val id: Long? = null,
+    val orderNo: String? = null,
+    val orderSubNo: String? = null,
+    var shipmentId: Long,
+    val shipmentDate: String?=null,
+    val systemMaterialId: String?=null,
+
+    val shippedQuantity: Int? = 0,
+    val unshippedQuantity: Int? = 0,
+    val stockQuantity: Int? = 0,
+
+    val cumulativeShipmentQuantity: Int? = null,
+    val shipmentHandler: String? = null,
+    val remark: String?=null,
 )

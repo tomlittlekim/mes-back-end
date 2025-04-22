@@ -11,10 +11,10 @@ data class ProductionResultFilter(
     var prodResultId: String? = null,
     var productId: String? = null,
     var equipmentId: String? = null,
-    var prodStartTimeFrom: LocalDate? = null,
-    var prodStartTimeTo: LocalDate? = null,
-    var prodEndTimeFrom: LocalDate? = null,
-    var prodEndTimeTo: LocalDate? = null,
+    var prodStartTimeFrom: LocalDateTime? = null,
+    var prodStartTimeTo: LocalDateTime? = null,
+    var prodEndTimeFrom: LocalDateTime? = null,
+    var prodEndTimeTo: LocalDateTime? = null,
     var flagActive: Boolean? = null
 )
 

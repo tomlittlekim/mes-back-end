@@ -43,26 +43,26 @@ class ProductionResultDataFetcher(
                 // 문자열 필드들 설정
                 filter.workOrderId = input["workOrderId"] as? String
                 filter.prodResultId = input["prodResultId"] as? String
+                filter.productId = input["productId"] as? String
                 filter.equipmentId = input["equipmentId"] as? String
 
-                // 날짜 필드 변환
+                // 날짜 필드 변환 - 정확한 시간까지 파싱하는 메소드 사용
                 if (input.containsKey("prodStartTimeFrom")) {
                     val prodStartTimeFrom = input["prodStartTimeFrom"] as? String
-                    filter.prodStartTimeFrom = DateUtils.parseDate(prodStartTimeFrom)
+                    filter.prodStartTimeFrom = DateUtils.parseDateTimeExact(prodStartTimeFrom)
                 }
                 if (input.containsKey("prodStartTimeTo")) {
                     val prodStartTimeTo = input["prodStartTimeTo"] as? String
-                    filter.prodStartTimeTo = DateUtils.parseDate(prodStartTimeTo)
+                    filter.prodStartTimeTo = DateUtils.parseDateTimeExact(prodStartTimeTo)
                 }
                 if (input.containsKey("prodEndTimeFrom")) {
                     val prodEndTimeFrom = input["prodEndTimeFrom"] as? String
-                    filter.prodEndTimeFrom = DateUtils.parseDate(prodEndTimeFrom)
+                    filter.prodEndTimeFrom = DateUtils.parseDateTimeExact(prodEndTimeFrom)
                 }
                 if (input.containsKey("prodEndTimeTo")) {
                     val prodEndTimeTo = input["prodEndTimeTo"] as? String
-                    filter.prodEndTimeTo = DateUtils.parseDate(prodEndTimeTo)
+                    filter.prodEndTimeTo = DateUtils.parseDateTimeExact(prodEndTimeTo)
                 }
-
 
                 // Boolean 필드 설정
                 filter.flagActive = input["flagActive"] as? Boolean ?: true

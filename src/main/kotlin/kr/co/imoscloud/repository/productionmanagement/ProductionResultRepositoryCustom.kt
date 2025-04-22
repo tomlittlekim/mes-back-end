@@ -25,10 +25,10 @@ interface ProductionResultRepositoryCustom {
         prodResultId: String?,
         productId: String?,
         equipmentId: String?,
-        prodStartTimeFrom: LocalDate?,
-        prodStartTimeTo: LocalDate?,
-        prodEndTimeFrom: LocalDate?,
-        prodEndTimeTo: LocalDate?,
+        prodStartTimeFrom: LocalDateTime?,
+        prodStartTimeTo: LocalDateTime?,
+        prodEndTimeFrom: LocalDateTime?,
+        prodEndTimeTo: LocalDateTime?,
         flagActive: Boolean?
     ): List<ProductionResult>
 

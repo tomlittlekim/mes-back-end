@@ -12,6 +12,7 @@ type ShipmentHeader {
     shippedQuantity: Int
     unshippedQuantity: Int
     remark: String
+    flagPrint: Boolean
 }
 
 type ShipmentDetail {

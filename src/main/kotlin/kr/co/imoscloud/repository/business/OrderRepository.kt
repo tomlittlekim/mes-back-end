@@ -131,6 +131,7 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
     @Query("""
         select new kr.co.imoscloud.service.business.OrderDetailWithMaterialDto(
             od.orderNo,
+            od.orderSubNo,
             od.systemMaterialId,
             mm.materialName,
             mm.materialStandard,

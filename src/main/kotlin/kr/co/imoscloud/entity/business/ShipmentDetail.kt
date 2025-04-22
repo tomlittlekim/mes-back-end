@@ -44,9 +44,6 @@ class ShipmentDetail(
     @Column(name = "UNSHIPPED_QUANTITY")
     var unshippedQuantity: Int? = null,
 
-    @Column(name = "STOCK_QUANTITY")
-    var stockQuantity: Int? = null,
-
     @Column(name = "CUMULATIVE_SHIPMENT_QUANTITY")
     var cumulativeShipmentQuantity: Int? = null,
 

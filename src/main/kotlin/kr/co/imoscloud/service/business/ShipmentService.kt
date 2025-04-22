@@ -68,7 +68,7 @@ class ShipmentService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val indies = list.mapNotNull { it.id }
 
-        if (detailRepo.existsOlderByMaterialNative(loginUser.compCd, indies))
+        if (detailRepo.existsOlderByMaterialNative(loginUser.compCd, indies) > 0)
             throw IllegalArgumentException("각각의 품목별 최신 정보만 편집 기능을 이용할 수 있습니다.")
 
         val quantityMap: MutableMap<String, Int> = HashMap()
@@ -103,7 +103,7 @@ class ShipmentService(
                         shipmentDate = DateUtils.parseDate(req.shipmentDate),
                         shippedQuantity = req.shippedQuantity,
                         unshippedQuantity = req.unshippedQuantity,
-                        stockQuantity = req.stockQuantity,
+//                        stockQuantity = req.stockQuantity, 재고수량
                         cumulativeShipmentQuantity = req.cumulativeShipmentQuantity,
                         shipmentHandler = req.shipmentHandler,
                         shipmentWarehouse = "제품창고",
@@ -142,6 +142,7 @@ class ShipmentService(
                         site = loginUser.getSite(),
                         compCd = loginUser.compCd,
                         orderNo = base.orderNo,
+                        orderSubNo = base.orderSubNo,
                         systemMaterialId = base.systemMaterialId,
                         materialName = base.materialName,
                         materialStandard = base.materialStandard,
@@ -151,7 +152,8 @@ class ShipmentService(
                 } else null
             }
 
-        val shipmentDetailMap = detailRepo.getAllByOrderNo(loginUser.getSite(), loginUser.compCd, orderNo)
+        val materialIds = semiShipmentDetails.mapNotNull { it.systemMaterialId }
+        val shipmentDetailMap = detailRepo.getAllByOrderNo(loginUser.getSite(), loginUser.compCd, orderNo, materialIds)
             .associateBy { it.systemMaterialId }
 
         return semiShipmentDetails.map { semi ->
@@ -168,8 +170,8 @@ class ShipmentService(
                 }
                 ?: semi.apply {
                     stockQuantity = 100
-                    shippedQuantity = this.quantity
-                    unshippedQuantity = 0
+                    shippedQuantity = 0
+                    unshippedQuantity = this.quantity
                 }
         }
     }
@@ -191,6 +193,7 @@ data class ShipmentHeaderNullableDto(
     val shippedQuantity: Int? = null,
     val unshippedQuantity: Int? = null,
     val remark: String? = null,
+    var flagPrint: Boolean? = false
 )
 
 data class ShipmentDetailNullableDto(
@@ -216,7 +219,6 @@ data class ShipmentDetailNullableDto(
     var shipmentWarehouse: String? = "제품창고",
     var shipmentHandler: String? = null,
     var remark: String? = null,
-    var flagPrint: Boolean? = false
 )
 
 data class ShipmentSearchRequest(
@@ -254,6 +256,7 @@ data class ShipmentDetailRequest(
 
 data class OrderDetailWithMaterialDto(
     val orderNo: String? = null,
+    val orderSubNo: String? = null,
     val systemMaterialId: String? = null,
     val materialName: String? = null,
     val materialStandard: String? = null,

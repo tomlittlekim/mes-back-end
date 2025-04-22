@@ -24,8 +24,9 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
             oh.totalAmount as totalAmount,
             sh.shipmentStatus as shipmentStatus,
             sh.shippedQuantity as shippedQuantity,
-            sh.unshippedQuantity as unshippedQuantity,
-            sh.remark as remark
+            (oh.orderQuantity - sh.shippedQuantity) as unshippedQuantity,
+            sh.remark as remark,
+            false as flagPrint
         )
         from ShipmentHeader sh
         left join OrderHeader oh on sh.orderNo = oh.orderNo
@@ -49,16 +50,22 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
 
     @Modifying
     @Query("""
-        update ShipmentHeader sh
-        set 
-            sh.shippedQuantity = (sh.shippedQuantity + :quantity),
-            sh.unshippedQuantity = (sh.unshippedQuantity - :quantity),
-            sh.updateUser = :updateUser,
-            sh.updateDate = :updateDate
-        where sh.shipmentId = :shipmentId
-            and sh.orderNo = :orderNo
-            and sh.flagActive is true
-    """)
+        UPDATE SHIPMENT_HEADER
+        SET 
+            SHIPPED_QUANTITY = SHIPPED_QUANTITY + :quantity,
+            UNSHIPPED_QUANTITY = UNSHIPPED_QUANTITY - :quantity,
+            SHIPMENT_STATUS = 
+                CASE 
+                    WHEN (UNSHIPPED_QUANTITY - :quantity) = 0 THEN 'completed'
+                    WHEN (UNSHIPPED_QUANTITY - :quantity) != 0 AND (SHIPPED_QUANTITY + :quantity) > 0 THEN 'partial'
+                    ELSE 'not'
+                END,
+            UPDATE_USER = :updateUser,
+            UPDATE_DATE = :updateDate
+        WHERE SHIPMENT_ID = :shipmentId
+          AND ORDER_NO = :orderNo
+          AND FLAG_ACTIVE = true
+    """, nativeQuery = true)
     fun updateQuantity(
         shipmentId: String,
         orderNo: String?,
@@ -66,7 +73,6 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
         updateUser: String,
         updateDate: LocalDateTime?= LocalDateTime.now()
     ): Int
-
 }
 
 interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
@@ -117,13 +123,13 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
             sh.UNSHIPPED_QUANTITY = sh.UNSHIPPED_QUANTITY + sd.CUMULATIVE_SHIPMENT_QUANTITY
         WHERE sd.SITE = :site
           AND sd.COMP_CD = :compCd
-          AND sd.SHIPMENT_ID = :shipmentId
+          AND sd.ID = :id
           AND sd.FLAG_ACTIVE = TRUE
     """, nativeQuery = true)
     fun softDelete(
         site: String,
         compCd: String,
-        shipmentId: Long,
+        id: Long,
         loginUser: String,
         updateDate: LocalDateTime?= LocalDateTime.now()
     ): Int
@@ -143,21 +149,22 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
               AND sd2.FLAG_ACTIVE = true
         )
     """, nativeQuery = true)
-    fun existsOlderByMaterialNative(compCd: String, ids: List<Long>): Boolean
+    fun existsOlderByMaterialNative(compCd: String, ids: List<Long>): Long
 
     @Query("""
-        select sd
-        from ShipmentDetail sd
-        where sd.site = :site
-            and sd.compCd = :compCd
-            and sd.orderNo = :orderNo
-            and sd.systemMaterialId In :materialIds
-            and sd.flagActive is true
-        order by sd.createDate desc limit 1
-    """)
+        SELECT *
+        FROM SHIPMENT_DETAIL
+        WHERE SITE = :site
+          AND COMP_CD = :compCd
+          AND ORDER_NO = :orderNo
+          AND SYSTEM_MATERIAL_ID IN (:materialIds)
+          AND FLAG_ACTIVE = TRUE
+        ORDER BY CREATE_DATE DESC LIMIT 1
+    """, nativeQuery = true)
     fun getAllByOrderNo(
         site: String,
         compCd: String,
-        systemMaterialId: String
+        orderNo: String,
+        materialIds: List<String>
     ): List<ShipmentDetail>
 }

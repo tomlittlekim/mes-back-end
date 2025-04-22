@@ -54,6 +54,11 @@ class P6spyPrettySqlFormatter : MessageFormattingStrategy {
             return ""
         }
 
+        // SensorRepository 관련 쿼리 필터링
+        if (shouldExclude(sql)) {
+            return ""
+        }
+
         // SQL 포맷팅
         val formattedSql = formatSql(sql)
 
@@ -84,6 +89,14 @@ class P6spyPrettySqlFormatter : MessageFormattingStrategy {
             .append(sqlWithHighlightedElements)
             .append("\n\n")
             .toString()
+    }
+
+    /**
+     * 특정 쿼리를 제외할지 여부를 결정하는 함수
+     */
+    private fun shouldExclude(sql: String): Boolean {
+        // SensorStatus 테이블에서 전력 데이터를 조회하는 쿼리 패턴
+        return sql.lowercase(Locale.ROOT).contains("from sensor_status")
     }
 
     /**

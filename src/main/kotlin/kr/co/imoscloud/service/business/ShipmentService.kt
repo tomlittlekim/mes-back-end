@@ -1,7 +1,6 @@
 package kr.co.imoscloud.service.business
 
 import jakarta.transaction.Transactional
-import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.business.ShipmentDetail
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentDetailRepository
@@ -111,7 +110,8 @@ class ShipmentService(
         return "출하등록 정보 생성 및 수정 성공"
     }
 
-    fun getMaterialWithShipmentForSelect(orderNo: String): List<ShipmentDetailNullableDto> {
+    // 출하등록 정보 하단 그리드의 품목ID 선택 시 나머지 필드에 맵핑해 줄 값을 반환하는 서비스
+    fun prepareShipmentDetailsForEntry(orderNo: String): List<ShipmentDetailNullableDto> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         val semiShipmentDetails = orderDetailRepo.getAllByOrderNoWithMaterial(loginUser.getSite(), loginUser.compCd, orderNo)

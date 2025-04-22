@@ -56,4 +56,33 @@ class BusinessFetcher(
     fun deleteOrderDetail(@InputArgument id: Long): String {
         return orderService.deleteDetail(id)
     }
+
+
+
+
+
+    @DgsQuery
+    fun getShipmentHeaders(@InputArgument req: ShipmentSearchRequest): List<ShipmentHeaderNullableDto> {
+        return shipmentService.getHeadersBySearchRequest(req)
+    }
+
+    @DgsQuery
+    fun getShipmentDetails(@InputArgument id: Long): List<ShipmentDetailNullableDto> {
+        return shipmentService.getDetailsByShipmentId(id)
+    }
+
+    @DgsQuery
+    fun prepareShipmentDetailsForEntry(@InputArgument orderNo: String): List<ShipmentDetailNullableDto> {
+        return shipmentService.prepareShipmentDetailsForEntry(orderNo)
+    }
+
+    @DgsMutation
+    fun upsertShipmentDetails(@InputArgument list: List<ShipmentDetailRequest>): String {
+        return shipmentService.upsertShipmentDetails(list)
+    }
+
+    @DgsMutation
+    fun softDeleteShipment(@InputArgument shipmentId: Long): String {
+        return shipmentService.softDeleteByShipmentId(shipmentId)
+    }
 }

@@ -1,0 +1,78 @@
+type ShipmentHeader {
+    id: Int
+    site: String
+    compCd: String
+    orderNo: String
+    orderDate: String
+    orderer: String
+    orderQuantity: Int
+    customerId: String
+    totalAmount: Int
+    shipmentStatus: String
+    shippedQuantity: Int
+    unshippedQuantity: Int
+    remark: String
+}
+
+type ShipmentDetail {
+    id: Int
+    site: String
+    compCd: String
+    orderNo: String
+    orderSubNo: String
+    systemMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    quantity: Int
+    stockQuantity: Int
+    shipmentId: Int
+    shipmentDate: String
+    shippedQuantity: Int
+    unshippedQuantity: Int
+    cumulativeShipmentQuantity: Int
+    shipmentWarehouse: String
+    shipmentHandler: String
+    remark: String
+}
+
+input ShipmentSearchRequest {
+    orderNo: String
+    fromDate: String
+    toDate: String
+    customerId: String
+    shipmentStatus: String
+}
+
+input ShipmentDetailRequest {
+    id: Int
+    site: String
+    compCd: String
+    orderNo: String
+    orderSubNo: String
+    systemMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    quantity: Int
+    stockQuantity: Int
+    shipmentId: Int
+    shipmentDate: String
+    shippedQuantity: Int
+    unshippedQuantity: Int
+    cumulativeShipmentQuantity: Int
+    shipmentWarehouse: String
+    shipmentHandler: String
+    remark: String
+}
+
+extend type Query {
+    getShipmentHeaders(req: ShipmentSearchRequest): [ShipmentHeader]
+    getShipmentDetails(id: Int): [ShipmentDetail]
+    prepareShipmentDetailsForEntry(orderNo: String): [ShipmentDetail]
+}
+
+extend type Mutation {
+    upsertShipmentDetails(list: [ShipmentDetailRequest]!): String
+    softDeleteShipment(shipmentId: Int!): String
+}

@@ -142,4 +142,20 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
         )
     """, nativeQuery = true)
     fun existsOlderByMaterialNative(compCd: String, ids: List<Long>): Boolean
+
+    @Query("""
+        select sd
+        from ShipmentDetail sd
+        where sd.site = :site
+            and sd.compCd = :compCd
+            and sd.orderNo = :orderNo
+            and sd.systemMaterialId In :materialIds
+            and sd.flagActive is true
+        order by sd.createDate desc limit 1
+    """)
+    fun getAllByOrderNo(
+        site: String,
+        compCd: String,
+        systemMaterialId: String
+    ): List<ShipmentDetail>
 }

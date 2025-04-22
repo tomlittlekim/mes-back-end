@@ -2,6 +2,7 @@ package kr.co.imoscloud.repository.business
 
 import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.business.OrderHeader
+import kr.co.imoscloud.service.business.OrderDetailWithMaterialDto
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -126,4 +127,24 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
             AND od.FLAG_ACTIVE is true
     """, nativeQuery = true)
     fun deleteAllByOrderHeaderId(site: String, compCd: String, id: Long, updateUserId: String): Int
+
+    @Query("""
+        select new kr.co.imoscloud.service.business.OrderDetailWithMaterialDto(
+            od.orderNo,
+            od.systemMaterialId,
+            mm.materialName,
+            mm.materialStandard,
+            mm.unit,
+            od.quantity
+        )
+        from OrderDetail od
+        left join MaterialMaster mm on od.systemMaterialId = mm.systemMaterialId
+            and od.compCd = mm.compCd
+            and mm.flagActive is true
+        where od.site = :site
+            and od.compCd = :compCd
+            and od.orderNo = :orderNo
+            and od.flagActive is true
+    """)
+    fun getAllByOrderNoWithMaterial(site: String, compCd: String, orderNo: String): List<OrderDetailWithMaterialDto>
 }

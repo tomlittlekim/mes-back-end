@@ -1,7 +1,9 @@
 package kr.co.imoscloud.service.business
 
 import jakarta.transaction.Transactional
+import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.business.ShipmentDetail
+import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentHeaderRepository
 import kr.co.imoscloud.util.AuthLevel
@@ -13,7 +15,8 @@ import java.time.LocalDate
 @Service
 class ShipmentService(
     private val headerRepo: ShipmentHeaderRepository,
-    private val detailRepo: ShipmentDetailRepository
+    private val detailRepo: ShipmentDetailRepository,
+    private val orderDetailRepo: OrderDetailRepository,
 ) {
 
     fun getHeadersBySearchRequest(req: ShipmentSearchRequest): List<ShipmentHeaderNullableDto> {
@@ -75,12 +78,12 @@ class ShipmentService(
                 }
                 ?:run {
                     val detail = ShipmentDetail(
-                        site = loginUser.getSite(),
-                        compCd = loginUser.compCd,
+                        site = req.site ?: loginUser.getSite(),
+                        compCd = req.compCd ?: loginUser.compCd,
                         orderNo = req.orderNo!!,
                         orderSubNo = req.orderSubNo!!,
                         systemMaterialId = req.systemMaterialId,
-                        shipmentId = req.shipmentId,
+                        shipmentId = req.shipmentId!!,
                         shipmentDate = DateUtils.parseDate(req.shipmentDate),
                         shippedQuantity = req.shippedQuantity,
                         unshippedQuantity = req.unshippedQuantity,
@@ -106,6 +109,52 @@ class ShipmentService(
 
         detailRepo.saveAll(detailList)
         return "출하등록 정보 생성 및 수정 성공"
+    }
+
+    fun getMaterialWithShipmentForSelect(orderNo: String): List<ShipmentDetailNullableDto> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        val semiShipmentDetails = orderDetailRepo.getAllByOrderNoWithMaterial(loginUser.getSite(), loginUser.compCd, orderNo)
+            .groupBy { it.systemMaterialId }.values
+            .mapNotNull { values: List<OrderDetailWithMaterialDto> ->
+                if (values.isNotEmpty()) {
+                    val base = values.first()
+                    val totalQuantity: Int = values.sumOf { it.quantity ?: 0 }
+
+                    ShipmentDetailNullableDto(
+                        site = loginUser.getSite(),
+                        compCd = loginUser.compCd,
+                        orderNo = base.orderNo,
+                        systemMaterialId = base.systemMaterialId,
+                        materialName = base.materialName,
+                        materialStandard = base.materialStandard,
+                        unit = base.unit,
+                        quantity = totalQuantity
+                    )
+                } else null
+            }
+
+        val shipmentDetailMap = detailRepo.getAllByOrderNo(loginUser.getSite(), loginUser.compCd, orderNo)
+            .associateBy { it.systemMaterialId }
+
+        return semiShipmentDetails.map { semi ->
+            val systemMaterialId = semi.systemMaterialId!!
+             shipmentDetailMap[systemMaterialId]
+                ?.let { base ->
+                    semi.apply {
+                        stockQuantity = 100
+                        shipmentId = base.shipmentId
+                        shipmentDate = base.shipmentDate
+                        shippedQuantity = (base.shippedQuantity?: 0)+(base.cumulativeShipmentQuantity?: 0)
+                        unshippedQuantity = (base.unshippedQuantity?: 0)-(base.cumulativeShipmentQuantity?: 0)
+                    }
+                }
+                ?: semi.apply {
+                    stockQuantity = 100
+                    shippedQuantity = this.quantity
+                    unshippedQuantity = 0
+                }
+        }
     }
 }
 
@@ -140,7 +189,7 @@ data class ShipmentDetailNullableDto(
     val unit: String? = null,
     var quantity: Int? = null,
     //Warehouse
-    val stockQuantity: Int? = null,
+    var stockQuantity: Int? = null,
     //ShipmentHeader
     var shipmentId: Long? = null,
     var shipmentDate: LocalDate? = null,
@@ -162,17 +211,34 @@ data class ShipmentSearchRequest(
 
 data class ShipmentDetailRequest(
     val id: Long? = null,
+    val site: String? = null,
+    val compCd: String? = null,
     val orderNo: String? = null,
-    val orderSubNo: String? = null,
-    var shipmentId: Long,
-    val shipmentDate: String?=null,
-    val systemMaterialId: String?=null,
+    var orderSubNo: String? = null,
+    //OrderDetail
+    val systemMaterialId: String? = null,
+    val materialName: String? = null,
+    val materialStandard: String? = null,
+    val unit: String? = null,
+    var quantity: Int? = null,
+    //Warehouse
+    var stockQuantity: Int? = null,
+    //ShipmentHeader
+    var shipmentId: Long? = null,
+    var shipmentDate: String? = null,
+    var shippedQuantity: Int? = null,
+    var unshippedQuantity: Int? = null,
+    var cumulativeShipmentQuantity: Int? = null,
+    var shipmentWarehouse: String? = "제품창고",
+    var shipmentHandler: String? = null,
+    var remark: String? = null,
+)
 
-    val shippedQuantity: Int? = 0,
-    val unshippedQuantity: Int? = 0,
-    val stockQuantity: Int? = 0,
-
-    val cumulativeShipmentQuantity: Int? = null,
-    val shipmentHandler: String? = null,
-    val remark: String?=null,
+data class OrderDetailWithMaterialDto(
+    val orderNo: String? = null,
+    val systemMaterialId: String? = null,
+    val materialName: String? = null,
+    val materialStandard: String? = null,
+    val unit: String? = null,
+    var quantity: Int? = null,
 )

@@ -1,7 +1,9 @@
 package kr.co.imoscloud.service.business
 
 import jakarta.transaction.Transactional
+import kr.co.imoscloud.entity.business.OrderHeader
 import kr.co.imoscloud.entity.business.ShipmentDetail
+import kr.co.imoscloud.entity.business.ShipmentHeader
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentHeaderRepository
@@ -13,7 +15,7 @@ import java.time.LocalDate
 
 @Service
 class ShipmentService(
-    private val headerRepo: ShipmentHeaderRepository,
+    val headerRepo: ShipmentHeaderRepository,
     private val detailRepo: ShipmentDetailRepository,
     private val orderDetailRepo: OrderDetailRepository,
 ) {
@@ -30,6 +32,21 @@ class ShipmentService(
             from, to
         )
     }
+
+    fun generateHeaderByOrderHeader(header: OrderHeader): ShipmentHeader =
+        ShipmentHeader(
+            site = header.site,
+            compCd = header.compCd,
+            orderNo = header.orderNo,
+            shipmentStatus = "not",
+            shippedQuantity = 0,
+            unshippedQuantity = header.orderQuantity
+        ).apply {
+            createUser = header.createUser
+            createDate = header.createDate
+            updateUser = header.updateUser
+            updateDate = header.updateDate
+        }
 
     fun getDetailsByShipmentId(id: Long): List<ShipmentDetailNullableDto> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
@@ -198,7 +215,8 @@ data class ShipmentDetailNullableDto(
     var cumulativeShipmentQuantity: Int? = null,
     var shipmentWarehouse: String? = "제품창고",
     var shipmentHandler: String? = null,
-    var remark: String? = null
+    var remark: String? = null,
+    var flagPrint: Boolean? = false
 )
 
 data class ShipmentSearchRequest(

@@ -22,9 +22,6 @@ class ShipmentHeader(
     @Column(name = "ORDER_NO", unique = true, nullable = false)
     var orderNo: String,
 
-    @Column(name = "CUSTOMER_ID", length = 100, nullable = false)
-    var customerId: String? = null,
-
     @Column(name = "SHIPMENT_STATUS")
     var shipmentStatus: String? = null,
 

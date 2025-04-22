@@ -3,6 +3,7 @@ package kr.co.imoscloud.service.business
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.business.OrderHeader
+import kr.co.imoscloud.entity.business.ShipmentHeader
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.repository.business.OrderDetailRepository
@@ -20,7 +21,8 @@ class OrderService(
     val headerRepo: OrderHeaderRepository,
     val detailRepo: OrderDetailRepository,
     private val materialRepo: MaterialRepository,
-    private val codeRep: CodeRep
+    private val codeRep: CodeRep,
+    private val shipmentService: ShipmentService
 ) {
 
     // orderHeader 조회
@@ -67,6 +69,7 @@ class OrderService(
         return "삭제 성공"
     }
 
+    @Transactional
     fun upsertHeader(list: List<OrderHeaderRequest>): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
@@ -74,6 +77,8 @@ class OrderService(
         val headerMap = headerRepo
             .findAllBySiteAndCompCdAndIdInAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, indies)
             .associateBy { it.id }
+
+        val shipmentHeaders: MutableList<ShipmentHeader> = mutableListOf()
 
         val headerList: List<OrderHeader> = list.map { req ->
             headerMap[req.id]
@@ -90,7 +95,7 @@ class OrderService(
                 }
                 ?:run {
                     try {
-                        OrderHeader(
+                        val orderHeader = OrderHeader(
                             site = req.site!!,
                             compCd = req.compCd!!,
                             orderNo = req.orderNo!!,
@@ -103,11 +108,16 @@ class OrderService(
                             deliveryAddr = req.deliveryAddr,
                             remark = req.remark,
                         ).apply { createCommonCol(loginUser) }
+
+                        shipmentHeaders.add(shipmentService.generateHeaderByOrderHeader(orderHeader))
+                        orderHeader
                     } catch (e: NullPointerException) {
                         throw IllegalArgumentException("기본 주문정보를 생성할 필드값이 부족합니다. ")
                     }
                 }
             }
+
+        if (shipmentHeaders.isNotEmpty()) shipmentService.headerRepo.saveAll(shipmentHeaders)
 
         headerRepo.saveAll(headerList)
         return "기본 주문정보 생성 및 수정 성공"

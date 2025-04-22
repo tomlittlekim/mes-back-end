@@ -31,7 +31,7 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
         left join OrderHeader oh on sh.orderNo = oh.orderNo
         where sh.compCd = :compCd
             and (:orderNo is null or sh.orderNo = :orderNo)
-            and (:customerId is null or sh.customerId = :customerId)
+            and (:customerId is null or oh.customerId = :customerId)
             and (:shipmentStatus is null or sh.shipmentStatus = :shipmentStatus)
             and sh.createDate between :from and :to
             and sh.flagActive is true 

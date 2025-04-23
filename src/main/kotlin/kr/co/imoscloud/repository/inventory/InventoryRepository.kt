@@ -1,11 +1,13 @@
 package kr.co.imoscloud.repository.inventory
 
 import kr.co.imoscloud.entity.inventory.*
+import kr.co.imoscloud.entity.standardInfo.Warehouse
 import kr.co.imoscloud.service.inventory.*
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 interface InventoryInManagementRep : JpaRepository<InventoryInManagement, Long>{
@@ -403,6 +405,46 @@ interface InventoryStatusRep : JpaRepository<InventoryStatus, Long> {
         site: String,
         systemMaterialId: String
     ): InventoryStatus?
+
+    @Query("""
+        select wh
+        from InventoryStatus its
+        left join Warehouse wh on its.warehouseId = wh.warehouseId
+            and its.site = wh.site
+            and its.compCd = wh.compCd
+            and wh.flagActive is true
+        where its.systemMaterialId = :systemMaterialId
+            and its.site = :site
+            and its.compCd = :compCd
+            and its.qty > 0
+            and its.flagActive is true
+    """)
+    fun getWarehouseByMaterialId(
+        site: String,
+        compCd: String,
+        systemMaterialId: String
+    ): List<Warehouse>
+
+    @Modifying
+    @Query("""
+        update InventoryStatus its
+        set
+            its.qty = (its.qty + :qty), 
+            its.updateDate = :updateDate,
+            its.updateUser = :updateUser
+        where its.compCd = :compCd
+            and its.warehouseId = :warehouseId
+            and its.systemMaterialId = :systemMaterialId
+            and its.flagActive is true
+    """)
+    fun updateQtyByIdAndSystemMaterialId(
+        compCd: String,
+        warehouseId: String,
+        systemMaterialId: String,
+        qty: Int,
+        updateUser: String,
+        updateDate: LocalDateTime = LocalDateTime.now()
+    ): Int
 }
 
 interface InventoryHistoryRep : JpaRepository<InventoryHistory, Long> {

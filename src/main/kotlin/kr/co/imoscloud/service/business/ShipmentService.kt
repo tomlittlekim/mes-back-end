@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.business.OrderHeader
 import kr.co.imoscloud.entity.business.ShipmentDetail
 import kr.co.imoscloud.entity.business.ShipmentHeader
+import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.entity.standardInfo.Warehouse
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentHeaderRepository
@@ -58,6 +60,7 @@ class ShipmentService(
     @AuthLevel(minLevel = 2)
     fun softDeleteByShipmentId(id: Long): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
         detailRepo.softDelete(loginUser.getSite(), loginUser.compCd, id, loginUser.loginId)
             .let { if (it==0) throw IllegalArgumentException("삭제할 출하정보가 존재하지 않습니다. ") }
 
@@ -74,6 +77,7 @@ class ShipmentService(
             throw IllegalArgumentException("각각의 품목별 최신 정보만 편집 기능을 이용할 수 있습니다.")
 
         val quantityMap: MutableMap<String, Int> = HashMap()
+        val inventoryMap: MutableMap<String, Int> = HashMap()
         val detailMap = detailRepo.findAllByCompCdAndIdInAndFlagActiveIsTrue(loginUser.compCd, indies).associateBy { it.id }
 
         val detailList = list.map { req ->
@@ -89,9 +93,12 @@ class ShipmentService(
                         shipmentHandler = req.shipmentHandler ?: this.shipmentHandler
                     }
 
-                    val newQuantity = (oldCumulativeShipmentQuantity?:0)-(req.cumulativeShipmentQuantity?:0)
-                    val mapIndex = "${req.shipmentId}-${req.orderNo}"
-                    quantityMap[mapIndex] = quantityMap.getOrDefault(mapIndex, 0) + newQuantity
+                    val newQty = (req.cumulativeShipmentQuantity?:0)-(oldCumulativeShipmentQuantity?:0)
+                    var mapIndex = "${req.shipmentId}-${req.orderNo}"
+                    quantityMap[mapIndex] = quantityMap.getOrDefault(mapIndex, 0) + newQty
+
+                    mapIndex = "${req.shipmentWarehouse}_${req.systemMaterialId}"
+                    inventoryMap[mapIndex] = inventoryMap.getOrDefault(mapIndex, 0) + (newQty * -1)
                     detail
                 }
                 ?:run {
@@ -108,12 +115,16 @@ class ShipmentService(
 //                        stockQuantity = req.stockQuantity, 재고수량
                         cumulativeShipmentQuantity = req.cumulativeShipmentQuantity,
                         shipmentHandler = req.shipmentHandler,
-                        shipmentWarehouse = "제품창고",
+                        shipmentWarehouse = req.shipmentWarehouse,
                         remark = req.remark
                     )
 
-                    val mapIndex = "${req.shipmentId}-${req.orderNo}"
-                    quantityMap[mapIndex] = quantityMap.getOrDefault(mapIndex, 0) + detail.cumulativeShipmentQuantity!!
+                    var mapIndex = "${req.shipmentId}-${req.orderNo}"
+                    val cumulativeQty = detail.cumulativeShipmentQuantity!!
+                    quantityMap[mapIndex] = quantityMap.getOrDefault(mapIndex, 0) + cumulativeQty
+
+                    mapIndex = "${req.shipmentWarehouse}_${req.systemMaterialId}"
+                    inventoryMap[mapIndex] = inventoryMap.getOrDefault(mapIndex, 0) - cumulativeQty
                     detail
                 }
         }
@@ -125,15 +136,28 @@ class ShipmentService(
             headerRepo.updateQuantity(shipmentId, orderNo, value, loginUser.compCd)
         }
 
+        inventoryMap.entries.forEach { (key, value) ->
+            val split = key.split("_")
+            val warehouseId = split.first()
+            val systemMaterialId = split.last()
+            inventoryStatusRep.updateQtyByIdAndSystemMaterialId(
+                loginUser.compCd,
+                warehouseId,
+                systemMaterialId,
+                value,
+                loginUser.loginId
+            )
+        }
+
         detailRepo.saveAll(detailList)
         return "출하등록 정보 생성 및 수정 성공"
     }
 
     // 출하등록 정보 하단 그리드의 품목ID 선택 시 나머지 필드에 맵핑해 줄 값을 반환하는 서비스
-    fun prepareShipmentDetailsForEntry(orderNo: String): List<ShipmentDetailNullableDto> {
+    fun prepareShipmentDetailsForEntry(req: ShipmentDetailEntryRequest): List<ShipmentDetailNullableDto> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        val semiShipmentDetails = orderDetailRepo.getAllByOrderNoWithMaterial(loginUser.getSite(), loginUser.compCd, orderNo)
+        val semiShipmentDetails = orderDetailRepo.getAllByOrderNoWithMaterial(loginUser.getSite(), loginUser.compCd, req.orderNo)
             .groupBy { it.systemMaterialId }.values
             .mapNotNull { values: List<OrderDetailWithMaterialDto> ->
                 if (values.isNotEmpty()) {
@@ -158,7 +182,7 @@ class ShipmentService(
         val shipmentDetailMap = detailRepo.getAllByOrderNo(
             loginUser.getSite(),
             loginUser.compCd,
-            orderNo,
+            req.orderNo,
             materialIds
         ).associateBy { it.systemMaterialId }
 
@@ -166,28 +190,41 @@ class ShipmentService(
             loginUser.compCd,
             loginUser.getSite(),
             materialIds
-        ).associateBy { it.systemMaterialId }
+        ).associateBy { "${it.warehouseId}-${it.systemMaterialId}" }
 
         return semiShipmentDetails.map { semi ->
             val systemMaterialId = semi.systemMaterialId!!
-            val stockQty = inventoryMap[systemMaterialId]?.qty
+            val inventoryIndex = "${req.warehouseId}-$systemMaterialId"
+            val warehouseMap = inventoryMap[inventoryIndex]
 
              shipmentDetailMap[systemMaterialId]
                 ?.let { base ->
                     semi.apply {
-                        stockQuantity = stockQty
+                        stockQuantity = warehouseMap?.qty
                         shipmentId = base.shipmentId
                         shipmentDate = base.shipmentDate
+                        shipmentWarehouse = warehouseMap?.warehouseId
                         shippedQuantity = (base.shippedQuantity?: 0)+(base.cumulativeShipmentQuantity?: 0)
                         unshippedQuantity = (base.unshippedQuantity?: 0)-(base.cumulativeShipmentQuantity?: 0)
                     }
                 }
                 ?: semi.apply {
-                    stockQuantity = stockQty
+                    stockQuantity = warehouseMap?.qty
                     shippedQuantity = 0
+                    shipmentWarehouse = warehouseMap?.warehouseId
                     unshippedQuantity = this.quantity
                 }
         }
+    }
+
+    fun getMaterialByOrderNo(orderNo: String): List<MaterialMaster> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        return detailRepo.getMaterialsByOrderNo(loginUser.getSite(), loginUser.compCd, orderNo)
+    }
+
+    fun getWarehouseByMaterialId(materialId: String): List<Warehouse> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        return inventoryStatusRep.getWarehouseByMaterialId(loginUser.getSite(), loginUser.compCd, materialId)
     }
 }
 
@@ -230,7 +267,7 @@ data class ShipmentDetailNullableDto(
     var shippedQuantity: Int? = null,
     var unshippedQuantity: Int? = null,
     var cumulativeShipmentQuantity: Int? = null,
-    var shipmentWarehouse: String? = "제품창고",
+    var shipmentWarehouse: String? = null,
     var shipmentHandler: String? = null,
     var remark: String? = null,
 )
@@ -263,7 +300,7 @@ data class ShipmentDetailRequest(
     var shippedQuantity: Int? = null,
     var unshippedQuantity: Int? = null,
     var cumulativeShipmentQuantity: Int? = null,
-    var shipmentWarehouse: String? = "제품창고",
+    var shipmentWarehouse: String? = null,
     var shipmentHandler: String? = null,
     var remark: String? = null,
 )
@@ -276,4 +313,9 @@ data class OrderDetailWithMaterialDto(
     val materialStandard: String? = null,
     val unit: String? = null,
     var quantity: Int? = null,
+)
+
+data class ShipmentDetailEntryRequest(
+    val orderNo: String,
+    val warehouseId: String
 )

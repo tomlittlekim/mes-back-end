@@ -1,6 +1,8 @@
 package kr.co.imoscloud.fetcher
 
 import com.netflix.graphql.dgs.*
+import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.entity.standardInfo.Warehouse
 import kr.co.imoscloud.service.business.*
 
 @DgsComponent
@@ -72,8 +74,8 @@ class BusinessFetcher(
     }
 
     @DgsQuery
-    fun prepareShipmentDetailsForEntry(@InputArgument orderNo: String): List<ShipmentDetailNullableDto> {
-        return shipmentService.prepareShipmentDetailsForEntry(orderNo)
+    fun prepareShipmentDetailsForEntry(@InputArgument req: ShipmentDetailEntryRequest): List<ShipmentDetailNullableDto> {
+        return shipmentService.prepareShipmentDetailsForEntry(req)
     }
 
     @DgsMutation
@@ -84,5 +86,15 @@ class BusinessFetcher(
     @DgsMutation
     fun softDeleteShipment(@InputArgument shipmentId: Long): String {
         return shipmentService.softDeleteByShipmentId(shipmentId)
+    }
+
+    @DgsQuery
+    fun getMaterialByOrderNo(@InputArgument orderNo: String): List<MaterialMaster> {
+        return shipmentService.getMaterialByOrderNo(orderNo)
+    }
+
+    @DgsQuery
+    fun getWarehouseByMaterialId(@InputArgument materialId: String): List<Warehouse> {
+        return shipmentService.getWarehouseByMaterialId(materialId)
     }
 }

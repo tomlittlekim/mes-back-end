@@ -3,6 +3,7 @@ package kr.co.imoscloud.repository.business
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.business.ShipmentDetail
 import kr.co.imoscloud.entity.business.ShipmentHeader
+import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.service.business.ShipmentDetailNullableDto
 import kr.co.imoscloud.service.business.ShipmentHeaderNullableDto
 import org.springframework.data.jpa.repository.JpaRepository
@@ -88,10 +89,10 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
             mm.materialStandard as materialStandard,
             mm.unit as unit,
             od.quantity as quantity,
-            100 as stockQuantity,
+            its.qty as stockQuantity,
             sd.shipmentId as shipmentId,
             sd.shipmentDate as shipmentDate,
-            sd. shippedQuantity as shippedQuantity,
+            sd.shippedQuantity as shippedQuantity,
             sd.unshippedQuantity as unshippedQuantity,
             sd.cumulativeShipmentQuantity as cumulativeShipmentQuantity,
             sd.shipmentWarehouse as shipmentWarehouse,
@@ -104,6 +105,10 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
             and od.flagActive is true
         left join MaterialMaster mm on od.systemMaterialId = mm.systemMaterialId
             and mm.flagActive is true
+        left join InventoryStatus its on sd.shipmentWarehouse = its.warehouseId
+            and sd.systemMaterialId = its.systemMaterialId
+            and sd.compCd = its.compCd
+            and its.flagActive is true
         where sd.compCd = :compCd
             and sd.shipmentId = :shipmentId
             and sd.flagActive is true
@@ -115,12 +120,17 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
     @Query("""
         UPDATE SHIPMENT_DETAIL sd
         JOIN SHIPMENT_HEADER sh ON sh.SHIPMENT_ID = sd.SHIPMENT_ID
+        JOIN INVENTORY_STATUS its ON its.WAREHOUSE_ID = sd.SHIPMENT_WAREHOUSE
+            AND its.SYSTEM_MATERIAL_ID = sd.SYSTEM_MATERIAL_ID
+            AND its.COMP_CD = sd.COMP_CD
+            AND its.FLAG_ACTIVE = TRUE
         SET 
             sd.FLAG_ACTIVE = FALSE,
             sd.UPDATE_USER = :loginUser,
             sd.UPDATE_DATE = :updateDate,
             sh.SHIPPED_QUANTITY = sh.SHIPPED_QUANTITY - sd.CUMULATIVE_SHIPMENT_QUANTITY,
-            sh.UNSHIPPED_QUANTITY = sh.UNSHIPPED_QUANTITY + sd.CUMULATIVE_SHIPMENT_QUANTITY
+            sh.UNSHIPPED_QUANTITY = sh.UNSHIPPED_QUANTITY + sd.CUMULATIVE_SHIPMENT_QUANTITY,
+            its.QTY = (its.QTY + sd.CUMULATIVE_SHIPMENT_QUANTITY)
         WHERE sd.SITE = :site
           AND sd.COMP_CD = :compCd
           AND sd.ID = :id
@@ -167,4 +177,18 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
         orderNo: String,
         materialIds: List<String>
     ): List<ShipmentDetail>
+
+    @Query("""
+        select mm
+        from OrderDetail od 
+        left join MaterialMaster mm on od.systemMaterialId = mm.systemMaterialId
+            and mm.site = od.site
+            and mm.compCd = od.compCd
+            and mm.flagActive is true
+        where od.orderNo = :orderNo
+            and od.site = :site
+            and od.compCd = :compCd
+            and od.flagActive is true
+    """)
+    fun getMaterialsByOrderNo(site: String, compCd: String, orderNo: String): List<MaterialMaster>
 }

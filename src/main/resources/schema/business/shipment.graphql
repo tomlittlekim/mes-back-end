@@ -37,6 +37,31 @@ type ShipmentDetail {
     remark: String
 }
 
+type WarehouseSummery {
+    factoryId: String
+    factoryName: String
+    warehouseId: String
+    warehouseName: String
+    warehouseType: String
+}
+
+type MaterialSummery {
+    seq: Int
+    materialType: String
+    materialCategory: String
+    systemMaterialId: String
+    userMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    minQuantity: Int
+    maxQuantity: Int
+    baseQuantity: Int
+    manufacturerName: String
+    supplierId: String
+    materialStorage: String
+}
+
 input ShipmentSearchRequest {
     orderNo: String
     fromDate: String
@@ -67,10 +92,17 @@ input ShipmentDetailRequest {
     remark: String
 }
 
+input ShipmentDetailEntryRequest {
+    orderNo: String
+    warehouseId: String
+}
+
 extend type Query {
     getShipmentHeaders(req: ShipmentSearchRequest): [ShipmentHeader]
     getShipmentDetails(id: Int): [ShipmentDetail]
-    prepareShipmentDetailsForEntry(orderNo: String): [ShipmentDetail]
+    prepareShipmentDetailsForEntry(req: ShipmentDetailEntryRequest): [ShipmentDetail]
+    getWarehouseByMaterialId(materialId: String!): [WarehouseSummery]
+    getMaterialByOrderNo(orderNo: String!): [MaterialSummery]
 }
 
 extend type Mutation {

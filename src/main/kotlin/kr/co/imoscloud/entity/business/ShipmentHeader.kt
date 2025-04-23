@@ -13,10 +13,10 @@ class ShipmentHeader(
     @Column(name = "SHIPMENT_ID")
     var shipmentId: Long? = null,
 
-    @Column(name = "SITE", length = 20)
+    @Column(name = "SITE", unique = true, length = 20)
     val site: String,
 
-    @Column(name = "COMP_CD", length = 20)
+    @Column(name = "COMP_CD", unique = true, length = 20)
     override val compCd: String,
 
     @Column(name = "ORDER_NO", unique = true, nullable = false)

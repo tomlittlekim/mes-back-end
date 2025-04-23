@@ -14,16 +14,16 @@ data class OrderDetail(
     @Column(name = "ID")
     val id: Long? = null,
 
-    @Column(name = "SITE", length = 20)
+    @Column(name = "SITE", unique = true, nullable = false, length = 20)
     val site: String,
 
-    @Column(name = "COMP_CD", length = 20)
+    @Column(name = "COMP_CD", unique = true, nullable = false, length = 20)
     override val compCd: String,
 
-    @Column(name = "ORDER_NO", nullable = false, length = 100)
+    @Column(name = "ORDER_NO", unique = true, nullable = false, length = 100)
     var orderNo: String,
 
-    @Column(name = "ORDER_SUB_NO", length = 100)
+    @Column(name = "ORDER_SUB_NO", unique = true, length = 100)
     var orderSubNo: String? = null,
 
     @Column(name = "SYSTEM_MATERIAL_ID", length = 50, nullable = false)

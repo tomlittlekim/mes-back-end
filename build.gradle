@@ -50,6 +50,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-graphql-starter'
+    implementation("com.graphql-java:graphql-java-extended-scalars:22.0")
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'

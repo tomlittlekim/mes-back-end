@@ -7,6 +7,7 @@ import kr.co.imoscloud.model.productionmanagement.ProductionResultUpdate
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
+import kr.co.imoscloud.util.DateUtils.parseDateTimeFromString
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -94,8 +95,8 @@ class ProductionResultCommandService(
                         equipmentId = input.equipmentId
                         resultInfo = input.resultInfo
                         defectCause = input.defectCause
-                        prodStartTime = input.prodStartTime
-                        prodEndTime = input.prodEndTime
+                        prodStartTime = parseDateTimeFromString(input.prodStartTime)
+                        prodEndTime = parseDateTimeFromString(input.prodEndTime)
                         flagActive = true
                         createCommonCol(currentUser)
                     }
@@ -195,8 +196,8 @@ class ProductionResultCommandService(
                         update.equipmentId?.let { equipmentId = it }
                         update.resultInfo?.let { resultInfo = it }
                         update.defectCause?.let { defectCause = it }
-                        update.prodStartTime?.let { prodStartTime = it }
-                        update.prodEndTime?.let { prodEndTime = it }
+                        update.prodStartTime?.let { prodStartTime = parseDateTimeFromString(it) }
+                        update.prodEndTime?.let { prodEndTime = parseDateTimeFromString(it) }
                         updateCommonCol(currentUser)
                     }
 

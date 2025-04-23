@@ -43,26 +43,26 @@ class ProductionResultDataFetcher(
                 // 문자열 필드들 설정
                 filter.workOrderId = input["workOrderId"] as? String
                 filter.prodResultId = input["prodResultId"] as? String
+                filter.productId = input["productId"] as? String
                 filter.equipmentId = input["equipmentId"] as? String
 
-                // 날짜 필드 변환
+                // 날짜 필드 변환 - 정확한 시간까지 파싱하는 메소드 사용
                 if (input.containsKey("prodStartTimeFrom")) {
                     val prodStartTimeFrom = input["prodStartTimeFrom"] as? String
-                    filter.prodStartTimeFrom = DateUtils.parseDate(prodStartTimeFrom)
+                    filter.prodStartTimeFrom = DateUtils.parseDateTimeExact(prodStartTimeFrom)
                 }
                 if (input.containsKey("prodStartTimeTo")) {
                     val prodStartTimeTo = input["prodStartTimeTo"] as? String
-                    filter.prodStartTimeTo = DateUtils.parseDate(prodStartTimeTo)
+                    filter.prodStartTimeTo = DateUtils.parseDateTimeExact(prodStartTimeTo)
                 }
                 if (input.containsKey("prodEndTimeFrom")) {
                     val prodEndTimeFrom = input["prodEndTimeFrom"] as? String
-                    filter.prodEndTimeFrom = DateUtils.parseDate(prodEndTimeFrom)
+                    filter.prodEndTimeFrom = DateUtils.parseDateTimeExact(prodEndTimeFrom)
                 }
                 if (input.containsKey("prodEndTimeTo")) {
                     val prodEndTimeTo = input["prodEndTimeTo"] as? String
-                    filter.prodEndTimeTo = DateUtils.parseDate(prodEndTimeTo)
+                    filter.prodEndTimeTo = DateUtils.parseDateTimeExact(prodEndTimeTo)
                 }
-
 
                 // Boolean 필드 설정
                 filter.flagActive = input["flagActive"] as? Boolean ?: true
@@ -88,13 +88,16 @@ class ProductionResultDataFetcher(
 
             // 불량정보 로깅
             defectInfos?.forEachIndexed { index, defectInfo ->
-                log.info("불량정보[$index] - prodResultId: ${defectInfo.prodResultId}, " +
-                        "defectQty: ${defectInfo.defectQty}, defectType: ${defectInfo.defectType}, " +
-                        "defectCause: ${defectInfo.defectCause}")
+                log.info(
+                    "불량정보[$index] - prodResultId: ${defectInfo.prodResultId}, " +
+                            "defectQty: ${defectInfo.defectQty}, defectType: ${defectInfo.defectType}, " +
+                            "defectCause: ${defectInfo.defectCause}"
+                )
             }
 
             // 서비스 메서드 호출. 예외는 서비스 계층에서 던짐
-            val result = productionResultService.saveProductionResult(createdRows, updatedRows, defectInfos)
+            val result =
+                productionResultService.saveProductionResult(createdRows, updatedRows, defectInfos)
             log.info("GraphQL 응답: saveProductionResult - 결과: $result")
             return result
         } catch (e: IllegalArgumentException) {
@@ -120,5 +123,9 @@ class ProductionResultDataFetcher(
             return false
         }
     }
+
+    @DgsQuery
+    fun productionResultsAtMobile(@InputArgument filter: ProductionResultFilter?): List<ProductionResult> =
+        productionResultService.getProductionResultsAtMobile(filter)
 
 }

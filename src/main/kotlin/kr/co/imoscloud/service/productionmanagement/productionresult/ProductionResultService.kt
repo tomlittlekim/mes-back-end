@@ -35,16 +35,14 @@ class ProductionResultService(
     /**
      * 작업지시ID로 생산실적 목록 조회
      */
-    fun getProductionResultsByWorkOrderId(workOrderId: String): List<ProductionResult> {
-        return queryService.getProductionResultsByWorkOrderId(workOrderId)
-    }
+    fun getProductionResultsByWorkOrderId(workOrderId: String): List<ProductionResult> =
+        queryService.getProductionResultsByWorkOrderId(workOrderId)
 
     /**
      * 다양한 필터 조건으로 생산실적 목록 조회
      */
-    fun getProductionResults(filter: ProductionResultFilter): List<ProductionResult> {
-        return queryService.getProductionResults(filter)
-    }
+    fun getProductionResults(filter: ProductionResultFilter): List<ProductionResult> =
+        queryService.getProductionResults(filter)
 
     /**
      * 생산실적 저장 (생성/수정)
@@ -53,15 +51,16 @@ class ProductionResultService(
         createdRows: List<ProductionResultInput>? = null,
         updatedRows: List<ProductionResultUpdate>? = null,
         defectInfos: List<DefectInfoInput>? = null
-    ): Boolean {
-        return commandService.saveProductionResult(createdRows, updatedRows, defectInfos)
-    }
+    ): Boolean =
+        commandService.saveProductionResult(createdRows, updatedRows, defectInfos)
 
     /**
      * 생산실적 소프트 삭제
      */
-    fun softDeleteProductionResult(prodResultId: String): Boolean {
-        return commandService.softDeleteProductionResult(prodResultId)
-    }
+    fun softDeleteProductionResult(prodResultId: String): Boolean =
+        commandService.softDeleteProductionResult(prodResultId)
+
+    fun getProductionResultsAtMobile(filter: ProductionResultFilter?): List<ProductionResult> =
+        queryService.getProductionResultsAtMobile(filter)
 
 }

@@ -15,6 +15,7 @@ object DateUtils {
     private val isoFormatter = DateTimeFormatter.ISO_ZONED_DATE_TIME
     private val yyyyMMddssHHmm = DateTimeFormatter.ofPattern(CoreEnum.DateTimeFormat.DATE_TIME_VIEW.value)
     private val yyyyMMdd = DateTimeFormatter.ofPattern(CoreEnum.DateTimeFormat.DATE_VIEW.value)
+    private val isoDateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
 
     /**
      * ISO 8601 형식의 날짜 문자열을 LocalDate로 변환하는 함수
@@ -72,6 +73,32 @@ object DateUtils {
     }
 
     /**
+     * 문자열을 LocalDateTime으로 변환하는 함수 (날짜와 시간 모두 포함)
+     * @param dateTimeStr 날짜와 시간 문자열 (ISO 형식 "yyyy-MM-ddTHH:mm:ss" 또는 "yyyy-MM-dd")
+     * @return 변환된 LocalDateTime 객체
+     *   - ISO 형식 날짜+시간: 해당 시간으로 설정
+     *   - 날짜만 있는 경우: 시작 시간은 00:00:00, 종료 시간은 23:59:59로 설정
+     */
+    fun parseDateTimeExact(dateTimeStr: String?): LocalDateTime? {
+        if (dateTimeStr.isNullOrEmpty()) {
+            return null
+        }
+
+        return try {
+            // ISO DateTime 형식 (yyyy-MM-ddTHH:mm:ss) 파싱 시도
+            LocalDateTime.parse(dateTimeStr, isoDateTimeFormatter)
+        } catch (e: DateTimeParseException) {
+            try {
+                // 날짜만 있는 경우 (yyyy-MM-dd) 00:00:00 시간으로 파싱
+                LocalDate.parse(dateTimeStr, formatter).atStartOfDay()
+            } catch (e2: DateTimeParseException) {
+                logger.error("날짜/시간 변환 실패: {}", dateTimeStr)
+                null
+            }
+        }
+    }
+
+    /**
      * 문자열을 LocalDateTime으로 변환하는 함수
      * @param dateStr "yyyy-MM-dd" 형식의 날짜 문자열
      * @return 변환된 LocalDateTime 객체 (시간은 00:00:00으로 설정), 변환 실패 시 null
@@ -85,6 +112,22 @@ object DateUtils {
             LocalDate.parse(dateStr, formatter).atStartOfDay()
         } catch (e: DateTimeParseException) {
             logger.error("날짜 변환 실패: {}", dateStr)
+            null
+        }
+    }
+
+    /**
+     * 문자열을 LocalDateTime으로 변환하는 헬퍼 함수
+     */
+    fun parseDateTimeFromString(dateString: String?): LocalDateTime? {
+        if (dateString.isNullOrBlank()) return null
+
+        return try {
+            // ISO 날짜 형식 (예: 2025-04-18T01:52:00)을 파싱
+            LocalDateTime.parse(dateString)
+        } catch (e: Exception) {
+            // 파싱 실패 시 로깅 및 null 반환
+            println("날짜 파싱 실패: $dateString - ${e.message}")
             null
         }
     }

@@ -71,7 +71,6 @@ class JwtAuthenticationFilter(
                 return
             }
             setAuthenticationContext(jwt, request)
-            log.info("JWT 필터에서 인증 설정 완료: {}", SecurityContextHolder.getContext().authentication.name)
         } catch (ex: ExpiredJwtException) {
             sendTokenExpiredResponse(response)
             return

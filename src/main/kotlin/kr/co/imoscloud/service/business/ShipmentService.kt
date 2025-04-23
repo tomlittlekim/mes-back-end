@@ -7,6 +7,7 @@ import kr.co.imoscloud.entity.business.ShipmentHeader
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentHeaderRepository
+import kr.co.imoscloud.repository.inventory.InventoryStatusRep
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
@@ -18,6 +19,7 @@ class ShipmentService(
     val headerRepo: ShipmentHeaderRepository,
     private val detailRepo: ShipmentDetailRepository,
     private val orderDetailRepo: OrderDetailRepository,
+    private val inventoryStatusRep: InventoryStatusRep
 ) {
 
     fun getHeadersBySearchRequest(req: ShipmentSearchRequest): List<ShipmentHeaderNullableDto> {
@@ -153,15 +155,27 @@ class ShipmentService(
             }
 
         val materialIds = semiShipmentDetails.mapNotNull { it.systemMaterialId }
-        val shipmentDetailMap = detailRepo.getAllByOrderNo(loginUser.getSite(), loginUser.compCd, orderNo, materialIds)
-            .associateBy { it.systemMaterialId }
+        val shipmentDetailMap = detailRepo.getAllByOrderNo(
+            loginUser.getSite(),
+            loginUser.compCd,
+            orderNo,
+            materialIds
+        ).associateBy { it.systemMaterialId }
+
+        val inventoryMap = inventoryStatusRep.findByCompCdAndSiteAndSystemMaterialIdIn(
+            loginUser.compCd,
+            loginUser.getSite(),
+            materialIds
+        ).associateBy { it.systemMaterialId }
 
         return semiShipmentDetails.map { semi ->
             val systemMaterialId = semi.systemMaterialId!!
+            val stockQty = inventoryMap[systemMaterialId]?.qty
+
              shipmentDetailMap[systemMaterialId]
                 ?.let { base ->
                     semi.apply {
-                        stockQuantity = 100
+                        stockQuantity = stockQty
                         shipmentId = base.shipmentId
                         shipmentDate = base.shipmentDate
                         shippedQuantity = (base.shippedQuantity?: 0)+(base.cumulativeShipmentQuantity?: 0)
@@ -169,7 +183,7 @@ class ShipmentService(
                     }
                 }
                 ?: semi.apply {
-                    stockQuantity = 100
+                    stockQuantity = stockQty
                     shippedQuantity = 0
                     unshippedQuantity = this.quantity
                 }

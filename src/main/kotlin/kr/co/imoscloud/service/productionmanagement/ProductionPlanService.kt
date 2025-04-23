@@ -53,6 +53,7 @@ class ProductionPlanService(
             compCd = currentUser.compCd,
             prodPlanId = activeFilter.prodPlanId,
             orderId = activeFilter.orderId,
+            orderDetailId = activeFilter.orderDetailId,
             productId = activeFilter.productId,
             productName = activeFilter.productName,
             materialCategory = activeFilter.materialCategory,
@@ -84,6 +85,7 @@ class ProductionPlanService(
                     compCd = currentUser.compCd
                     prodPlanId = "PP" + System.currentTimeMillis()
                     orderId = input.orderId
+                    orderDetailId = input.orderDetailId
                     productId = input.productId
                     shiftType = input.shiftType
                     planQty = input.planQty
@@ -113,6 +115,7 @@ class ProductionPlanService(
                     // 기존 계획 업데이트
                     plan.apply {
                         update.orderId?.let { orderId = it }
+                        update.orderDetailId?.let { orderDetailId = it }
                         update.productId?.let { productId = it }
                         update.shiftType?.let { shiftType = it }
                         update.planQty?.let { planQty = it }

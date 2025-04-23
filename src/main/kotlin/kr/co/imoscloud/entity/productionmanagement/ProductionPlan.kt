@@ -24,6 +24,9 @@ class ProductionPlan : CommonCol() {
     @Column(name = "ORDER_ID", length = 20)
     var orderId: String? = null
 
+    @Column(name = "ORDER_DETAIL_ID", length = 20)
+    var orderDetailId: String? = null
+
     @Column(name = "PRODUCT_ID", length = 100)
     var productId: String? = null
 

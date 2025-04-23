@@ -17,6 +17,7 @@ type ProductionPlan {
     compCd: String
     prodPlanId: String
     orderId: String
+    orderDetailId: String
     productId: String
     productName: String  # MaterialMaster 테이블에서 조인한 필드
     materialCategory: String  # MaterialMaster 테이블에서 조인한 필드
@@ -35,6 +36,7 @@ type ProductionPlan {
 input ProductionPlanFilter {
     prodPlanId: String
     orderId: String
+    orderDetailId: String
     productId: String
     productName: String
     materialCategory: String  # 제품 유형 필드 (필터링 용도)
@@ -48,6 +50,7 @@ input ProductionPlanFilter {
 
 input ProductionPlanInput {
     orderId: String
+    orderDetailId: String
     productId: String
     productName: String  # 클라이언트에서 전송용
     shiftType: String
@@ -60,6 +63,7 @@ input ProductionPlanInput {
 input ProductionPlanUpdate {
     prodPlanId: String!
     orderId: String
+    orderDetailId: String
     productId: String
     productName: String  # 클라이언트에서 전송용
     shiftType: String

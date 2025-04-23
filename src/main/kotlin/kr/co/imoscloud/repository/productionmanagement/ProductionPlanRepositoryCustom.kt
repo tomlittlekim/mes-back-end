@@ -9,6 +9,7 @@ interface ProductionPlanRepositoryCustom {
         compCd: String,
         prodPlanId: String?,
         orderId: String?,
+        orderDetailId: String?,
         productId: String?,
         productName: String?,
         materialCategory: String?,

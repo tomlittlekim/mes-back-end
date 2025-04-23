@@ -5,5 +5,4 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface DefectInfoRepository : JpaRepository<DefectInfo, Long>, DefectInfoRepositoryCustom {
     fun findByDefectId(defectId: String): DefectInfo?
-    fun findAllBySiteAndCompCdAndFlagActiveIsTrue(site: String, compCd: String): List<DefectInfo?>?
 }

@@ -21,13 +21,16 @@ class DefectInfoService(
     /**
      * 모든 불량 정보 조회
      * 기본적으로 사용자의 사이트와 회사 코드에 해당하는 데이터만 조회
+     * 필터 조건에 따라 결과를 필터링함
      */
-    fun getAllDefectInfos(): List<DefectInfo?>? {
+    fun getAllDefectInfos(filter: DefectInfoFilter? = null): List<DefectInfo?>? {
         val currentUser = getCurrentUserPrincipal()
-
-        return defectInfoRepository.findAllBySiteAndCompCdAndFlagActiveIsTrue(
+        
+        // 항상 필터링된 결과 조회
+        return defectInfoRepository.getDefectInfoByFilter(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
+            filter = filter
         )
     }
 

@@ -5,12 +5,9 @@ package kr.co.imoscloud.model.productionmanagement
  */
 data class DefectInfoFilter(
     val defectId: String? = null,
-    val workOrderId: String? = null,
     val prodResultId: String? = null,
     val productId: String? = null,
-    val productName: String? = null,
-    val state: String? = null,
-    val defectType: String? = null,
+    val equipmentId: String? = null,
     val fromDate: String? = null,
     val toDate: String? = null,
     val flagActive: Boolean? = true

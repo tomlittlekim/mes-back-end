@@ -1,6 +1,7 @@
 package kr.co.imoscloud.repository.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.DefectInfo
+import kr.co.imoscloud.model.productionmanagement.DefectInfoFilter
 import java.time.LocalDateTime
 
 interface DefectInfoRepositoryCustom {
@@ -12,6 +13,15 @@ interface DefectInfoRepositoryCustom {
         site: String,
         compCd: String,
         prodResultId: String
+    ): List<DefectInfo>
+
+    /**
+     * 필터 조건으로 불량 정보 조회
+     */
+    fun getDefectInfoByFilter(
+        site: String,
+        compCd: String,
+        filter: DefectInfoFilter?
     ): List<DefectInfo>
 
     /**

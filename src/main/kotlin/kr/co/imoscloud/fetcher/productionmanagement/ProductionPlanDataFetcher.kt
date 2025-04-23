@@ -31,6 +31,7 @@ class ProductionPlanDataFetcher(
                 // 문자열 필드들 설정
                 filter.prodPlanId = input["prodPlanId"] as? String
                 filter.orderId = input["orderId"] as? String
+                filter.orderDetailId = input["orderDetailId"] as? String
                 filter.productId = input["productId"] as? String
                 filter.productName = input["productName"] as? String
                 filter.materialCategory = input["materialCategory"] as? String

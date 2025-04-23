@@ -8,6 +8,7 @@ import java.time.LocalTime
 data class ProductionPlanFilter(
     var prodPlanId: String? = null,
     var orderId: String? = null,
+    var orderDetailId: String? = null,
     var productId: String? = null,
     var productName: String? = null, // 제품명 필드 추가
     var materialCategory: String? = null, // 제품 유형 필드 추가 - 검색용으로만 사용
@@ -26,6 +27,7 @@ data class ProductionPlanDTO(
     val compCd: String?,
     val prodPlanId: String?,
     val orderId: String?,
+    val orderDetailId: String?,
     val productId: String?,
     val shiftType: String?,
     val planQty: Double?,
@@ -43,6 +45,7 @@ data class ProductionPlanDTO(
 
 data class ProductionPlanInput(
     val orderId: String? = null,
+    val orderDetailId: String? = null,
     val productId: String? = null,
     val productName: String? = null, // 제품명 필드 추가
     val shiftType: String? = null,
@@ -69,6 +72,7 @@ data class ProductionPlanInput(
 data class ProductionPlanUpdate(
     val prodPlanId: String,
     val orderId: String? = null,
+    val orderDetailId: String? = null,
     val productId: String? = null,
     val productName: String? = null, // 제품명 필드 추가
     val shiftType: String? = null,

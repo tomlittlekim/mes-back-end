@@ -22,6 +22,7 @@ class ProductionPlanRepositoryImpl(
         compCd: String,
         prodPlanId: String?,
         orderId: String?,
+        orderDetailId: String?,
         productId: String?,
         productName: String?,
         materialCategory: String?,
@@ -44,6 +45,7 @@ class ProductionPlanRepositoryImpl(
                 plan.compCd,
                 plan.prodPlanId,
                 plan.orderId,
+                plan.orderDetailId,
                 plan.productId,
                 plan.shiftType,
                 plan.planQty,
@@ -80,6 +82,13 @@ class ProductionPlanRepositoryImpl(
         orderId?.let {
             if (it.isNotBlank()) {
                 query = query.where(plan.orderId.like("%$it%"))
+            }
+        }
+
+        // orderDetailId 필터링
+        orderDetailId?.let {
+            if (it.isNotBlank()) {
+                query = query.where(plan.orderDetailId.like("%$it%"))
             }
         }
 

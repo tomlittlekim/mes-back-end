@@ -3,6 +3,7 @@ package kr.co.imoscloud.fetcher.productionmanagement
 import com.netflix.graphql.dgs.*
 import kr.co.imoscloud.entity.productionmanagement.DefectInfo
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
+import kr.co.imoscloud.model.productionmanagement.DefectInfoFilter
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -23,7 +24,14 @@ class DefectInfoDataFetcher(
      * 오류가 발생해도 빈 배열을 반환해야 GraphQL non-null 타입 조건을 충족함
      */
     @DgsQuery
-    fun allDefectInfos(): List<DefectInfo?>? = defectInfoService.getAllDefectInfos()
+    fun allDefectInfos(@InputArgument filter: DefectInfoFilter?): List<DefectInfo?>? {
+        try {
+            return defectInfoService.getAllDefectInfos(filter)
+        } catch (e: Exception) {
+            log.error("불량 정보 필터 조회 중 오류 발생", e)
+            return emptyList()
+        }
+    }
 
     /**
      * 생산 실적 ID로 불량 정보 조회

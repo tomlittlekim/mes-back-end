@@ -47,7 +47,7 @@ data class PlanVsActualGraphQLDto(
 )
 
 data class PlanVsActualFilter(
-    val systemMaterialIds: List<String?>,
-    val startDate: String,
-    val endDate: String,
+    val systemMaterialIds: List<String>? = null,
+    val startDate: String? = null,
+    val endDate: String? = null,
 )

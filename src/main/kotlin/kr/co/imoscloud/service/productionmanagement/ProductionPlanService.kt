@@ -176,7 +176,7 @@ class ProductionPlanService(
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-        val materialIds = filter.systemMaterialIds.filterNotNull().takeIf { it.isNotEmpty() }
+        val materialIds = filter.systemMaterialIds?.filterNotNull()?.takeIf { it.isNotEmpty() }
 
         // 인터페이스 프로젝션 사용
         val results = productionPlanRepository.planVsActual(

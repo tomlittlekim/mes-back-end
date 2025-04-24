@@ -39,6 +39,7 @@ class InventoryIn {
     @Column(name = "TOTAL_PRICE")
     var totalPrice: Int? = null
 
+    /** 사용 여부 */
     @Column(name = "FLAG_ACTIVE")
     var flagActive: Boolean? = null
 

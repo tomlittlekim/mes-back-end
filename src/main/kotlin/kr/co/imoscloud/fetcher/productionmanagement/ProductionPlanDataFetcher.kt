@@ -3,10 +3,7 @@ package kr.co.imoscloud.fetcher.productionmanagement
 import com.netflix.graphql.dgs.*
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
-import kr.co.imoscloud.model.productionmanagement.ProductionPlanDTO
-import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
-import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
-import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
+import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
 import kr.co.imoscloud.util.DateUtils
@@ -144,5 +141,10 @@ class ProductionPlanDataFetcher(
             log.error("작업지시 목록 조회 중 오류 발생", e)
             return emptyList()
         }
+    }
+
+    @DgsQuery
+    fun planVsActual(@InputArgument("filter") filterInput: PlanVsActualFilter): List<PlanVsActualGraphQLDto> {
+        return productionPlanService.getPlanVsActualData(filterInput)
     }
 }

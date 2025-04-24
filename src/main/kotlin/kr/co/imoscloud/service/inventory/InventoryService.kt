@@ -1303,7 +1303,7 @@ class InventoryService(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
             inManagementId = inManagementId
-        ) ?: 0 // 합계가 null이면 0으로 처리
+        )?.toInt() ?: 0 // 합계가 null이면 0으로 처리
 
         management.totalPrice = total
         management.updateUser = currentUser.loginId
@@ -1324,7 +1324,7 @@ class InventoryService(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
             outManagementId = outManagementId
-        ) ?: 0
+        )?.toInt() ?: 0
 
         management.totalPrice = total
         management.updateUser = currentUser.loginId

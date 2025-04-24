@@ -97,4 +97,10 @@ class BusinessFetcher(
     fun getWarehouseByMaterialId(@InputArgument materialId: String): List<Warehouse> {
         return shipmentService.getWarehouseByMaterialId(materialId)
     }
+
+
+
+
+
+
 }

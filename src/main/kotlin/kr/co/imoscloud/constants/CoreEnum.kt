@@ -35,4 +35,9 @@ class CoreEnum {
         DOOR("DOOR"),
         RIDAR("RIDAR")
     }
+
+    enum class DrivePath(val value: String) {
+        HOME_PATH("./resources"),
+        ATTACHMENT_PATH("./attachments")
+    }
 }

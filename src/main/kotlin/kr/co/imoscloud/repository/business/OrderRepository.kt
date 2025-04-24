@@ -54,7 +54,7 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
         WHERE ORDER_NO = :orderNo
           AND FLAG_ACTIVE = true
     """, nativeQuery = true)
-    fun updateAmountsByDetailPrice(orderNo: String, totalAmount: Int, vatAmount: Int, orderQuantity: Int): Int
+    fun updateAmountsByDetailPrice(orderNo: String, totalAmount: Int, vatAmount: Int, orderQuantity: Double): Int
 
     @Modifying
     @Query("""

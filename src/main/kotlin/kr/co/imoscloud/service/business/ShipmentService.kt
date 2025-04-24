@@ -236,13 +236,13 @@ data class ShipmentHeaderNullableDto(
     //OrderHeader
     val orderDate: LocalDate? = null,
     val orderer: String? = null,
-    val orderQuantity: Int? = null,
+    val orderQuantity: Double? = null,
     val customerId: String? = null,
     val totalAmount: Int? = 0,
     //ShipmentHeader
     val shipmentStatus: String?=null,
-    val shippedQuantity: Int? = null,
-    val unshippedQuantity: Int? = null,
+    val shippedQuantity: Double? = null,
+    val unshippedQuantity: Double? = null,
     val remark: String? = null,
     var flagPrint: Boolean? = false
 )

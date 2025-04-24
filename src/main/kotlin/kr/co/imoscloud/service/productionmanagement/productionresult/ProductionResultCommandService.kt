@@ -1,9 +1,16 @@
 package kr.co.imoscloud.service.productionmanagement.productionresult
 
+import kr.co.imoscloud.entity.inventory.InventoryHistory
+import kr.co.imoscloud.entity.inventory.InventoryStatus
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
 import kr.co.imoscloud.model.productionmanagement.ProductionResultInput
 import kr.co.imoscloud.model.productionmanagement.ProductionResultUpdate
+import kr.co.imoscloud.repository.inventory.InventoryHistoryRep
+import kr.co.imoscloud.repository.inventory.InventoryStatusRep
+import kr.co.imoscloud.repository.material.BomDetailRepository
+import kr.co.imoscloud.repository.material.BomRepository
+import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
@@ -11,6 +18,7 @@ import kr.co.imoscloud.util.DateUtils.parseDateTimeFromString
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 /**
  * 생산실적 생성/수정/삭제 관련 서비스
@@ -20,7 +28,12 @@ class ProductionResultCommandService(
     private val productionResultRepository: ProductionResultRepository,
     private val workOrderRepository: WorkOrderRepository,
     private val defectInfoService: DefectInfoService,
-    private val productionResultQueryService: ProductionResultQueryService
+    private val productionResultQueryService: ProductionResultQueryService,
+    private val bomRepository: BomRepository,
+    private val bomDetailRepository: BomDetailRepository,
+    private val inventoryStatusRep: InventoryStatusRep,
+    private val inventoryHistoryRep: InventoryHistoryRep,
+    private val materialRepository: MaterialRepository
 ) {
     /**
      * 생산실적 저장 (생성/수정)
@@ -102,6 +115,11 @@ class ProductionResultCommandService(
                     }
 
                     val savedResult = productionResultRepository.save(newResult)
+
+                    // 생산한 제품 ID로 BOM 찾기
+                    input.productId?.let { productId ->
+                        processProductionMaterialConsumption(productId, goodQty.toInt(), currentUser.getSite(), currentUser.compCd)
+                    }
 
                     // 불량정보가 있는 경우 함께 저장
                     val relatedDefectInfos = defectInfos
@@ -315,5 +333,176 @@ class ProductionResultCommandService(
         } catch (e: Exception) {
             return false
         }
+    }
+
+    /**
+     * 생산시 자재 소비 처리 메서드
+     * BOM 구성에 따른 재고 차감 및 이력 생성
+     */
+    private fun processProductionMaterialConsumption(
+        productId: String, 
+        productionQty: Int,
+        site: String,
+        compCd: String
+    ) {
+        // 현재 사용자 정보 가져오기
+        val currentUser = getCurrentUserPrincipal()
+        
+        // 1. 제품 ID(productId)로 BOM 찾기 - itemCd가 productId와 일치하는 BOM 조회
+        val bom = bomRepository.getBomList(
+            site = site,
+            compCd = compCd,
+            materialType = "",
+            materialName = "",
+            bomName = ""
+        ).find { it.bom.itemCd == productId }?.bom ?: return
+        
+        // 2. BOM의 상세 자재 리스트 가져오기
+        val bomDetails = bomDetailRepository.getBomDetailListByBomId(site, compCd, bom.bomId ?: return)
+        if (bomDetails.isEmpty()) return
+        
+        // 3. 사용할 모든 자재 ID 수집
+        val materialIds = bomDetails.mapNotNull { it.bomDetail.itemCd }
+        
+        // 4. 현재 자재 재고 상태 조회
+        val currentInventoryStatus = inventoryStatusRep.findByCompCdAndSiteAndSystemMaterialIdIn(
+            compCd, site, materialIds
+        ).associateBy { it.systemMaterialId }
+        
+        // 5. 업데이트할 재고 상태 및 생성할 이력 로그 준비
+        val statusesToUpdate = mutableListOf<InventoryStatus>()
+        val logsToSave = mutableListOf<InventoryHistory>()
+        val now = LocalDateTime.now()
+        
+        // 6. 각 BOM 자재별로 소비량 계산 및 재고 차감 처리
+        bomDetails.forEach { bomDetail ->
+            val materialId = bomDetail.bomDetail.itemCd ?: return@forEach
+            // Double 타입 그대로 계산하고 소수점 유지
+            val requiredQtyDouble = (bomDetail.bomDetail.itemQty ?: 0.0) * productionQty.toDouble()
+            // 정수형 변환은 재고 차감 시에만 적용
+            val requiredQty = requiredQtyDouble
+            
+            if (requiredQtyDouble <= 0.0) return@forEach
+            
+            val existingStatus = currentInventoryStatus[materialId]
+            
+            // MaterialMaster에서 자재 정보 조회 (supplier, manufacturer 정보 포함)
+            val materialMaster = materialRepository.findByCompCdAndSiteAndSystemMaterialId(
+                compCd, site, materialId
+            )
+            
+            if (existingStatus != null) {
+                // 기존 재고가 있는 경우 - 기존 수량에 관계없이 항상 차감
+                val prevQty = existingStatus.qty ?: 0.0
+                val currentQty = prevQty - requiredQty
+                
+                existingStatus.qty = currentQty
+                existingStatus.updateDate = now
+                existingStatus.updateUser = currentUser.loginId // 실제 사용자 ID로 변경
+                
+                statusesToUpdate.add(existingStatus)
+                
+                // 재고 변동 이력 생성 - 소수점 정보 포함
+                createInventoryConsumptionLog(
+                    site = site,
+                    compCd = compCd,
+                    materialId = materialId,
+                    materialName = bomDetail.materialName,
+                    materialStandard = bomDetail.materialStandard,
+                    unit = bomDetail.unit,
+                    supplierName = materialMaster?.supplierName,
+                    manufacturerName = materialMaster?.manufacturerName,
+                    prevQty = prevQty,
+                    changeQty = -requiredQty,
+                    currentQty = currentQty,
+                    reason = "생산소비: $productId (수량: $productionQty, 소요량: ${bomDetail.bomDetail.itemQty} × $productionQty = $requiredQtyDouble)",
+                    logsToSave = logsToSave,
+                    userId = currentUser.loginId
+                )
+            } else {
+                // 재고가 없는 경우 새로 생성 (0부터 시작하여 차감)
+                val newStatus = InventoryStatus().apply {
+                    this.site = site
+                    this.compCd = compCd
+                    this.systemMaterialId = materialId
+                    this.qty = -requiredQty // 0에서 차감하여 음수가 됨
+                    this.createDate = now
+                    this.updateDate = now
+                    this.createUser = currentUser.loginId // 실제 사용자 ID
+                    this.updateUser = currentUser.loginId // 실제 사용자 ID
+                    this.flagActive = true
+                }
+                
+                statusesToUpdate.add(newStatus)
+                
+                // 재고 변동 이력 생성 - 소수점 정보 포함
+                createInventoryConsumptionLog(
+                    site = site,
+                    compCd = compCd,
+                    materialId = materialId,
+                    materialName = bomDetail.materialName,
+                    materialStandard = bomDetail.materialStandard,
+                    unit = bomDetail.unit,
+                    supplierName = materialMaster?.supplierName,
+                    manufacturerName = materialMaster?.manufacturerName,
+                    prevQty = 0.0, // 초기값은 0
+                    changeQty = -requiredQty,
+                    currentQty = -requiredQty,
+                    reason = "생산소비(재고없음): $productId (수량: $productionQty, 소요량: ${bomDetail.bomDetail.itemQty} × $productionQty = $requiredQtyDouble)",
+                    logsToSave = logsToSave,
+                    userId = currentUser.loginId
+                )
+            }
+        }
+        
+        // 7. 재고 상태 및 이력 로그 저장
+        if (statusesToUpdate.isNotEmpty()) {
+            inventoryStatusRep.saveAll(statusesToUpdate)
+        }
+        
+        if (logsToSave.isNotEmpty()) {
+            inventoryHistoryRep.saveAll(logsToSave)
+        }
+    }
+    
+    /**
+     * 재고 소비 이력 생성 헬퍼
+     */
+    private fun createInventoryConsumptionLog(
+        site: String,
+        compCd: String,
+        materialId: String,
+        materialName: String?,
+        materialStandard: String?,
+        unit: String?,
+        supplierName: String?,
+        manufacturerName: String?,
+        prevQty: Double,
+        changeQty: Double,
+        currentQty: Double,
+        reason: String,
+        logsToSave: MutableList<InventoryHistory>,
+        userId: String?
+    ) {
+        val now = LocalDateTime.now()
+        
+        logsToSave.add(InventoryHistory().apply {
+            this.site = site
+            this.compCd = compCd
+            this.materialName = materialName
+            this.unit = unit
+            this.supplierName = supplierName
+            this.manufacturerName = manufacturerName
+            this.prevQty = prevQty
+            this.changeQty = changeQty
+            this.currentQty = currentQty
+            this.inOutType = "OUT"
+            this.reason = reason
+            this.flagActive = true
+            this.createDate = now
+            this.createUser = userId
+            this.updateDate = now
+            this.updateUser = userId
+        })
     }
 }

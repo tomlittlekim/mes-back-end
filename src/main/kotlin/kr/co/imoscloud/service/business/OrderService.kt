@@ -165,7 +165,7 @@ class OrderService(
                 val totalPrice = deleteIt.totalPrice?.let { p -> p * -1 } ?:0
                 val vatPrice = deleteIt.vatPrice?.let { p -> p * -1 } ?:0
                 if (totalPrice != 0 || vatPrice != 0) {
-                    headerRepo.updateAmountsByDetailPrice(deleteIt.orderNo, totalPrice, vatPrice, (deleteIt.quantity*-1))
+                    headerRepo.updateAmountsByDetailPrice(deleteIt.orderNo, totalPrice, vatPrice, (deleteIt.quantity*-1.0))
                 }
                 deleteIt
             }
@@ -201,9 +201,9 @@ class OrderService(
                         deliveryDate = DateUtils.parseDate(req.deliveryDate) ?: this.deliveryDate
                         quantity = req.quantity ?: this.quantity
                         unitPrice = req.unitPrice ?: this.unitPrice
-                        supplyPrice = if(req.quantity != null || req.unitPrice != null) {
+                        supplyPrice = (if(req.quantity != null || req.unitPrice != null) {
                             (req.quantity ?: this.quantity) * (req.unitPrice ?: this.unitPrice)
-                        } else this.supplyPrice
+                        } else this.supplyPrice) as Int?
                         remark = req.remark ?: this.remark
                         updateCommonCol(loginUser)
                     }
@@ -232,7 +232,7 @@ class OrderService(
                         quantity = req.quantity!!,
                         unitPrice = req.unitPrice!!,
                         discountedAmount = req.discountedAmount,
-                        supplyPrice = (req.quantity * req.unitPrice),
+                        supplyPrice = ((req.quantity * req.unitPrice).toInt()),
                         remark = req.remark,
                     ).apply { createCommonCol(loginUser) }
 
@@ -362,7 +362,7 @@ data class OrderDetailNullableDto(
     val materialStandard: String? = null,
     val unit: String? = null,
     val deliveryDate: LocalDate? = null,
-    val quantity: Int? = null,
+    val quantity: Double? = null,
     val unitPrice: Int? = null,
     val supplyPrice: Int? = null,
     val vatPrice: Int? = null,
@@ -399,7 +399,7 @@ data class OrderDetailRequest(
     val orderSubNo: String? = null,
     val systemMaterialId: String? = null,
     val deliveryDate: String? = null,
-    val quantity: Int? = null,
+    val quantity: Double? = null,
     val unitPrice: Int? = null,
     val discountedAmount: Int? = null,
     val remark: String? = null,
@@ -408,7 +408,7 @@ data class OrderDetailRequest(
 data class CalculateFroOrder(
     var total: Int = 0,
     var vat: Int = 0,
-    var quantity: Int = 0,
+    var quantity: Double = 0.0,
 )
 
 data class NewDetailRequest(

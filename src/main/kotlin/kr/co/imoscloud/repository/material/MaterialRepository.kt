@@ -151,6 +151,8 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         flagActive: Boolean
     ): List<MaterialMaster?>
 
+    fun findByCompCdAndSiteAndSystemMaterialId(compCd: String, site: String, systemMaterialId: String): MaterialMaster?
+
 
     @Query("""
         select m

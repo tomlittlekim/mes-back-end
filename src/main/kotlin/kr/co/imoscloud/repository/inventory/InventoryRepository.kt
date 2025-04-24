@@ -441,7 +441,7 @@ interface InventoryStatusRep : JpaRepository<InventoryStatus, Long> {
         compCd: String,
         warehouseId: String,
         systemMaterialId: String,
-        qty: Int,
+        qty: Double,
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now()
     ): Int

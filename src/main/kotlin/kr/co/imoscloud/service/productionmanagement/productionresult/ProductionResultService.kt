@@ -2,6 +2,11 @@ package kr.co.imoscloud.service.productionmanagement.productionresult
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.model.productionmanagement.*
+import kr.co.imoscloud.repository.inventory.InventoryHistoryRep
+import kr.co.imoscloud.repository.inventory.InventoryStatusRep
+import kr.co.imoscloud.repository.material.BomDetailRepository
+import kr.co.imoscloud.repository.material.BomRepository
+import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
@@ -17,6 +22,11 @@ class ProductionResultService(
     productionResultRepository: ProductionResultRepository,
     workOrderRepository: WorkOrderRepository,
     defectInfoService: DefectInfoService,
+    bomRepository: BomRepository,
+    bomDetailRepository: BomDetailRepository,
+    inventoryStatusRep: InventoryStatusRep,
+    inventoryHistoryRep: InventoryHistoryRep,
+    materialRepository: MaterialRepository
 ) {
     // 쿼리 서비스 - 조회 관련 기능 처리
     private val queryService = ProductionResultQueryService(
@@ -29,7 +39,12 @@ class ProductionResultService(
         productionResultRepository,
         workOrderRepository,
         defectInfoService,
-        queryService
+        queryService,
+        bomRepository,
+        bomDetailRepository,
+        inventoryStatusRep,
+        inventoryHistoryRep,
+        materialRepository
     )
 
     /**

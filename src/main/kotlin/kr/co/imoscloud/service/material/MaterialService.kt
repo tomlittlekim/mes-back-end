@@ -104,7 +104,6 @@ class MaterialService(
                 it?.manufacturerName,
                 it?.supplierId,
                 it?.supplierName,
-                it?.materialStorage,
 //                if (it?.flagActive == true) "Y" else "N",
                 it?.createUser,
                 DateUtils.formatLocalDate(it?.createDate),
@@ -141,7 +140,6 @@ class MaterialService(
                 baseQuantity = it?.baseQuantity,
                 manufacturerName = it?.manufacturerName,
                 supplierId = it?.supplierId,
-                materialStorage = it?.materialStorage,
             ).apply {
 //                flagActive = it?.flagActive.equals("Y")
                 createCommonCol(userPrincipal!!)
@@ -181,7 +179,6 @@ class MaterialService(
                 it.baseQuantity = x?.baseQuantity
                 it.manufacturerName = x?.manufacturerName
                 it.supplierId = x?.supplierId
-                it.materialStorage = x?.materialStorage
 //                it.flagActive = x?.flagActive.equals("Y")
                 it.updateCommonCol(userPrincipal!!)
             }
@@ -267,13 +264,12 @@ data class MaterialResponseModel(
     val materialName: String? = null,
     val materialStandard: String? = null,
     val unit: String? = null,
-    val minQuantity: Int? = null,
-    val maxQuantity: Int? = null,
-    val baseQuantity: Int? = null,
+    val minQuantity: Double? = null,
+    val maxQuantity: Double? = null,
+    val baseQuantity: Double? = null,
     val manufacturerName: String? = null,
     val supplierId: String? = null,
     val supplierName: String? = null,
-    val materialStorage: String? = null,
 //    val flagActive: String? = null,
     val createUser: String? = null,
     val createDate: String? = null,

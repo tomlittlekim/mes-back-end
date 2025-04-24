@@ -14,9 +14,9 @@ input MaterialInput {
     materialName: String
     materialStandard: String
     unit: String
-    minQuantity: Int
-    maxQuantity: Int
-    baseQuantity: Int
+    minQuantity: Float
+    maxQuantity: Float
+    baseQuantity: Float
     manufacturerName: String
     supplierId: String
     materialStorage: String
@@ -31,9 +31,9 @@ input MaterialUpdate {
     materialName: String
     materialStandard: String
     unit: String
-    minQuantity: Int
-    maxQuantity: Int
-    baseQuantity: Int
+    minQuantity: Float
+    maxQuantity: Float
+    baseQuantity: Float
     manufacturerName: String
     supplierId: String
     materialStorage: String
@@ -49,9 +49,9 @@ type Material {
     materialName: String
     materialStandard: String
     unit: String
-    minQuantity: Int
-    maxQuantity: Int
-    baseQuantity: Int
+    minQuantity: Float
+    maxQuantity: Float
+    baseQuantity: Float
     manufacturerName: String
     supplierId: String
     materialStorage: String

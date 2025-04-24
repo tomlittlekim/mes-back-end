@@ -79,12 +79,11 @@ data class MaterialInput(
     var materialName: String? = null,
     var materialStandard: String? = null,
     var unit: String? = null,
-    var minQuantity: Int? = null,
-    var maxQuantity: Int? = null,
-    var baseQuantity: Int? = null,
+    var minQuantity: Double? = null,
+    var maxQuantity: Double? = null,
+    var baseQuantity: Double? = null,
     var manufacturerName: String? = null,
     var supplierId: String? = null,
-    var materialStorage: String? = null,
 //    var flagActive: String? = null
 )
 
@@ -96,11 +95,10 @@ data class MaterialUpdate(
     var materialName: String? = null,
     var materialStandard: String? = null,
     var unit: String? = null,
-    var minQuantity: Int? = null,
-    var maxQuantity: Int? = null,
-    var baseQuantity: Int? = null,
+    var minQuantity: Double? = null,
+    var maxQuantity: Double? = null,
+    var baseQuantity: Double? = null,
     var manufacturerName: String? = null,
     var supplierId: String? = null,
-    var materialStorage: String? = null,
 //    var flagActive: String? = null
 )

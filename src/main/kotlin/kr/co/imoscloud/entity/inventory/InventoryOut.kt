@@ -30,7 +30,7 @@ class InventoryOut {
     var outType: String? = null
 
     @Column(name = "QTY")
-    var qty: Int? = null
+    var qty: Double? = null
 
     @Column(name = "UNIT_PRICE")
     var unitPrice: Int? = null

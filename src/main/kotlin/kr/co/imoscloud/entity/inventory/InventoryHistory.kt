@@ -40,13 +40,13 @@ class InventoryHistory {
     var unit: String? = null
 
     @Column(name = "PREV_QTY")
-    var prevQty: Int? = null
+    var prevQty: Double? = null
 
     @Column(name = "CHANGE_QTY")
-    var changeQty: Int? = null
+    var changeQty: Double? = null
 
     @Column(name = "CURRENT_QTY")
-    var currentQty: Int? = null
+    var currentQty: Double? = null
 
     @Column(name = "REASON", length = 500)
     var reason: String? = null

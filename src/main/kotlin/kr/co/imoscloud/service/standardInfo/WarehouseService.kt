@@ -27,6 +27,7 @@ class WarehouseService(
             factoryName = filter.factoryName,
             warehouseId = filter.warehouseId,
             warehouseName = filter.warehouseName,
+            warehouseType = filter.warehouseType,
         )
     }
 

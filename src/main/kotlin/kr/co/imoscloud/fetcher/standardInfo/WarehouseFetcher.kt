@@ -57,5 +57,6 @@ data class WarehouseFilter(
     val factoryName:String,
     val warehouseId: String,
     val warehouseName: String,
+    val warehouseType: String?,
 //    val flagActive:String ?= null
 )

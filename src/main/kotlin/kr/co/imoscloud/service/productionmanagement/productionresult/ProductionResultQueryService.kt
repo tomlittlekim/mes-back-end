@@ -46,6 +46,7 @@ class ProductionResultQueryService(
             prodResultId = activeFilter.prodResultId,
             productId = activeFilter.productId,
             equipmentId = activeFilter.equipmentId,
+            warehouseId = activeFilter.warehouseId,
             prodStartTimeFrom = activeFilter.prodStartTimeFrom,
             prodStartTimeTo = activeFilter.prodStartTimeTo,
             prodEndTimeFrom = activeFilter.prodEndTimeFrom,

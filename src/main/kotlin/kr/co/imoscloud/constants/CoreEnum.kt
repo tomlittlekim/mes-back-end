@@ -8,6 +8,12 @@ class CoreEnum {
         SUB_MATERIAL("SUB_MATERIAL", "부자재"),
     }
 
+    enum class WarehouseType(val key: String, val value: String) {
+        MATERIAL_WAREHOUSE("MATERIAL_WAREHOUSE", "자재창고"),
+        PRODUCTION_WAREHOUSE("PRODUCTION_WAREHOUSE", "생산창고"),
+        PRODUCT_WAREHOUSE("PRODUCT_WAREHOUSE", "제품창고"),
+    }
+
     enum class DateTimeFormat(val value: String) {
         DATE_TIME("yyyyMMdd_HHmmss"),
         DATE("yyyyMMdd"),

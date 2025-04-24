@@ -333,7 +333,7 @@ data class OrderHeaderNullableDto(
     val orderNo: String? = null,
     val orderDate: LocalDate? = null,
     val orderer: String? = null,
-    val orderQuantity: Int? = null,
+    val orderQuantity: Double? = null,
     val customerId: String? = null,
     val totalAmount: Int? = 0,
     val vatAmount: Int? = 0,

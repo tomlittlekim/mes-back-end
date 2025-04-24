@@ -57,8 +57,8 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
             UNSHIPPED_QUANTITY = UNSHIPPED_QUANTITY - :quantity,
             SHIPMENT_STATUS = 
                 CASE 
-                    WHEN (UNSHIPPED_QUANTITY - :quantity) = 0 THEN 'completed'
-                    WHEN (UNSHIPPED_QUANTITY - :quantity) != 0 AND (SHIPPED_QUANTITY + :quantity) > 0 THEN 'partial'
+                    WHEN (UNSHIPPED_QUANTITY - :quantity) = 0.0 THEN 'completed'
+                    WHEN (UNSHIPPED_QUANTITY - :quantity) != 0.0 AND (SHIPPED_QUANTITY + :quantity) > 0.0 THEN 'partial'
                     ELSE 'not'
                 END,
             UPDATE_USER = :updateUser,
@@ -70,7 +70,7 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
     fun updateQuantity(
         shipmentId: String,
         orderNo: String?,
-        quantity: Int,
+        quantity: Double,
         updateUser: String,
         updateDate: LocalDateTime?= LocalDateTime.now()
     ): Int

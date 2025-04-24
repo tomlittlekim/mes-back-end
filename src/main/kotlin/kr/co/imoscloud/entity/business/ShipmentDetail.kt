@@ -39,13 +39,13 @@ class ShipmentDetail(
     var shipmentDate: LocalDate? = null,
 
     @Column(name = "SHIPPED_QUANTITY")
-    var shippedQuantity: Int? = null,
+    var shippedQuantity: Double? = null,
 
     @Column(name = "UNSHIPPED_QUANTITY")
-    var unshippedQuantity: Int? = null,
+    var unshippedQuantity: Double? = null,
 
     @Column(name = "CUMULATIVE_SHIPMENT_QUANTITY")
-    var cumulativeShipmentQuantity: Int? = null,
+    var cumulativeShipmentQuantity: Double? = null,
 
     @Column(name = "SHIPMENT_WAREHOUSE")
     var shipmentWarehouse: String? = null,

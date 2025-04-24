@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.service.material.MaterialNameAndSysIdResponseModel
 import kr.co.imoscloud.service.material.MaterialResponseModel
 import kr.co.imoscloud.service.material.MaterialService
 import kr.co.imoscloud.service.material.MaterialTypeGroupResponseModel
@@ -61,6 +62,10 @@ class MaterialDataFetcher(
 
     @DgsQuery
     fun getProductsBySelectBox(): List<MaterialMaster> = materialService.getProductsBySameCompany()
+
+    //재료 이름,id(반제품, 완제품)
+    @DgsQuery
+    fun getMaterialNameAndSysId(): List<MaterialNameAndSysIdResponseModel?> = materialService.getMaterialNameAndSysId()
 }
 
 data class MaterialFilter(

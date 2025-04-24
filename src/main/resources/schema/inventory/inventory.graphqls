@@ -150,9 +150,9 @@ type InventoryOut {
     materialCategory: String
     materialStandard: String
     qty: Float
-    unitPrice: Float
-    unitVat: Float
-    totalPrice: Float
+    unitPrice: Int
+    unitVat: Int
+    totalPrice: Int
     createUser: String
     createDate: String
     updateUser: String

@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.material
 
+import graphql.com.google.common.collect.ImmutableList
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.material.MaterialMaster
@@ -206,6 +207,16 @@ class MaterialService(
         )
         return entityToResponse(materialCodeList)
     }
+    /*재료 이름,id(반제품, 완제품)*/
+    fun getMaterialNameAndSysId(): List<MaterialNameAndSysIdResponseModel?> {
+        val userPrincipal = getCurrentUser()
+        return materialRep.findMaterialNameAndSysId(
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+            materialTypes = null,
+            flagActive = true
+        )
+    }
 
     //제품 정보 테이블을 MaterialTypeGroupResponseModel 계층구조로 전체 조회
     fun getAllMaterials(): List<MaterialTypeGroupResponseModel> {
@@ -275,4 +286,9 @@ data class MaterialResponseModel(
     val createDate: String? = null,
     val updateUser: String? = null,
     val updateDate: String? = null,
+)
+
+data class MaterialNameAndSysIdResponseModel(
+    val systemMaterialId: String? = null,
+    val materialName: String? = null,
 )

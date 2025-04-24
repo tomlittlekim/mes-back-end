@@ -2,9 +2,12 @@ package kr.co.imoscloud.repository.material
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.model.productionmanagement.PlanVsActualResponseDto
+import kr.co.imoscloud.service.material.MaterialNameAndSysIdResponseModel
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
 interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
@@ -127,6 +130,27 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
         site: String,
         compCd: String,
     ): List<MaterialMaster>
+
+    //단순 조회용 name, sysId 반환
+    @Query(
+        value = """
+        SELECT
+            mm.MATERIAL_NAME AS materialName,
+            mm.SYSTEM_MATERIAL_ID AS systemMaterialId
+        FROM MATERIAL_MASTER mm
+        WHERE mm.MATERIAL_TYPE IN ('HALF_PRODUCT', 'COMPLETE_PRODUCT')
+          AND mm.FLAG_ACTIVE = true
+          AND mm.COMP_CD = :compCd
+          AND mm.SITE = :site
+    """,
+        nativeQuery = true
+    )
+    fun findMaterialNameAndSysId(
+        @Param("compCd") compCd: String?,
+        @Param("site") site: String?,
+        @Param("materialTypes") materialTypes: List<String>?,
+        @Param("flagActive") flagActive: Boolean?
+    ): List<MaterialNameAndSysIdResponseModel>
 
     @Query(
         """

@@ -43,7 +43,7 @@ class ShipmentService(
             compCd = header.compCd,
             orderNo = header.orderNo,
             shipmentStatus = "not",
-            shippedQuantity = 0,
+            shippedQuantity = 0.0,
             unshippedQuantity = header.orderQuantity
         ).apply {
             createUser = header.createUser
@@ -76,8 +76,8 @@ class ShipmentService(
         if (detailRepo.existsOlderByMaterialNative(loginUser.compCd, indies) > 0)
             throw IllegalArgumentException("각각의 품목별 최신 정보만 편집 기능을 이용할 수 있습니다.")
 
-        val quantityMap: MutableMap<String, Int> = HashMap()
-        val inventoryMap: MutableMap<String, Int> = HashMap()
+        val quantityMap: MutableMap<String, Double> = HashMap()
+        val inventoryMap: MutableMap<String, Double> = HashMap()
         val detailMap = detailRepo.findAllByCompCdAndIdInAndFlagActiveIsTrue(loginUser.compCd, indies).associateBy { it.id }
 
         val detailList = list.map { req ->
@@ -93,12 +93,12 @@ class ShipmentService(
                         shipmentHandler = req.shipmentHandler ?: this.shipmentHandler
                     }
 
-                    val newQty = (req.cumulativeShipmentQuantity?:0)-(oldCumulativeShipmentQuantity?:0)
+                    val newQty = (req.cumulativeShipmentQuantity?:0.0)-(oldCumulativeShipmentQuantity?:0.0)
                     var mapIndex = "${req.shipmentId}-${req.orderNo}"
-                    quantityMap[mapIndex] = quantityMap.getOrDefault(mapIndex, 0) + newQty
+                    quantityMap[mapIndex] = quantityMap.getOrDefault(mapIndex, 0.0) + newQty
 
                     mapIndex = "${req.shipmentWarehouse}_${req.systemMaterialId}"
-                    inventoryMap[mapIndex] = inventoryMap.getOrDefault(mapIndex, 0) + (newQty * -1)
+                    inventoryMap[mapIndex] = inventoryMap.getOrDefault(mapIndex, 0.0) + (newQty * -1.0)
                     detail
                 }
                 ?:run {
@@ -121,10 +121,10 @@ class ShipmentService(
 
                     var mapIndex = "${req.shipmentId}-${req.orderNo}"
                     val cumulativeQty = detail.cumulativeShipmentQuantity!!
-                    quantityMap[mapIndex] = quantityMap.getOrDefault(mapIndex, 0) + cumulativeQty
+                    quantityMap[mapIndex] = quantityMap.getOrDefault(mapIndex, 0.0) + cumulativeQty
 
                     mapIndex = "${req.shipmentWarehouse}_${req.systemMaterialId}"
-                    inventoryMap[mapIndex] = inventoryMap.getOrDefault(mapIndex, 0) - cumulativeQty
+                    inventoryMap[mapIndex] = inventoryMap.getOrDefault(mapIndex, 0.0) - cumulativeQty
                     detail
                 }
         }
@@ -162,7 +162,7 @@ class ShipmentService(
             .mapNotNull { values: List<OrderDetailWithMaterialDto> ->
                 if (values.isNotEmpty()) {
                     val base = values.first()
-                    val totalQuantity: Int = values.sumOf { it.quantity ?: 0 }
+                    val totalQuantity: Double = values.sumOf { it.quantity ?: 0.0 }
 
                     ShipmentDetailNullableDto(
                         site = loginUser.getSite(),
@@ -204,13 +204,13 @@ class ShipmentService(
                         shipmentId = base.shipmentId
                         shipmentDate = base.shipmentDate
                         shipmentWarehouse = warehouseMap?.warehouseId
-                        shippedQuantity = (base.shippedQuantity?: 0)+(base.cumulativeShipmentQuantity?: 0)
-                        unshippedQuantity = (base.unshippedQuantity?: 0)-(base.cumulativeShipmentQuantity?: 0)
+                        shippedQuantity = (base.shippedQuantity?: 0.0)+(base.cumulativeShipmentQuantity?: 0.0)
+                        unshippedQuantity = (base.unshippedQuantity?: 0.0)-(base.cumulativeShipmentQuantity?: 0.0)
                     }
                 }
                 ?: semi.apply {
                     stockQuantity = warehouseMap?.qty
-                    shippedQuantity = 0
+                    shippedQuantity = 0.0
                     shipmentWarehouse = warehouseMap?.warehouseId
                     unshippedQuantity = this.quantity
                 }
@@ -258,15 +258,15 @@ data class ShipmentDetailNullableDto(
     val materialName: String? = null,
     val materialStandard: String? = null,
     val unit: String? = null,
-    var quantity: Int? = null,
+    var quantity: Double? = null,
     //Warehouse
-    var stockQuantity: Int? = null,
+    var stockQuantity: Double? = null,
     //ShipmentHeader
     var shipmentId: Long? = null,
     var shipmentDate: LocalDate? = null,
-    var shippedQuantity: Int? = null,
-    var unshippedQuantity: Int? = null,
-    var cumulativeShipmentQuantity: Int? = null,
+    var shippedQuantity: Double? = null,
+    var unshippedQuantity: Double? = null,
+    var cumulativeShipmentQuantity: Double? = null,
     var shipmentWarehouse: String? = null,
     var shipmentHandler: String? = null,
     var remark: String? = null,
@@ -291,15 +291,15 @@ data class ShipmentDetailRequest(
     val materialName: String? = null,
     val materialStandard: String? = null,
     val unit: String? = null,
-    var quantity: Int? = null,
+    var quantity: Double? = null,
     //Warehouse
-    var stockQuantity: Int? = null,
+    var stockQuantity: Double? = null,
     //ShipmentHeader
     var shipmentId: Long? = null,
     var shipmentDate: String? = null,
-    var shippedQuantity: Int? = null,
-    var unshippedQuantity: Int? = null,
-    var cumulativeShipmentQuantity: Int? = null,
+    var shippedQuantity: Double? = null,
+    var unshippedQuantity: Double? = null,
+    var cumulativeShipmentQuantity: Double? = null,
     var shipmentWarehouse: String? = null,
     var shipmentHandler: String? = null,
     var remark: String? = null,
@@ -312,7 +312,7 @@ data class OrderDetailWithMaterialDto(
     val materialName: String? = null,
     val materialStandard: String? = null,
     val unit: String? = null,
-    var quantity: Int? = null,
+    var quantity: Double? = null,
 )
 
 data class ShipmentDetailEntryRequest(

@@ -28,7 +28,7 @@ class OrderHeader(
     var orderDate: LocalDate? = null,
 
     @Column(name = "ORDER_QUANTITY")
-    var orderQuantity: Int? = 0,
+    var orderQuantity: Double? = 0.0,
 
     @Column(name = "CUSTOMER_ID", length = 100, nullable = false)
     var customerId: String? = null,

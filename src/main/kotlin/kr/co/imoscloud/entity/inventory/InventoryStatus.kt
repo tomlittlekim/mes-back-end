@@ -27,7 +27,7 @@ class InventoryStatus {
     var systemMaterialId: String? = null
 
     @Column(name = "QTY")
-    var qty: Int? = null
+    var qty: Double? = null
 
     @Column(name = "FLAG_ACTIVE")
     var flagActive: Boolean? = null

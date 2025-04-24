@@ -26,10 +26,10 @@ class ShipmentHeader(
     var shipmentStatus: String? = null,
 
     @Column(name = "SHIPPED_QUANTITY")
-    var shippedQuantity: Int? = null,
+    var shippedQuantity: Double? = null,
 
     @Column(name = "UNSHIPPED_QUANTITY")
-    var unshippedQuantity: Int? = null,
+    var unshippedQuantity: Double? = null,
 
     @Column(name = "REMARK")
     var remark: String? = null,

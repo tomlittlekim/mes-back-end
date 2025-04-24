@@ -36,7 +36,7 @@ abstract class AbstractPrint(
     }
 
     protected fun <H, B> process(head: H?, bodies : List<B>, isRowType: Boolean?=null) : File {
-        val bodyMap = generateBody(bodies, false, isRowType)
+        val bodyMap = generateBody(bodies, true, isRowType)
 
         val base: FileManagement = getFodsFile()
         val headerMap = generateHeader(base.menuId!!)

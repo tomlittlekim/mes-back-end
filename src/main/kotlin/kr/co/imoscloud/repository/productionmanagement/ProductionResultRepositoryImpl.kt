@@ -48,6 +48,7 @@ class ProductionResultRepositoryImpl(
         prodResultId: String?,
         productId: String?,
         equipmentId: String?,
+        warehouseId: String?,
         prodStartTimeFrom: LocalDateTime?,
         prodStartTimeTo: LocalDateTime?,
         prodEndTimeFrom: LocalDateTime?,
@@ -87,6 +88,12 @@ class ProductionResultRepositoryImpl(
         equipmentId?.let {
             if (it.isNotBlank()) {
                 query.where(productionResult.equipmentId.like("%$it%"))
+            }
+        }
+
+        warehouseId?.let {
+            if (it.isNotBlank()) {
+                query.where(productionResult.warehouseId.eq(it))
             }
         }
 

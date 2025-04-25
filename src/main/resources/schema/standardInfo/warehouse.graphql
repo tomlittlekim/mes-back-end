@@ -3,6 +3,7 @@ input WarehouseFilter{
     factoryName:String!
     warehouseId:String!
     warehouseName:String!
+    warehouseType:String
 #    flagActive:String
 }
 

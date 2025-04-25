@@ -1,12 +1,9 @@
 package kr.co.imoscloud.service.productionmanagement.productionresult
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
-import kr.co.imoscloud.model.productionmanagement.*
-import kr.co.imoscloud.repository.inventory.InventoryHistoryRep
-import kr.co.imoscloud.repository.inventory.InventoryStatusRep
-import kr.co.imoscloud.repository.material.BomDetailRepository
-import kr.co.imoscloud.repository.material.BomRepository
-import kr.co.imoscloud.repository.material.MaterialRepository
+import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
+import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter
+import kr.co.imoscloud.model.productionmanagement.ProductionResultInput
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
@@ -22,11 +19,9 @@ class ProductionResultService(
     productionResultRepository: ProductionResultRepository,
     workOrderRepository: WorkOrderRepository,
     defectInfoService: DefectInfoService,
-    bomRepository: BomRepository,
-    bomDetailRepository: BomDetailRepository,
-    inventoryStatusRep: InventoryStatusRep,
-    inventoryHistoryRep: InventoryHistoryRep,
-    materialRepository: MaterialRepository
+    
+    // 재고 관련 서비스를 직접 주입받음
+    productionInventoryService: ProductionInventoryService
 ) {
     // 쿼리 서비스 - 조회 관련 기능 처리
     private val queryService = ProductionResultQueryService(
@@ -34,17 +29,13 @@ class ProductionResultService(
         workOrderRepository
     )
 
-    // 커맨드 서비스 - 생성/수정/삭제 관련 기능 처리
+    // 커맨드 서비스 - 생성/삭제 관련 기능 처리
     private val commandService = ProductionResultCommandService(
         productionResultRepository,
         workOrderRepository,
         defectInfoService,
         queryService,
-        bomRepository,
-        bomDetailRepository,
-        inventoryStatusRep,
-        inventoryHistoryRep,
-        materialRepository
+        productionInventoryService
     )
 
     /**
@@ -60,22 +51,17 @@ class ProductionResultService(
         queryService.getProductionResults(filter)
 
     /**
-     * 생산실적 저장 (생성/수정)
+     * 생산실적 저장 (생성)
      */
     fun saveProductionResult(
         createdRows: List<ProductionResultInput>? = null,
-        updatedRows: List<ProductionResultUpdate>? = null,
         defectInfos: List<DefectInfoInput>? = null
     ): Boolean =
-        commandService.saveProductionResult(createdRows, updatedRows, defectInfos)
+        commandService.saveProductionResult(createdRows, defectInfos)
 
     /**
      * 생산실적 소프트 삭제
      */
     fun softDeleteProductionResult(prodResultId: String): Boolean =
         commandService.softDeleteProductionResult(prodResultId)
-
-    fun getProductionResultsAtMobile(filter: ProductionResultFilter?): List<ProductionResult> =
-        queryService.getProductionResultsAtMobile(filter)
-
 }

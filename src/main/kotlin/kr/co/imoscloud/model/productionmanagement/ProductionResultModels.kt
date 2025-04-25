@@ -11,6 +11,7 @@ data class ProductionResultFilter(
     var prodResultId: String? = null,
     var productId: String? = null,
     var equipmentId: String? = null,
+    var warehouseId: String? = null,
     var prodStartTimeFrom: LocalDateTime? = null,
     var prodStartTimeTo: LocalDateTime? = null,
     var prodEndTimeFrom: LocalDateTime? = null,
@@ -27,28 +28,11 @@ data class ProductionResultInput(
     val goodQty: Double? = null,
     val defectQty: Double? = null,
     val equipmentId: String? = null,
+    val warehouseId: String? = null,
     val resultInfo: String? = null,
     val defectCause: String? = null,
     // 타입을 LocalDateTime에서 String으로 변경
     val prodStartTime: String? = null,
     val prodEndTime: String? = null,
     val flagActive: Boolean? = true
-)
-
-/**
- * 생산실적 수정 입력 클래스
- */
-data class ProductionResultUpdate(
-    val prodResultId: String,
-    val workOrderId: String? = null,
-    val productId: String? = null,
-    val goodQty: Double? = null,
-    val defectQty: Double? = null,
-    val equipmentId: String? = null,
-    val resultInfo: String? = null,
-    val defectCause: String? = null,
-    // 타입을 LocalDateTime에서 String으로 변경
-    val prodStartTime: String? = null,
-    val prodEndTime: String? = null,
-    val flagActive: Boolean? = null
 )

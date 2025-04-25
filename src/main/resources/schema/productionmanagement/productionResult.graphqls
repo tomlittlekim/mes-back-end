@@ -9,10 +9,17 @@ extend type Mutation {
     # 생산실적 관련 뮤테이션
     saveProductionResult(
         createdRows: [ProductionResultInput],
-        updatedRows: [ProductionResultUpdate],
         defectInfos: [DefectInfoInput]
     ): Boolean
     deleteProductionResult(prodResultId: String!): Boolean
+    
+    # 모바일 전용 생산실적 뮤테이션
+    startProductionAtMobile(input: ProductionResultInput!): String
+    updateProductionResultAtMobile(
+        prodResultId: String!,
+        input: ProductionResultInput!,
+        defectInfos: [DefectInfoInput]
+    ): Boolean
 }
 
 # 기본 생산실적 조회용 필터
@@ -21,6 +28,7 @@ input ProductionResultFilter {
     prodResultId: String
     productId: String
     equipmentId: String
+    warehouseId: String
     prodStartTimeFrom: String
     prodStartTimeTo: String
     prodEndTimeFrom: String
@@ -41,6 +49,7 @@ type ProductionResult {
     progressRate: String
     defectRate: String
     equipmentId: String
+    warehouseId: String
     resultInfo: String
     defectCause: String
     prodStartTime: String   # 생산시작일시 추가
@@ -61,21 +70,7 @@ input ProductionResultInput {
     goodQty: Float
     defectQty: Float
     equipmentId: String
-    resultInfo: String
-    defectCause: String
-    prodStartTime: String   # 생산시작일시 추가
-    prodEndTime: String     # 생산종료일시 추가
-    flagActive: Boolean
-}
-
-# 생산실적 수정 타입
-input ProductionResultUpdate {
-    prodResultId: String!
-    workOrderId: String
-    productId: String
-    goodQty: Float
-    defectQty: Float
-    equipmentId: String
+    warehouseId: String
     resultInfo: String
     defectCause: String
     prodStartTime: String   # 생산시작일시 추가

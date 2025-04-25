@@ -46,6 +46,7 @@ class ProductionResultQueryService(
             prodResultId = activeFilter.prodResultId,
             productId = activeFilter.productId,
             equipmentId = activeFilter.equipmentId,
+            warehouseId = activeFilter.warehouseId,
             prodStartTimeFrom = activeFilter.prodStartTimeFrom,
             prodStartTimeTo = activeFilter.prodStartTimeTo,
             prodEndTimeFrom = activeFilter.prodEndTimeFrom,
@@ -67,6 +68,23 @@ class ProductionResultQueryService(
         )
 
         // 현재 편집 중인 생산실적을 제외한 모든 생산실적의 양품수량 합계 계산
+        return results.sumOf { it.goodQty ?: 0.0 }
+    }
+
+    /**
+     * 특정 생산실적을 제외한 작업지시별 총 생산 양품수량 조회
+     * - 특정 작업지시ID에 대한 모든 생산실적의 양품수량 합계를 반환하되,
+     * - 지정된 생산실적ID의 데이터는 제외
+     */
+    fun getTotalGoodQtyByWorkOrderIdExcludingResult(workOrderId: String, prodResultId: String): Double {
+        val currentUser = getCurrentUserPrincipal()
+        val results = productionResultRepository.getProductionResultsByWorkOrderId(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            workOrderId = workOrderId
+        ).filter { it.prodResultId != prodResultId } // 특정 생산실적ID 제외
+        
+        // 필터링된 생산실적의 양품수량 합계 계산
         return results.sumOf { it.goodQty ?: 0.0 }
     }
 

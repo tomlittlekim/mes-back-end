@@ -1,23 +1,22 @@
 package kr.co.imoscloud.fetcher.productionmanagement
 
-import com.netflix.graphql.dgs.*
+import com.netflix.graphql.dgs.DgsComponent
+import com.netflix.graphql.dgs.DgsData
+import com.netflix.graphql.dgs.DgsQuery
+import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.exceptions.DgsEntityNotFoundException
+import com.querydsl.core.util.MathUtils.result
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
-import kr.co.imoscloud.entity.productionmanagement.WorkOrder
-import kr.co.imoscloud.model.productionmanagement.*
-import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
-import kr.co.imoscloud.service.productionmanagement.DefectInfoService
+import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
+import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter
+import kr.co.imoscloud.model.productionmanagement.ProductionResultInput
 import kr.co.imoscloud.service.productionmanagement.productionresult.ProductionResultService
-import kr.co.imoscloud.service.productionmanagement.WorkOrderService
 import kr.co.imoscloud.util.DateUtils
 import org.slf4j.LoggerFactory
 
 @DgsComponent
 class ProductionResultDataFetcher(
     private val productionResultService: ProductionResultService,
-    private val workOrderService: WorkOrderService,
-    private val workOrderRepository: WorkOrderRepository,
-    private val defectInfoService: DefectInfoService
 ) {
     private val log = LoggerFactory.getLogger(ProductionResultDataFetcher::class.java)
 
@@ -76,30 +75,14 @@ class ProductionResultDataFetcher(
         }
     }
 
-    // 생산실적 저장 (생성/수정)
+    // 생산실적 저장 (생성)
     @DgsData(parentType = "Mutation", field = "saveProductionResult")
     fun saveProductionResult(
         @InputArgument("createdRows") createdRows: List<ProductionResultInput>? = null,
-        @InputArgument("updatedRows") updatedRows: List<ProductionResultUpdate>? = null,
         @InputArgument("defectInfos") defectInfos: List<DefectInfoInput>? = null
     ): Boolean {
         try {
-            log.info("GraphQL 요청: saveProductionResult - 생성: ${createdRows?.size ?: 0}개, 수정: ${updatedRows?.size ?: 0}개, 불량정보: ${defectInfos?.size ?: 0}개")
-
-            // 불량정보 로깅
-            defectInfos?.forEachIndexed { index, defectInfo ->
-                log.info(
-                    "불량정보[$index] - prodResultId: ${defectInfo.prodResultId}, " +
-                            "defectQty: ${defectInfo.defectQty}, defectType: ${defectInfo.defectType}, " +
-                            "defectCause: ${defectInfo.defectCause}"
-                )
-            }
-
-            // 서비스 메서드 호출. 예외는 서비스 계층에서 던짐
-            val result =
-                productionResultService.saveProductionResult(createdRows, updatedRows, defectInfos)
-            log.info("GraphQL 응답: saveProductionResult - 결과: $result")
-            return result
+            return productionResultService.saveProductionResult(createdRows, defectInfos)
         } catch (e: IllegalArgumentException) {
             // 비즈니스 로직 오류는 로그로 남기고 예외를 던짐
             log.warn("생산실적 저장 중 비즈니스 로직 오류: ${e.message}")
@@ -123,9 +106,4 @@ class ProductionResultDataFetcher(
             return false
         }
     }
-
-    @DgsQuery
-    fun productionResultsAtMobile(@InputArgument filter: ProductionResultFilter?): List<ProductionResult> =
-        productionResultService.getProductionResultsAtMobile(filter)
-
 }

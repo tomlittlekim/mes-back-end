@@ -1,5 +1,5 @@
 type FileManagement {
-    seq: Int
+    id: Int
     name: String
     extension: String,
     path: String,

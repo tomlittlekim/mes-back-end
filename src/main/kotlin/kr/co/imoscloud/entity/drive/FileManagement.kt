@@ -4,13 +4,13 @@ import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
 
 @Entity
-@Table(name = "File_Management")
+@Table(name = "FILE_MANAGEMENT")
 class FileManagement(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "FILE_ID")
-    val seq: Long = 0,
+    val id: Long = 0,
 
     @Column(name = "FILE_NAME", unique = true, nullable = false)
     var name: String,

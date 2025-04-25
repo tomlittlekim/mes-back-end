@@ -13,6 +13,6 @@ class DriveController(
     private val driveService: DriveService,
 ) {
 
-    @PostMapping("")
+    @PostMapping("/add")
     fun addFile(@ModelAttribute req: LabelExcelRequest): String = driveService.addFile(req)
 }

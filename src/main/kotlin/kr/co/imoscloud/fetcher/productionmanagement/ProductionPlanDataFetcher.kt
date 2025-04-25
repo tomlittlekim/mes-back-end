@@ -147,4 +147,10 @@ class ProductionPlanDataFetcher(
     fun planVsActual(@InputArgument("filter") filterInput: PlanVsActualFilter): List<PlanVsActualGraphQLDto> {
         return productionPlanService.getPlanVsActualData(filterInput)
     }
+
+    //planVsActual랑 같은 필터 사용
+    @DgsQuery
+    fun periodicProduction(@InputArgument("filter") filterInput: PlanVsActualFilter): List<PeriodicProductionResponseDto> {
+        return productionPlanService.getPeriodicProduction(filterInput)
+    }
 }

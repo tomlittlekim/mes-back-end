@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.material
 
+import graphql.com.google.common.collect.ImmutableList
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.material.MaterialMaster
@@ -104,7 +105,6 @@ class MaterialService(
                 it?.manufacturerName,
                 it?.supplierId,
                 it?.supplierName,
-                it?.materialStorage,
 //                if (it?.flagActive == true) "Y" else "N",
                 it?.createUser,
                 DateUtils.formatLocalDate(it?.createDate),
@@ -141,7 +141,6 @@ class MaterialService(
                 baseQuantity = it?.baseQuantity,
                 manufacturerName = it?.manufacturerName,
                 supplierId = it?.supplierId,
-                materialStorage = it?.materialStorage,
             ).apply {
 //                flagActive = it?.flagActive.equals("Y")
                 createCommonCol(userPrincipal!!)
@@ -181,7 +180,6 @@ class MaterialService(
                 it.baseQuantity = x?.baseQuantity
                 it.manufacturerName = x?.manufacturerName
                 it.supplierId = x?.supplierId
-                it.materialStorage = x?.materialStorage
 //                it.flagActive = x?.flagActive.equals("Y")
                 it.updateCommonCol(userPrincipal!!)
             }
@@ -208,6 +206,16 @@ class MaterialService(
             compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
         )
         return entityToResponse(materialCodeList)
+    }
+    /*재료 이름,id(반제품, 완제품)*/
+    fun getMaterialNameAndSysId(): List<MaterialNameAndSysIdResponseModel?> {
+        val userPrincipal = getCurrentUser()
+        return materialRep.findMaterialNameAndSysId(
+            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
+            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+            materialTypes = null,
+            flagActive = true
+        )
     }
 
     //제품 정보 테이블을 MaterialTypeGroupResponseModel 계층구조로 전체 조회
@@ -267,16 +275,20 @@ data class MaterialResponseModel(
     val materialName: String? = null,
     val materialStandard: String? = null,
     val unit: String? = null,
-    val minQuantity: Int? = null,
-    val maxQuantity: Int? = null,
-    val baseQuantity: Int? = null,
+    val minQuantity: Double? = null,
+    val maxQuantity: Double? = null,
+    val baseQuantity: Double? = null,
     val manufacturerName: String? = null,
     val supplierId: String? = null,
     val supplierName: String? = null,
-    val materialStorage: String? = null,
 //    val flagActive: String? = null,
     val createUser: String? = null,
     val createDate: String? = null,
     val updateUser: String? = null,
     val updateDate: String? = null,
+)
+
+data class MaterialNameAndSysIdResponseModel(
+    val systemMaterialId: String? = null,
+    val materialName: String? = null,
 )

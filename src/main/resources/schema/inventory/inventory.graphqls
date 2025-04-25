@@ -20,7 +20,7 @@ type InventoryIn {
     materialName: String
     materialCategory: String
     materialStandard: String
-    qty: Int
+    qty: Float
     unitPrice: Int
     unitVat: Int
     totalPrice: Int
@@ -37,7 +37,7 @@ type InventoryStatus {
     materialName: String
     currentQty: String
     unit: String
-    qty: Int
+    qty: Float
 }
 type InventoryHistory {
     inOutType: String
@@ -46,8 +46,8 @@ type InventoryHistory {
     manufacturerName: String
     materialName: String
     unit: String
-    changeQty: Int
-    currentQty: Int
+    changeQty: Float
+    currentQty: Float
     createDate: String
 }
 input InventoryInManagementFilter {
@@ -149,7 +149,7 @@ type InventoryOut {
     materialName: String
     materialCategory: String
     materialStandard: String
-    qty: Int
+    qty: Float
     unitPrice: Int
     unitVat: Int
     totalPrice: Int

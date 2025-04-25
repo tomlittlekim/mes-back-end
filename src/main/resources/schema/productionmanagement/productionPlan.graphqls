@@ -2,6 +2,7 @@ extend type Query {
     productionPlans(filter: ProductionPlanFilter): [ProductionPlan]!
     productionPlansWithWorkOrders(filter: ProductionPlanFilter): [ProductionPlan]!
     productMaterials: [Material]! # 새로운 쿼리 추가
+    planVsActual(filter: PlanVsActualFilter): [PlanVsActual]
 }
 
 extend type Mutation {
@@ -31,6 +32,22 @@ type ProductionPlan {
     updateUser: String
     flagActive: Boolean
     workOrders: [WorkOrder]  # 리졸버를 통해 처리됨
+}
+
+type PlanVsActual {
+    prodPlanId: String
+    planQty: Int
+    totalOrderQty: Int
+    completedOrderQty: Int
+    achievementRate: Float
+    materialName: String
+    systemMaterialId: String
+}
+
+input PlanVsActualFilter {
+    systemMaterialIds: [String]
+    startDate: String
+    endDate: String
 }
 
 input ProductionPlanFilter {

@@ -33,7 +33,7 @@ data class OrderDetail(
     var deliveryDate: LocalDate? = null,
 
     @Column(name = "QUANTITY", nullable = false)
-    var quantity: Int,
+    var quantity: Double,
 
     @Column(name = "UNIT_PRICE", nullable = false)
     var unitPrice: Int,

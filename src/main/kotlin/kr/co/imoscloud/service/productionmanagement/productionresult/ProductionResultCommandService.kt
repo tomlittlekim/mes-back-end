@@ -3,7 +3,6 @@ package kr.co.imoscloud.service.productionmanagement.productionresult
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
 import kr.co.imoscloud.model.productionmanagement.ProductionResultInput
-import kr.co.imoscloud.model.productionmanagement.ProductionResultUpdate
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
@@ -13,24 +12,24 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * 생산실적 생성/수정/삭제 관련 서비스
+ * 생산실적 생성/삭제 관련 서비스
  */
 @Service
 class ProductionResultCommandService(
     private val productionResultRepository: ProductionResultRepository,
     private val workOrderRepository: WorkOrderRepository,
     private val defectInfoService: DefectInfoService,
-    private val productionResultQueryService: ProductionResultQueryService
+    private val productionResultQueryService: ProductionResultQueryService,
+    private val productionInventoryService: ProductionInventoryService
 ) {
     /**
-     * 생산실적 저장 (생성/수정)
+     * 생산실적 저장 (생성)
      * - 불량정보도 함께 저장할 수 있는 기능 추가
      * - 양품수량 검증 로직 추가 (작업지시수량 초과 불가)
      */
     @Transactional
     fun saveProductionResult(
         createdRows: List<ProductionResultInput>? = null,
-        updatedRows: List<ProductionResultUpdate>? = null,
         defectInfos: List<DefectInfoInput>? = null
     ): Boolean {
         try {
@@ -93,6 +92,7 @@ class ProductionResultCommandService(
                         this.progressRate = progressRate
                         this.defectRate = defectRate
                         equipmentId = input.equipmentId
+                        warehouseId = input.warehouseId
                         resultInfo = input.resultInfo
                         defectCause = input.defectCause
                         prodStartTime = parseDateTimeFromString(input.prodStartTime)
@@ -102,6 +102,29 @@ class ProductionResultCommandService(
                     }
 
                     val savedResult = productionResultRepository.save(newResult)
+
+                    // 생산한 제품 ID로 BOM 찾기
+                    input.productId?.let { productId ->
+                        // 재고 관련 처리를 ProductionInventoryService로 위임
+                        // 자재 소비 처리
+                        productionInventoryService.processProductionMaterialConsumption(
+                            productId = productId, 
+                            productionQty = goodQty.toInt(), 
+                            site = currentUser.getSite(), 
+                            compCd = currentUser.compCd
+                        )
+                        
+                        // 생산품 재고 증가 처리
+                        if (goodQty > 0) {
+                            productionInventoryService.increaseProductInventory(
+                                productId = productId,
+                                productionQty = goodQty,
+                                site = currentUser.getSite(),
+                                compCd = currentUser.compCd,
+                                warehouseId = input.warehouseId
+                            )
+                        }
+                    }
 
                     // 불량정보가 있는 경우 함께 저장
                     val relatedDefectInfos = defectInfos
@@ -126,119 +149,6 @@ class ProductionResultCommandService(
                     // 작업지시가 있는 경우에만 작업지시 상태 업데이트
                     if (workOrder != null) {
                         updateWorkOrderStatus(workOrder, goodQty, existingTotalGoodQty, workOrder.orderQty ?: 0.0, totalQty)
-                    }
-                } catch (e: Exception) {
-                    throw e  // 트랜잭션 롤백을 위해 예외를 다시 던짐
-                }
-            }
-
-            // 기존 생산실적 업데이트
-            updatedRows?.forEach { update ->
-                try {
-                    // 특정 조건에 맞는 생산실적을 직접 찾는 쿼리 사용
-                    val existingResult = productionResultRepository.findBySiteAndCompCdAndProdResultId(
-                        currentUser.getSite(),
-                        currentUser.compCd,
-                        update.prodResultId
-                    ) ?: throw IllegalArgumentException("수정할 생산실적을 찾을 수 없습니다: ${update.prodResultId}")
-
-                    // 작업지시 정보 조회 (선택 사항으로 변경)
-                    val workOrder = existingResult.workOrderId?.let {
-                        workOrderRepository.findBySiteAndCompCdAndWorkOrderId(
-                            site = currentUser.getSite(),
-                            compCd = currentUser.compCd,
-                            workOrderId = it
-                        )
-                    }
-
-                    // 기존 양품수량
-                    val oldGoodQty = existingResult.goodQty ?: 0.0
-                    // 새 양품수량
-                    val newGoodQty = update.goodQty ?: oldGoodQty
-
-                    // 작업지시가 있는 경우에만 다른 생산실적의 양품수량 합계 조회
-                    var otherGoodQty = 0.0
-                    var orderQty = 0.0
-
-                    if (workOrder != null) {
-                        otherGoodQty = productionResultQueryService.getTotalGoodQtyByWorkOrderId(workOrder.workOrderId!!) - oldGoodQty
-                        orderQty = workOrder.orderQty ?: 0.0
-
-                        // 양품수량 검증 - 변경 후 총 양품수량이 작업지시수량을 초과하는지 확인
-                        if (otherGoodQty + newGoodQty > orderQty) {
-                            throw IllegalArgumentException("총 생산 양품수량이 작업지시수량(${orderQty})을 초과할 수 없습니다. 현재 등록된 양품수량: ${otherGoodQty}")
-                        }
-                    }
-
-                    // Qty 관련 계산
-                    val defectQty = update.defectQty ?: existingResult.defectQty ?: 0.0
-                    val totalQty = newGoodQty + defectQty
-
-                    // 수정된 진척률 계산 - 작업지시가 있는 경우에만 계산
-                    val progressRate = if (workOrder != null && orderQty > 0) {
-                        // 다른 생산실적의 양품수량 + 현재 생산실적의 양품수량으로 누적 진척률 계산
-                        String.format("%.1f", ((otherGoodQty + newGoodQty) / orderQty) * 100.0)
-                    } else "0.0"
-
-                    // 불량률 계산 - 현재 생산실적의 양품과 불량만 고려
-                    val defectRate = if (totalQty > 0) {
-                        String.format("%.1f", (defectQty / totalQty) * 100.0)
-                    } else "0.0"
-
-                    // 생산실적 업데이트
-                    existingResult.apply {
-                        update.workOrderId?.let { workOrderId = it }
-                        update.productId?.let { productId = it }
-                        update.goodQty?.let { this.goodQty = it }
-                        update.defectQty?.let { this.defectQty = it }
-                        this.progressRate = progressRate
-                        this.defectRate = defectRate
-                        update.equipmentId?.let { equipmentId = it }
-                        update.resultInfo?.let { resultInfo = it }
-                        update.defectCause?.let { defectCause = it }
-                        update.prodStartTime?.let { prodStartTime = parseDateTimeFromString(it) }
-                        update.prodEndTime?.let { prodEndTime = parseDateTimeFromString(it) }
-                        updateCommonCol(currentUser)
-                    }
-
-                    val savedResult = productionResultRepository.save(existingResult)
-
-                    // 불량정보가 있는 경우 함께 처리
-                    val relatedDefectInfos = defectInfos?.filter {
-                        it.prodResultId == update.prodResultId
-                    }
-
-                    if (!relatedDefectInfos.isNullOrEmpty()) {
-                        // 기존 불량정보 조회
-                        val existingDefectInfos = defectInfoService.getDefectInfoByProdResultId(update.prodResultId)
-
-                        if (existingDefectInfos.isNotEmpty()) {
-                            // 기존 불량정보는 모두 비활성화
-                            existingDefectInfos.forEach { defectInfo ->
-                                defectInfoService.softDeleteDefectInfo(defectInfo.defectId!!)
-                            }
-                        }
-
-                        // 각 불량정보에 prodResultId를 명시적으로 설정
-                        val updatedDefectInfos = relatedDefectInfos.map { defectInfo ->
-                            // prodResultId가 없거나 다른 경우 업데이트
-                            if (defectInfo.prodResultId.isNullOrBlank() || defectInfo.prodResultId != savedResult.prodResultId) {
-                                defectInfo.copy(prodResultId = savedResult.prodResultId)
-                            } else {
-                                defectInfo
-                            }
-                        }
-
-                        // 새 불량정보 추가
-                        defectInfoService.saveDefectInfoForProductionResult(
-                            prodResultId = savedResult.prodResultId!!,
-                            defectInputs = updatedDefectInfos
-                        )
-                    }
-
-                    // 작업지시가 있는 경우에만 작업지시 상태 업데이트
-                    if (workOrder != null) {
-                        updateWorkOrderStatus(workOrder, newGoodQty, otherGoodQty, orderQty, totalQty)
                     }
                 } catch (e: Exception) {
                     throw e  // 트랜잭션 롤백을 위해 예외를 다시 던짐

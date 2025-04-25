@@ -3,10 +3,7 @@ package kr.co.imoscloud.service.productionmanagement
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
-import kr.co.imoscloud.model.productionmanagement.ProductionPlanDTO
-import kr.co.imoscloud.model.productionmanagement.ProductionPlanFilter
-import kr.co.imoscloud.model.productionmanagement.ProductionPlanInput
-import kr.co.imoscloud.model.productionmanagement.ProductionPlanUpdate
+import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipalOrNull
@@ -16,7 +13,7 @@ import org.springframework.stereotype.Service
 @Service
 class ProductionPlanService(
     val productionPlanRepository: ProductionPlanRepository,
-    val materialMasterRepository: MaterialRepository
+    val materialMasterRepository: MaterialRepository,
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanService::class.java)
 
@@ -169,5 +166,29 @@ class ProductionPlanService(
             log.error("생산계획 소프트 삭제 중 오류 발생", e)
             throw e  // 오류를 상위로 전파하도록 변경
         }
+    }
+
+    /*
+    레포트 화면에서 계획대비 실적조회를 하기 위한 메서드
+     */
+
+    fun getPlanVsActualData(filter: PlanVsActualFilter): List<PlanVsActualGraphQLDto> {
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        val materialIds = filter.systemMaterialIds.filterNotNull().takeIf { it.isNotEmpty() }
+
+        // 인터페이스 프로젝션 사용
+        val results = productionPlanRepository.planVsActual(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            systemMaterialIds = materialIds,
+            flagActive = true,
+            startDate = filter.startDate,
+            endDate = filter.endDate
+        )
+        
+        // 인터페이스 프로젝션 결과를 GraphQL 응답용 DTO로 변환
+        return results.map { it.toGraphQLResponse() }
     }
 }

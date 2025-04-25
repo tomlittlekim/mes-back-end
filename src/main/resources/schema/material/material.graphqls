@@ -14,9 +14,9 @@ input MaterialInput {
     materialName: String
     materialStandard: String
     unit: String
-    minQuantity: Int
-    maxQuantity: Int
-    baseQuantity: Int
+    minQuantity: Float
+    maxQuantity: Float
+    baseQuantity: Float
     manufacturerName: String
     supplierId: String
     materialStorage: String
@@ -31,9 +31,9 @@ input MaterialUpdate {
     materialName: String
     materialStandard: String
     unit: String
-    minQuantity: Int
-    maxQuantity: Int
-    baseQuantity: Int
+    minQuantity: Float
+    maxQuantity: Float
+    baseQuantity: Float
     manufacturerName: String
     supplierId: String
     materialStorage: String
@@ -49,9 +49,9 @@ type Material {
     materialName: String
     materialStandard: String
     unit: String
-    minQuantity: Int
-    maxQuantity: Int
-    baseQuantity: Int
+    minQuantity: Float
+    maxQuantity: Float
+    baseQuantity: Float
     manufacturerName: String
     supplierId: String
     materialStorage: String
@@ -74,6 +74,11 @@ type MaterialCategoryGroup {
     materials: [Material]
 }
 
+type MaterialNameAndSysId{
+    systemMaterialId: String
+    materialName: String
+}
+
 extend type Query {
     getRawSubMaterials(filter: MaterialFilter): [Material]
     getCompleteMaterials(filter: MaterialFilter): [Material]
@@ -84,6 +89,9 @@ extend type Query {
     #드롭다운용 코드 조회
     getMaterialCode: [Material]
     getProductsBySelectBox: [Material]
+
+    #재료 이름,id(반제품, 완제품)
+    getMaterialNameAndSysId:[MaterialNameAndSysId]
 }
 
 extend type Mutation {

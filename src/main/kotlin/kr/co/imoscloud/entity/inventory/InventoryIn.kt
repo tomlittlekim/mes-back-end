@@ -28,7 +28,7 @@ class InventoryIn {
     var inType: String? = null
 
     @Column(name = "QTY")
-    var qty: Int? = null
+    var qty: Double? = null
 
     @Column(name = "UNIT_PRICE")
     var unitPrice: Int? = null
@@ -39,6 +39,7 @@ class InventoryIn {
     @Column(name = "TOTAL_PRICE")
     var totalPrice: Int? = null
 
+    /** 사용 여부 */
     @Column(name = "FLAG_ACTIVE")
     var flagActive: Boolean? = null
 

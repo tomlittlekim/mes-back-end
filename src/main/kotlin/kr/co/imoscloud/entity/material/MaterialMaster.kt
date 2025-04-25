@@ -39,13 +39,13 @@ class MaterialMaster (
     var unit: String? = null,
 
     @Column(name = "MIN_QUANTITY")
-    var minQuantity: Int? = null,
+    var minQuantity: Double? = null,
 
     @Column(name = "MAX_QUANTITY")
-    var maxQuantity: Int? = null,
+    var maxQuantity: Double? = null,
 
     @Column(name = "BASE_QUANTITY")
-    var baseQuantity: Int? = null,
+    var baseQuantity: Double? = null,
 
     @Column(name = "MANUFACTURER_NAME", length = 100)
     var manufacturerName: String? = null,
@@ -56,6 +56,6 @@ class MaterialMaster (
     @Column(name = "SUPPLIER_NAME", length = 100)
     var supplierName: String? = null,
 
-    @Column(name = "MATERIAL_STORAGE", length = 100)
-    var materialStorage: String? = null,
+//    @Column(name = "MATERIAL_STORAGE", length = 100)
+//    var materialStorage: String? = null,
 ): CommonCol()

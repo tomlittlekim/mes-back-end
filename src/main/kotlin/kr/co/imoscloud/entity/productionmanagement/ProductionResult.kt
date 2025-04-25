@@ -42,6 +42,9 @@ class ProductionResult : CommonCol() {
     @Column(name = "EQUIPMENT_ID", length = 20)
     var equipmentId: String? = null
 
+    @Column(name = "WAREHOUSE_ID", length = 50)
+    var warehouseId: String? = null
+
     @Column(name = "RESULT_INFO", columnDefinition = "TEXT")
     var resultInfo: String? = null
 

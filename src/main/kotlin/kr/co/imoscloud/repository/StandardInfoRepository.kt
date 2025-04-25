@@ -394,6 +394,7 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
             and   (f.factoryName like concat ('%',:factoryName,'%'))
             and   (w.warehouseId like concat ('%',:warehouseId,'%'))
             and   (w.warehouseName like concat ('%',:warehouseName,'%'))
+            and   (:warehouseType is null or w.warehouseType = :warehouseType)
             and   w.flagActive = true
         """
     )
@@ -403,7 +404,8 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
         factoryId:String,
         factoryName:String,
         warehouseId:String,
-        warehouseName:String
+        warehouseName:String,
+        warehouseType: String?,
     ):List<WarehouseResponse?>
 
     @Query(

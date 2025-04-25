@@ -25,6 +25,7 @@ interface ProductionResultRepositoryCustom {
         prodResultId: String?,
         productId: String?,
         equipmentId: String?,
+        warehouseId: String?,
         prodStartTimeFrom: LocalDateTime?,
         prodStartTimeTo: LocalDateTime?,
         prodEndTimeFrom: LocalDateTime?,

@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.service.material.MaterialNameAndSysIdResponseModel
 import kr.co.imoscloud.service.material.MaterialResponseModel
 import kr.co.imoscloud.service.material.MaterialService
 import kr.co.imoscloud.service.material.MaterialTypeGroupResponseModel
@@ -61,6 +62,10 @@ class MaterialDataFetcher(
 
     @DgsQuery
     fun getProductsBySelectBox(): List<MaterialMaster> = materialService.getProductsBySameCompany()
+
+    //재료 이름,id(반제품, 완제품)
+    @DgsQuery
+    fun getMaterialNameAndSysId(): List<MaterialNameAndSysIdResponseModel?> = materialService.getMaterialNameAndSysId()
 }
 
 data class MaterialFilter(
@@ -79,12 +84,11 @@ data class MaterialInput(
     var materialName: String? = null,
     var materialStandard: String? = null,
     var unit: String? = null,
-    var minQuantity: Int? = null,
-    var maxQuantity: Int? = null,
-    var baseQuantity: Int? = null,
+    var minQuantity: Double? = null,
+    var maxQuantity: Double? = null,
+    var baseQuantity: Double? = null,
     var manufacturerName: String? = null,
     var supplierId: String? = null,
-    var materialStorage: String? = null,
 //    var flagActive: String? = null
 )
 
@@ -96,11 +100,10 @@ data class MaterialUpdate(
     var materialName: String? = null,
     var materialStandard: String? = null,
     var unit: String? = null,
-    var minQuantity: Int? = null,
-    var maxQuantity: Int? = null,
-    var baseQuantity: Int? = null,
+    var minQuantity: Double? = null,
+    var maxQuantity: Double? = null,
+    var baseQuantity: Double? = null,
     var manufacturerName: String? = null,
     var supplierId: String? = null,
-    var materialStorage: String? = null,
 //    var flagActive: String? = null
 )

@@ -1,0 +1,16 @@
+type FileManagement {
+    seq: Int
+    name: String
+    extension: String,
+    path: String,
+    size: Int
+    menuId: String
+}
+
+extend type Mutation {
+    deleteFile(id: Int): String
+}
+
+extend type Query {
+    getAllFiles: [FileManagement]
+}

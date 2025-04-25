@@ -207,6 +207,11 @@ class ProductionResultCommandService(
             )
 
             existingResult?.let {
+                // 기존 재고 복원 처리
+                if (it.goodQty != null && it.goodQty!! > 0.0 && it.productId != null) {
+                    productionInventoryService.restoreInventoryForDeletedProductionResult(it)
+                }
+                
                 // flagActive를 false로 설정
                 it.flagActive = false
                 it.updateCommonCol(currentUser)

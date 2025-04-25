@@ -64,7 +64,4 @@ class ProductionResultService(
      */
     fun softDeleteProductionResult(prodResultId: String): Boolean =
         commandService.softDeleteProductionResult(prodResultId)
-
-    fun getProductionResultsAtMobile(filter: ProductionResultFilter?): List<ProductionResult> =
-        queryService.getProductionResultsAtMobile(filter)
 }

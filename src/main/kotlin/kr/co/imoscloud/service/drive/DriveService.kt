@@ -39,7 +39,10 @@ class DriveService(
         if (driveRepo.existsByNameAndExtensionAndMenuIdAndFlagActiveIsTrue(name, extension, req.menuId))
             throw IllegalArgumentException("동일한 이름과 확장자 파일이 존재합니다. ")
 
-        val file = generateEntityUsingFile(req.file, loginUser)
+        val file = generateEntityUsingFile(req.file).apply {
+            menuId = req.menuId
+            createCommonCol(loginUser)
+        }
         val filePath = getSavePath(file)
 
         FileOutputStream(filePath).write(req.file.bytes)
@@ -83,10 +86,7 @@ class DriveService(
         FileInputStream(file).use { it.copyTo(response.outputStream) }
     }
 
-    private fun generateEntityUsingFile(
-        file: MultipartFile,
-        loginUser: UserPrincipal,
-    ): FileManagement {
+    private fun generateEntityUsingFile(file: MultipartFile): FileManagement {
         val nameAndExtension = getNameWithExtension(file.originalFilename)
 
         val fileEntity = FileManagement(
@@ -94,7 +94,7 @@ class DriveService(
             extension = nameAndExtension.second,
             path = CoreEnum.DrivePath.HOME_PATH.value,
             size = (file.size / 1024).toInt(),
-        ).apply { createCommonCol(loginUser) }
+        )
 
         try {
             FileOutputStream(getSavePath(fileEntity)).use { outputStream -> outputStream.write(file.bytes) }

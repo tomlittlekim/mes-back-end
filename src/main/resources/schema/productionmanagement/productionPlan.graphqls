@@ -3,6 +3,8 @@ extend type Query {
     productionPlansWithWorkOrders(filter: ProductionPlanFilter): [ProductionPlan]!
     productMaterials: [Material]! # 새로운 쿼리 추가
     planVsActual(filter: PlanVsActualFilter): [PlanVsActual]
+    periodicProduction(filter: PlanVsActualFilter): [PeriodicProduction]
+
 }
 
 extend type Mutation {
@@ -34,16 +36,25 @@ type ProductionPlan {
     workOrders: [WorkOrder]  # 리졸버를 통해 처리됨
 }
 
+# 계획대비 설적 조회
 type PlanVsActual {
     prodPlanId: String
-    planQty: Int
-    totalOrderQty: Int
-    completedOrderQty: Int
+    planQty: Float
+    totalOrderQty: Float
+    completedOrderQty: Float
     achievementRate: Float
     materialName: String
     systemMaterialId: String
 }
 
+type PeriodicProduction {
+    materialName: String
+    totalGoodQty: Float
+    totalDefectQty: Float
+    totalDefectRate: Float
+}
+
+#계획대비 실적조회, 기간별 생산 실적, 불량율 현황 (공통 필터)
 input PlanVsActualFilter {
     systemMaterialIds: [String]
     startDate: String

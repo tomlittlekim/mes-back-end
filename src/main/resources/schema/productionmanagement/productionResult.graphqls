@@ -12,6 +12,14 @@ extend type Mutation {
         defectInfos: [DefectInfoInput]
     ): Boolean
     deleteProductionResult(prodResultId: String!): Boolean
+    
+    # 모바일 전용 생산실적 뮤테이션
+    startProductionAtMobile(input: ProductionResultInput!): String
+    updateProductionResultAtMobile(
+        prodResultId: String!,
+        input: ProductionResultInput!,
+        defectInfos: [DefectInfoInput]
+    ): Boolean
 }
 
 # 기본 생산실적 조회용 필터

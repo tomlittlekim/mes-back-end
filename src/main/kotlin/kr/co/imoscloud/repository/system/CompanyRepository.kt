@@ -30,4 +30,23 @@ interface CompanyRepository: JpaRepository<Company, Long> {
             and c.flagActive is true
     """)
     fun findAllBySearchConditionForDev(site: String?=null, companyName: String?=null): List<Company>
+
+    @Query("""
+        select
+            m.menuName as title,
+            c.businessRegistrationNumber as registrationNumber,
+            c.companyName as company,
+            c.loginId as owner,
+            c.businessAddress as address,
+            c.businessType as type,
+            c.businessItem as item,
+            c.phoneNumber as number
+        from Company c
+        left join Menu m on m.menuId = :menuId
+            and m.flagActive is true
+        where c.site = :site
+            and c.compCd = :compCd
+            and c.flagActive is true
+    """)
+    fun getInitialHeader(site: String, compCd: String, menuId: String): Map<String, String>
 }

@@ -135,8 +135,8 @@ interface MaterialRepository : JpaRepository<MaterialMaster, Int> {
     @Query(
         value = """
         SELECT
-            mm.MATERIAL_NAME AS materialName,
-            mm.SYSTEM_MATERIAL_ID AS systemMaterialId
+            mm.SYSTEM_MATERIAL_ID AS systemMaterialId,
+            mm.MATERIAL_NAME AS materialName
         FROM MATERIAL_MASTER mm
         WHERE mm.MATERIAL_TYPE IN ('HALF_PRODUCT', 'COMPLETE_PRODUCT')
           AND mm.FLAG_ACTIVE = true

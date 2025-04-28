@@ -106,9 +106,4 @@ class ProductionResultDataFetcher(
             return false
         }
     }
-
-    @DgsQuery
-    fun productionResultsAtMobile(@InputArgument filter: ProductionResultFilter?): List<ProductionResult> =
-        productionResultService.getProductionResultsAtMobile(filter)
-
 }

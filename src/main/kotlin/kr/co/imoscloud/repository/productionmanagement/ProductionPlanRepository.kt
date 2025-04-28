@@ -1,6 +1,7 @@
 package kr.co.imoscloud.repository.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
+import kr.co.imoscloud.model.productionmanagement.PeriodicProductionResponseDto
 import kr.co.imoscloud.model.productionmanagement.PlanVsActualResponseDto
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -79,4 +80,53 @@ interface ProductionPlanRepository: JpaRepository<ProductionPlan, Long>, Product
         @Param("startDate") startDate: String?,
         @Param("endDate") endDate: String?
     ): List<PlanVsActualResponseDto>
+
+    @Query(
+        value = """
+                select
+            ifnull(mm.MATERIAL_NAME, '품명 미정') as MATERIAL_NAME,
+            sum(pr.GOOD_QTY) as TOTAL_GOOD_QTY,
+            sum(pr.DEFECT_QTY) as TOTAL_DEFECT_QTY,
+            ifnull(round(
+            (sum(pr.DEFECT_QTY) / (sum(pr.GOOD_QTY) + sum(pr.DEFECT_QTY))) * 100,2), 0) as TOTAL_DEFECT_RATE
+        from PRODUCTION_RESULT pr
+                 left join MATERIAL_MASTER mm on
+                     (mm.SYSTEM_MATERIAL_ID = pr.PRODUCT_ID
+                         and mm.SITE = pr.SITE
+                         and mm.COMP_CD = pr.COMP_CD)
+        WHERE
+            (:compCd IS NULL OR pr.COMP_CD = :compCd)
+            AND (:site IS NULL OR pr.SITE = :site)
+            AND (:#{#systemMaterialIds == null || #systemMaterialIds.isEmpty()} = true OR mm.SYSTEM_MATERIAL_ID IN (:#{#systemMaterialIds}))
+            AND (:flagActive IS NULL OR pr.FLAG_ACTIVE = :flagActive)
+            AND (
+                (:startDate IS NULL OR :startDate = '' OR :endDate IS NULL OR :endDate = '')
+                OR (
+                    pr.CREATE_DATE BETWEEN 
+                    CASE 
+                        WHEN :startDate IS NULL OR :startDate = '' 
+                        THEN '1970-01-01' 
+                        ELSE STR_TO_DATE(:startDate, '%Y-%m-%d') 
+                    END
+                    AND 
+                    CASE 
+                        WHEN :endDate IS NULL OR :endDate = '' 
+                        THEN CURRENT_DATE() 
+                        ELSE STR_TO_DATE(:endDate, '%Y-%m-%d') 
+                    END
+                )
+            )
+        group by mm.MATERIAL_NAME
+        having TOTAL_GOOD_QTY > 0
+        """,
+        nativeQuery = true
+    )
+    fun periodicProduction(
+        @Param("compCd") compCd: String?,
+        @Param("site") site: String?,
+        @Param("systemMaterialIds") systemMaterialIds: List<String>?,
+        @Param("flagActive") flagActive: Boolean?,
+        @Param("startDate") startDate: String?,
+        @Param("endDate") endDate: String?
+    ): List<PeriodicProductionResponseDto>
 }

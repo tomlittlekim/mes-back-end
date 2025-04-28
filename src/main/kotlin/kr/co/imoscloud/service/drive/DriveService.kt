@@ -39,17 +39,20 @@ class DriveService(
         if (driveRepo.existsByNameAndExtensionAndMenuIdAndFlagActiveIsTrue(name, extension, req.menuId))
             throw IllegalArgumentException("동일한 이름과 확장자 파일이 존재합니다. ")
 
-        val file = generateEntityUsingFile(req.file).apply {
+        var file = generateEntityUsingFile(req.file).apply {
             menuId = req.menuId
             createCommonCol(loginUser)
         }
         val filePath = getSavePath(file)
 
         FileOutputStream(filePath).write(req.file.bytes)
-        converter.excelToFods(filePath)
-        File(filePath).delete()
-        driveRepo.save(file.apply { this.extension = "fods" })
+        if (file.extension == "xlsx") {
+            converter.excelToFods(filePath)
+            File(filePath).delete()
+            file = file.apply { this.extension = "fods" }
+        }
 
+        driveRepo.save(file)
         return "저장 성공"
     }
 

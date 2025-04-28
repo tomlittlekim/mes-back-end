@@ -37,7 +37,7 @@ class ShipmentService(
         )
     }
 
-    fun generateHeaderByOrderHeader(header: OrderHeader): ShipmentHeader =
+    fun generateShipmentHeader(header: OrderHeader): ShipmentHeader =
         ShipmentHeader(
             site = header.site,
             compCd = header.compCd,

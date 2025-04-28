@@ -11,6 +11,13 @@ interface PlanVsActualResponseDto {
     val systemMaterialId: String
 }
 
+interface PeriodicProductionResponseDto {
+    val materialName: String
+    val totalGoodQty: String
+    val totalDefectQty: Number
+    val totalDefectRate: String
+}
+
 // GraphQL에서 사용할 구현체 클래스 (필요시 사용)
 data class PlanVsActualResponseDtoImpl(
     override val prodPlanId: String,
@@ -47,7 +54,13 @@ data class PlanVsActualGraphQLDto(
 )
 
 data class PlanVsActualFilter(
-    val systemMaterialIds: List<String?>,
-    val startDate: String,
-    val endDate: String,
+    val systemMaterialIds: List<String>? = null,
+    val startDate: String? = null,
+    val endDate: String? = null,
 )
+
+//data class PeriodicProductionFilter(
+//    val systemMaterialIds: List<String>? = null,
+//    val startDate: String? = null,
+//    val endDate: String? = null,
+//)

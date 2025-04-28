@@ -176,7 +176,7 @@ class ProductionPlanService(
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-        val materialIds = filter.systemMaterialIds.filterNotNull().takeIf { it.isNotEmpty() }
+        val materialIds = filter.systemMaterialIds?.filterNotNull()?.takeIf { it.isNotEmpty() }
 
         // 인터페이스 프로젝션 사용
         val results = productionPlanRepository.planVsActual(
@@ -190,5 +190,21 @@ class ProductionPlanService(
         
         // 인터페이스 프로젝션 결과를 GraphQL 응답용 DTO로 변환
         return results.map { it.toGraphQLResponse() }
+    }
+
+    fun getPeriodicProduction(filter: PlanVsActualFilter): List<PeriodicProductionResponseDto> {
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+
+        val materialIds = filter.systemMaterialIds?.takeIf { it.isNotEmpty() }
+
+        return productionPlanRepository.periodicProduction(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            systemMaterialIds = materialIds,
+            flagActive = true,
+            startDate = filter.startDate,
+            endDate = filter.endDate
+        )
     }
 }

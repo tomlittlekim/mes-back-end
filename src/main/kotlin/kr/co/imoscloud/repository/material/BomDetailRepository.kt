@@ -36,7 +36,7 @@ interface BomDetailRepository : JpaRepository<BomDetail, Int> {
         AND d.compCd = :compCd
         AND d.bomId = :bomId
         AND d.flagActive = true
-        ORDER BY d.createDate DESC, d.bomLevel ASC
+        ORDER BY d.bomLevel ASC, d.createDate DESC
         """
     )
     fun getBomDetailListByBomId(
@@ -72,6 +72,7 @@ interface BomDetailRepository : JpaRepository<BomDetail, Int> {
         AND d.compCd = :compCd
         AND d.bomDetailId IN :bomDetailIds
         AND d.flagActive = true
+        ORDER BY d.bomLevel ASC, d.createDate DESC
         """
     )
     fun getBomDetailListByBomDetailIds(

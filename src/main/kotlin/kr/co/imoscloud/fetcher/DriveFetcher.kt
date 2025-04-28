@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.service.drive.DriveService
+import kr.co.imoscloud.service.drive.ModifyFilesRequest
 
 @DgsComponent
 class DriveFetcher(
@@ -17,4 +18,7 @@ class DriveFetcher(
 
     @DgsMutation
     fun deleteFile(@InputArgument id: Long) = driveService.deleteFile(id)
+
+    @DgsMutation
+    fun updateFiles(@InputArgument list: List<ModifyFilesRequest>): String = driveService.updateFiles(list)
 }

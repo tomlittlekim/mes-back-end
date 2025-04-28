@@ -7,8 +7,15 @@ type FileManagement {
     menuId: String
 }
 
+input ModifyFilesRequest {
+    id: Int!
+    name: String
+    menuId: String
+}
+
 extend type Mutation {
     deleteFile(id: Int): String
+    updateFiles(list: [ModifyFilesRequest]): String
 }
 
 extend type Query {

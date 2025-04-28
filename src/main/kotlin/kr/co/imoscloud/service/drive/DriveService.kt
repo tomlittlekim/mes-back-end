@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.drive
 
+import jakarta.transaction.Transactional
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.iface.IDrive
@@ -15,6 +16,7 @@ import java.io.FileOutputStream
 @Service
 class DriveService(
     private val driveRepo : DriveRepository,
+    private val converter: FileConvertService
 ): IDrive {
 
     @AuthLevel(minLevel = 5)
@@ -27,6 +29,7 @@ class DriveService(
     }
 
     @AuthLevel(minLevel = 5)
+    @Transactional
     fun addFile(req: LabelExcelRequest): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val (name, extension) = getNameWithExtension(req.file.originalFilename)
@@ -38,11 +41,30 @@ class DriveService(
         val filePath = getSavePath(file)
 
         FileOutputStream(filePath).write(req.file.bytes)
-        excelToFods(filePath)
+        converter.excelToFods(filePath)
         File(filePath).delete()
         driveRepo.save(file.apply { this.extension = "fods" })
 
         return "저장 성공"
+    }
+
+    @AuthLevel(minLevel = 5)
+    @Transactional
+    fun updateFiles(list: List<ModifyFilesRequest>): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        val ids = list.map { it.id }
+        val updates = driveRepo.findAllByIdInAndFlagActiveIsTrue(ids).map {
+            val modify = list.first { req -> it.id == req.id }
+            it.apply {
+                name = modify.name ?: this.name
+                menuId = modify.menuId ?: this.menuId
+                updateCommonCol(loginUser)
+            }
+        }
+
+        driveRepo.saveAll(updates)
+        return "업데이트 성공"
     }
 
     private fun generateEntityUsingFile(
@@ -64,23 +86,15 @@ class DriveService(
             throw IllegalArgumentException("파일 저장 중 오류가 발생했습니다: ${e.message}")
         }; return fileEntity
     }
-
-    private fun excelToFods(savePath: String) {
-        val libreOfficePath = getLibreOfficeExecutable()
-        val process = ProcessBuilder(
-            libreOfficePath,
-            "--headless",
-            "--convert-to",
-            "fods",
-            savePath,
-            "--outdir",
-            CoreEnum.DrivePath.HOME_PATH.value
-        ).start()
-        process.waitFor()
-    }
 }
 
 data class LabelExcelRequest(
     val menuId: String,
     val file: MultipartFile
+)
+
+data class ModifyFilesRequest(
+    val id: Long,
+    val name: String?=null,
+    val menuId: String?=null
 )

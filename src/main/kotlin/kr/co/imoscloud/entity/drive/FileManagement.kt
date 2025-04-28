@@ -25,6 +25,6 @@ class FileManagement(
     var size: Int=0,
 
     @Column(name = "MENU_ID")
-    val menuId: String? = null,
+    var menuId: String? = null,
 
 ): CommonCol()

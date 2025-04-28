@@ -16,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter
+import org.springframework.security.web.firewall.HttpFirewall
+import org.springframework.security.web.firewall.StrictHttpFirewall
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
@@ -77,7 +79,13 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration().apply {
-            allowedOrigins = listOf("http://localhost:3000", "http://imos-cloud.co.kr", "http://pems-cloud.co.kr")
+            allowedOrigins = listOf(
+                "http://localhost",
+                "http://localhost:3000",
+                "http://localhost:80",
+                "http://imos-cloud.co.kr",
+                "http://pems-cloud.co.kr"
+            )
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
             allowedHeaders = listOf("*")
             exposedHeaders = listOf("X-Token-Expired")
@@ -91,4 +99,16 @@ class SecurityConfig(
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+
+    @Bean
+    fun httpFirewall(): HttpFirewall {
+        val firewall = StrictHttpFirewall()
+        firewall.setAllowUrlEncodedSlash(true)
+        firewall.setAllowSemicolon(true)
+        firewall.setAllowUrlEncodedPercent(true)
+        firewall.setAllowBackSlash(true)
+        firewall.setAllowUrlEncodedPeriod(true)
+        firewall.setAllowUrlEncodedDoubleSlash(true)
+        return firewall
+    }
 }

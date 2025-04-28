@@ -43,7 +43,7 @@ class CoreEnum {
     }
 
     enum class DrivePath(val value: String) {
-        HOME_PATH("/app"),
+        HOME_PATH("/data"),
         ATTACHMENT_PATH("/attachments")
     }
 }

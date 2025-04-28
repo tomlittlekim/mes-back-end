@@ -55,3 +55,9 @@ decorator:
       enable-logging: true
       multiline: true
       logging: slf4j
+
+# LibreOffice
+jodconverter:
+  office-manager:
+    port-numbers: 2002
+    host-name: libreoffice # 컨테이너 이름

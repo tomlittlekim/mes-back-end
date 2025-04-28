@@ -5,15 +5,6 @@ import java.util.*
 
 interface IDrive {
 
-    fun getLibreOfficeExecutable(): String {
-        val osName = System.getProperty("os.name").lowercase(Locale.getDefault())
-        return when {
-            osName.contains("mac") -> "/Applications/LibreOffice.app/Contents/MacOS/soffice"
-            osName.contains("win") -> "C:\\Program Files\\LibreOffice\\program\\soffice.exe"
-            else -> "libreoffice"
-        }
-    }
-
     fun getNameWithExtension(originalFileName: String?): Pair<String, String> {
         originalFileName ?: throw IllegalArgumentException("잘못된 파일 형식 입니다.")
 
@@ -22,5 +13,5 @@ interface IDrive {
         return Pair(name, list.last())
     }
 
-    fun getSavePath(file: FileManagement): String = "${file.path}/${file.name}.${file.extension}}"
+    fun getSavePath(file: FileManagement): String = "${file.path}/${file.name}.${file.extension}"
 }

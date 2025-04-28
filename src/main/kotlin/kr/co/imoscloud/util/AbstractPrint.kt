@@ -1,12 +1,9 @@
 package kr.co.imoscloud.util
 
-import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.drive.FileManagement
+import kr.co.imoscloud.service.drive.FileConvertService
 import java.io.File
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Paths
 import java.util.*
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
@@ -14,7 +11,8 @@ import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
 abstract class AbstractPrint(
-    private val core: Core
+    private val core: Core,
+    private val converter: FileConvertService
 ) {
 
     abstract fun getFodsFile(): FileManagement
@@ -32,7 +30,7 @@ abstract class AbstractPrint(
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (bodyMap + (etcMap?.let { headerMap + it } ?: headerMap)))
-        return fodsToPdf(copiedFile)
+        return converter.convertToPdfUsingLibreOffice(copiedFile)
     }
 
     protected fun <H, B> process(head: H?, bodies : List<B>, isRowType: Boolean?=null) : File {
@@ -46,7 +44,7 @@ abstract class AbstractPrint(
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (bodyMap + (etcMap?.let { headerMap + it } ?: headerMap)))
-        return fodsToPdf(copiedFile)
+        return converter.convertToPdfUsingLibreOffice(copiedFile)
     }
 
     protected fun getLibreOfficeExecutable(): String {
@@ -86,36 +84,6 @@ abstract class AbstractPrint(
         val source = DOMSource(doc)
         val result = StreamResult(fods)
         transformer.transform(source, result)
-    }
-
-    private fun fodsToPdf(fods: File): File {
-        val command: List<String> = convertToPdfUsingLibreOffice(fods)
-        val pdfSavePath = "${CoreEnum.DrivePath.HOME_PATH.value}/${fods.nameWithoutExtension}.pdf"
-
-        val builder = ProcessBuilder(command)
-        builder.environment()["PAPER_SIZE"] = "A4"
-        builder.redirectErrorStream(true) // 오류 스트림을 표준 스트림으로 병합
-        val process = builder.start() // 프로세스 시작
-        val exitCode = process.waitFor() // 프로세스 완료 대기
-
-        if (exitCode != 0 && !Files.exists(Paths.get(pdfSavePath)))
-            throw IOException("파일을 PDF로 변환하는 중 오류가 발생했습니다.")
-
-        return File(pdfSavePath)
-    }
-
-    private fun convertToPdfUsingLibreOffice(fods: File): List<String> {
-        val libreOfficePath = getLibreOfficeExecutable()
-        val command: List<String> = listOf(
-            libreOfficePath,
-            "--headless",
-            "--convert-to",
-            "pdf:writer_pdf_Export", // 엑셀 파일을 PDF로 변환할 때 A4 레이아웃 유지 옵션 사용
-            fods.absolutePath,
-            "--outdir",
-            CoreEnum.DrivePath.HOME_PATH.value
-        )
-        return command
     }
 
     private fun copyToFile(base: FileManagement, newFilename: String): File {

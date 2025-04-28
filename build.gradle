@@ -8,7 +8,6 @@ plugins {
 }
 
 group = 'kr.co.imoscloud'
-version = '0.0.1-SNAPSHOT'
 
 java {
     toolchain {
@@ -71,6 +70,10 @@ dependencies {
 
     // p6spy 의존성 추가 (SQL 로깅 향상)
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+
+    // LibreOffice 변환용
+    implementation("org.jodconverter:jodconverter-local:4.4.6")
+    implementation("org.jodconverter:jodconverter-spring-boot-starter:4.4.6")
 }
 
 dependencyManagement {
@@ -97,6 +100,7 @@ tasks.named('test') {
 
 bootJar {
     mainClass = 'kr.co.imoscloud.ImosBackEndApplicationKt'
+    archiveFileName = 'app.jar'
 }
 
 springBoot {

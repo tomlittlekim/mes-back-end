@@ -12,13 +12,13 @@ class FileManagement(
     @Column(name = "FILE_ID")
     val id: Long = 0,
 
-    @Column(name = "FILE_NAME", unique = true, nullable = false)
+    @Column(name = "FILE_NAME", unique = true, nullable = false, length = 100)
     var name: String,
 
-    @Column(name = "FILE_EXTENSION", unique = true, nullable = false)
+    @Column(name = "FILE_EXTENSION", unique = true, nullable = false, length = 100)
     var extension: String,
 
-    @Column(name = "FILE_PATH", unique = true, nullable = false)
+    @Column(name = "FILE_PATH", unique = true, nullable = false, length = 100)
     var path: String,
 
     @Column(name = "FILE_SIZE")

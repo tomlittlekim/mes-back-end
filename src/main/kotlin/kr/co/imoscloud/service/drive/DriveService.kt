@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.drive
 
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.drive.FileManagement
@@ -11,6 +12,7 @@ import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 
 @Service
@@ -65,6 +67,20 @@ class DriveService(
 
         driveRepo.saveAll(updates)
         return "업데이트 성공"
+    }
+
+    @AuthLevel(minLevel = 5)
+    @Transactional
+    fun downloadFile(id: Long, response: HttpServletResponse): Unit {
+        val entity = driveRepo.findById(id)
+            .orElseThrow { throw IllegalArgumentException("다운 받으려는 파일이 존재하지 않습니다. ") }
+        val encodedFileName = encodeToString(getOriginalFilename(entity))
+        val file = File(getSavePath(entity))
+
+        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''${encodedFileName}")
+        response.contentType = "application/octet-stream"
+        response.setContentLength(file.length().toInt())
+        FileInputStream(file).use { it.copyTo(response.outputStream) }
     }
 
     private fun generateEntityUsingFile(

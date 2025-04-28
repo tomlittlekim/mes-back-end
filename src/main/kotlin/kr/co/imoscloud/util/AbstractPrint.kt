@@ -47,15 +47,6 @@ abstract class AbstractPrint(
         return converter.convertToPdfUsingLibreOffice(copiedFile)
     }
 
-    protected fun getLibreOfficeExecutable(): String {
-        val osName = System.getProperty("os.name").lowercase(Locale.getDefault())
-        return when {
-            osName.contains("mac") -> "/Applications/LibreOffice.app/Contents/MacOS/soffice"
-            osName.contains("win") -> "C:\\Program Files\\LibreOffice\\program\\soffice.exe"
-            else -> "libreoffice"
-        }
-    }
-
     private fun replaceFods(fods: File, map: Map<String, String?>) {
         val factory = DocumentBuilderFactory.newInstance()
         val builder = factory.newDocumentBuilder()

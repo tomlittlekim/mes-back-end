@@ -99,84 +99,41 @@ abstract class AbstractPrint(
     private fun <B> generateBody(
         list: List<B>,
         isList: Boolean,
-        isRowType: Boolean?=null
+        isRowType: Boolean? = null
     ): MutableMap<String, String?> {
         val resultMap: MutableMap<String, String?> = mutableMapOf()
 
         if (isList) {
             list.forEachIndexed { i, value ->
                 val dto = entityToPrintDto(value)
-                val index = i + 1
                 if (isRowType == true) {
-                    dto.col1?.let { resultMap["col${index}_${index}_1"] = it }
-                    dto.col2?.let { resultMap["col${index}_${index}_2"] = it }
-                    dto.col3?.let { resultMap["col${index}_${index}_3"] = it }
-                    dto.col4?.let { resultMap["col${index}_${index}_4"] = it }
-                    dto.col5?.let { resultMap["col${index}_${index}_5"] = it }
-                    dto.col6?.let { resultMap["col${index}_${index}_6"] = it }
-                    dto.col7?.let { resultMap["col${index}_${index}_7"] = it }
-                    dto.col8?.let { resultMap["col${index}_${index}_8"] = it }
-                    dto.col9?.let { resultMap["col${index}_${index}_9"] = it }
-                    dto.col10?.let { resultMap["col${index}_${index}_10"] = it }
-                    dto.col11?.let { resultMap["col${index}_${index}_11"] = it }
-                    dto.col12?.let { resultMap["col${index}_${index}_12"] = it }
-                    dto.col13?.let { resultMap["col${index}_${index}_13"] = it }
-                    dto.col14?.let { resultMap["col${index}_${index}_14"] = it }
-                    dto.col15?.let { resultMap["col${index}_${index}_15"] = it }
-                    dto.col16?.let { resultMap["col${index}_${index}_16"] = it }
-                    dto.col17?.let { resultMap["col${index}_${index}_17"] = it }
-                    dto.col18?.let { resultMap["col${index}_${index}_18"] = it }
-                    dto.col19?.let { resultMap["col${index}_${index}_19"] = it }
-                    dto.col20?.let { resultMap["col${index}_${index}_20"] = it }
+                    // 가로 타입 매핑 (1_1, 2_1, ...)
+                    dtoToList(dto).forEachIndexed { index, value ->
+                        resultMap["${index + 1}_${i + 1}"] = value
+                    }
                 } else {
-                    dto.col1?.let { resultMap["col1_${index}_${index}"] = it }
-                    dto.col2?.let { resultMap["col2_${index}_${index}"] = it }
-                    dto.col3?.let { resultMap["col3_${index}_${index}"] = it }
-                    dto.col4?.let { resultMap["col4_${index}_${index}"] = it }
-                    dto.col5?.let { resultMap["col5_${index}_${index}"] = it }
-                    dto.col6?.let { resultMap["col6_${index}_${index}"] = it }
-                    dto.col7?.let { resultMap["col7_${index}_${index}"] = it }
-                    dto.col8?.let { resultMap["col8_${index}_${index}"] = it }
-                    dto.col9?.let { resultMap["col9_${index}_${index}"] = it }
-                    dto.col10?.let { resultMap["col10_${index}_${index}"] = it }
-                    dto.col11?.let { resultMap["col11_${index}_${index}"] = it }
-                    dto.col12?.let { resultMap["col12_${index}_${index}"] = it }
-                    dto.col13?.let { resultMap["col13_${index}_${index}"] = it }
-                    dto.col14?.let { resultMap["col14_${index}_${index}"] = it }
-                    dto.col15?.let { resultMap["col15_${index}_${index}"] = it }
-                    dto.col16?.let { resultMap["col16_${index}_${index}"] = it }
-                    dto.col17?.let { resultMap["col17_${index}_${index}"] = it }
-                    dto.col18?.let { resultMap["col18_${index}_${index}"] = it }
-                    dto.col19?.let { resultMap["col19_${index}_${index}"] = it }
-                    dto.col20?.let { resultMap["col20_${index}_${index}"] = it }
+                    // 세로 타입 매핑 (1_1, 1_2, ...)
+                    dtoToList(dto).forEachIndexed { index, value ->
+                        resultMap["${i + 1}_${index + 1}"] = value
+                    }
                 }
             }
         } else {
-            val printDto = entityToPrintDto(list.first())
-            printDto.col1?.let { resultMap["col1"] = it }
-            printDto.col2?.let { resultMap["col2"] = it }
-            printDto.col3?.let { resultMap["col3"] = it }
-            printDto.col4?.let { resultMap["col4"] = it }
-            printDto.col5?.let { resultMap["col5"] = it }
-            printDto.col6?.let { resultMap["col6"] = it }
-            printDto.col7?.let { resultMap["col7"] = it }
-            printDto.col8?.let { resultMap["col8"] = it }
-            printDto.col9?.let { resultMap["col9"] = it }
-            printDto.col10?.let { resultMap["col10"] = it }
-            printDto.col11?.let { resultMap["col11"] = it }
-            printDto.col12?.let { resultMap["col12"] = it }
-            printDto.col13?.let { resultMap["col13"] = it }
-            printDto.col14?.let { resultMap["col14"] = it }
-            printDto.col15?.let { resultMap["col15"] = it }
-            printDto.col16?.let { resultMap["col16"] = it }
-            printDto.col17?.let { resultMap["col17"] = it }
-            printDto.col18?.let { resultMap["col18"] = it }
-            printDto.col19?.let { resultMap["col19"] = it }
-            printDto.col20?.let { resultMap["col20"] = it }
+            val dto = entityToPrintDto(list.first())
+            dtoToList(dto).forEachIndexed { index, value ->
+                resultMap["${index + 1}"] = value
+            }
         }
 
         return resultMap
     }
+
+    private fun dtoToList(dto: PrintDto): List<String?> = listOf(
+        dto.col1, dto.col2, dto.col3, dto.col4, dto.col5,
+        dto.col6, dto.col7, dto.col8, dto.col9, dto.col10,
+        dto.col11, dto.col12, dto.col13, dto.col14, dto.col15,
+        dto.col16, dto.col17, dto.col18, dto.col19, dto.col20
+    )
 }
 
 data class PrintDto(

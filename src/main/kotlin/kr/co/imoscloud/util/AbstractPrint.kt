@@ -4,7 +4,6 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.service.drive.FileConvertService
 import java.io.File
-import java.util.*
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
@@ -17,14 +16,15 @@ abstract class AbstractPrint(
 
     abstract fun getFodsFile(): FileManagement
     abstract fun <B> entityToPrintDto(body : B): PrintDto
-    abstract fun <H> getETCFromHeader(header: H?): MutableMap<String, String>
+    abstract fun <H> extractAdditionalHeaderFields(header: H?): MutableMap<String, String>?
+    abstract fun <B> extractAdditionalBodyFields(bodies : List<B>): MutableMap<String, String>?
 
     protected fun <H, B> process(head: H?, body : B, isRowType: Boolean?=null) : File {
         val bodyMap = generateBody(listOf(body), false, isRowType)
 
         val base: FileManagement = getFodsFile()
         val headerMap = generateHeader(base.menuId!!)
-        val etcMap = head?.let { getETCFromHeader(it) }
+        val etcMap = head?.let { extractAdditionalHeaderFields(it) }
 
         val newFilename = "${headerMap["companyName"]}_${headerMap["title"]}.fods"
         val copiedFile = copyToFile(base, newFilename)
@@ -35,15 +35,18 @@ abstract class AbstractPrint(
 
     protected fun <H, B> process(head: H?, bodies : List<B>, isRowType: Boolean?=null) : File {
         val bodyMap = generateBody(bodies, true, isRowType)
+        val extractBodyMap = extractAdditionalBodyFields(bodies)
+        val totalBodyMap = extractBodyMap?.let { bodyMap + it } ?: bodyMap
 
         val base: FileManagement = getFodsFile()
         val headerMap = generateHeader(base.menuId!!)
-        val etcMap = head?.let { getETCFromHeader(it) }
+        val extractHeaderMap = head?.let { extractAdditionalHeaderFields(it) }
+        val totalHeaderMap = extractHeaderMap?.let { totalBodyMap + it } ?: totalBodyMap
 
         val newFilename = "${headerMap["companyName"]}_${headerMap["title"]}.fods"
         val copiedFile = copyToFile(base, newFilename)
 
-        replaceFods(copiedFile, (bodyMap + (etcMap?.let { headerMap + it } ?: headerMap)))
+        replaceFods(copiedFile, (totalBodyMap + totalHeaderMap))
         return converter.convertToPdfUsingLibreOffice(copiedFile)
     }
 

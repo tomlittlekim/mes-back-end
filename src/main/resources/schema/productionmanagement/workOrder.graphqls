@@ -19,6 +19,8 @@ input WorkOrderFilter {
     flagActive: Boolean
     planStartDateFrom: String
     planStartDateTo: String
+    planEndDateFrom: String
+    planEndDateTo: String
 }
 
 type WorkOrder {

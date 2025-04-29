@@ -15,6 +15,8 @@ interface WorkOrderRepositoryCustom {
         flagActive: Boolean?,
         planStartDateFrom: LocalDateTime?,
         planStartDateTo: LocalDateTime?,
+        planEndDateFrom: LocalDateTime?,
+        planEndDateTo: LocalDateTime?,
     ): List<WorkOrder>
 
     fun getWorkOrdersByProdPlanId(

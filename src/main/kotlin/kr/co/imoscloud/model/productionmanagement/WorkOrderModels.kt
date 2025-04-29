@@ -10,6 +10,8 @@ data class WorkOrderFilter(
     var flagActive: Boolean? = null,
     var planStartDateFrom: String? = null,
     var planStartDateTo: String? = null,
+    var planEndDateFrom: String? = null,
+    var planEndDateTo: String? = null,
 )
 
 data class WorkOrderInput(

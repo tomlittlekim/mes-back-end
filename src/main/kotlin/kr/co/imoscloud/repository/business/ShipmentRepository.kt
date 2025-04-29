@@ -3,7 +3,7 @@ package kr.co.imoscloud.repository.business
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.business.ShipmentDetail
 import kr.co.imoscloud.entity.business.ShipmentHeader
-import kr.co.imoscloud.entity.material.MaterialMaster
+import kr.co.imoscloud.service.business.MaterialWithOrderDetail
 import kr.co.imoscloud.service.business.ShipmentDetailNullableDto
 import kr.co.imoscloud.service.business.ShipmentHeaderNullableDto
 import kr.co.imoscloud.service.business.ShipmentWithSupplyPrice
@@ -168,19 +168,25 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
         WHERE SITE = :site
           AND COMP_CD = :compCd
           AND ORDER_NO = :orderNo
-          AND SYSTEM_MATERIAL_ID IN (:materialIds)
+          AND ORDER_SUB_NO = :orderSubNo
+          AND SYSTEM_MATERIAL_ID = :materialId
           AND FLAG_ACTIVE = TRUE
         ORDER BY CREATE_DATE DESC LIMIT 1
     """, nativeQuery = true)
-    fun getAllByOrderNo(
+    fun getLatestDetailByRequest(
         site: String,
         compCd: String,
         orderNo: String,
-        materialIds: List<String>
-    ): List<ShipmentDetail>
+        orderSubNo: String,
+        materialId: String
+    ): ShipmentDetail?
 
     @Query("""
-        select mm
+        select new kr.co.imoscloud.service.business.MaterialWithOrderDetail(
+            mm.systemMaterialId,
+            (concat(cast(od.quantity as string), 'EA ', mm.materialName)),
+            od.orderSubNo
+        )
         from OrderDetail od 
         left join MaterialMaster mm on od.systemMaterialId = mm.systemMaterialId
             and mm.site = od.site
@@ -191,7 +197,7 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
             and od.compCd = :compCd
             and od.flagActive is true
     """)
-    fun getMaterialsByOrderNo(site: String, compCd: String, orderNo: String): List<MaterialMaster>
+    fun getMaterialsByOrderNo(site: String, compCd: String, orderNo: String): List<MaterialWithOrderDetail>
 
     @Query("""
         select new kr.co.imoscloud.service.business.ShipmentWithSupplyPrice(

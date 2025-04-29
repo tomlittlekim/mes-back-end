@@ -74,7 +74,7 @@ class BusinessFetcher(
     }
 
     @DgsQuery
-    fun prepareShipmentDetailsForEntry(@InputArgument req: ShipmentDetailEntryRequest): List<ShipmentDetailNullableDto> {
+    fun prepareShipmentDetailsForEntry(@InputArgument req: ShipmentDetailEntryRequest): ShipmentDetailNullableDto {
         return shipmentService.prepareShipmentDetailsForEntry(req)
     }
 
@@ -89,7 +89,7 @@ class BusinessFetcher(
     }
 
     @DgsQuery
-    fun getMaterialByOrderNo(@InputArgument orderNo: String): List<MaterialMaster> {
+    fun getMaterialByOrderNo(@InputArgument orderNo: String): List<MaterialWithOrderDetail> {
         return shipmentService.getMaterialByOrderNo(orderNo)
     }
 

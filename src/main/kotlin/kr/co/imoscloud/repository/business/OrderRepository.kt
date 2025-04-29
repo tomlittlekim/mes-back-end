@@ -2,7 +2,7 @@ package kr.co.imoscloud.repository.business
 
 import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.business.OrderHeader
-import kr.co.imoscloud.service.business.OrderDetailWithMaterialDto
+import kr.co.imoscloud.service.business.ShipmentDetailNullableDto
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -129,23 +129,43 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
     fun deleteAllByOrderHeaderId(site: String, compCd: String, id: Long, updateUserId: String): Int
 
     @Query("""
-        select new kr.co.imoscloud.service.business.OrderDetailWithMaterialDto(
+        select new kr.co.imoscloud.service.business.ShipmentDetailNullableDto(
+            null,
+            od.site,
+            od.compCd,
             od.orderNo,
             od.orderSubNo,
             od.systemMaterialId,
             mm.materialName,
             mm.materialStandard,
             mm.unit,
-            od.quantity
+            od.quantity,
+            its.qty,
+            null,
+            null,
+            its.warehouseId,
+            0.0,
+            0.0
         )
         from OrderDetail od
         left join MaterialMaster mm on od.systemMaterialId = mm.systemMaterialId
             and od.compCd = mm.compCd
             and mm.flagActive is true
+        left join InventoryStatus its on od.systemMaterialId = its.systemMaterialId
+            and od.compCd = its.compCd
+            and its.warehouseId = :warehouseId
+            and its.flagActive is true
         where od.site = :site
             and od.compCd = :compCd
             and od.orderNo = :orderNo
+            and od.orderSubNo = :orderSubNo
             and od.flagActive is true
     """)
-    fun getAllByOrderNoWithMaterial(site: String, compCd: String, orderNo: String): List<OrderDetailWithMaterialDto>
+    fun getInitialByRequest(
+        site: String,
+        compCd: String,
+        orderNo: String,
+        orderSubNo: String,
+        warehouseId: String
+    ): ShipmentDetailNullableDto?
 }

@@ -394,12 +394,6 @@ interface InventoryStatusRep : JpaRepository<InventoryStatus, Long> {
         @Param("materialName") materialName: String?
     ): List<InventoryStatusResponseModel?>
 
-    fun findByCompCdAndSiteAndSystemMaterialIdIn(
-        compCd: String,
-        site: String,
-        systemMaterialIds: List<String>
-    ): List<InventoryStatus>
-
     fun findByCompCdAndSiteAndSystemMaterialId(
         compCd: String,
         site: String,

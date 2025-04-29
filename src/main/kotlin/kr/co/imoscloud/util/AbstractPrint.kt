@@ -30,7 +30,7 @@ abstract class AbstractPrint(
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (bodyMap + (etcMap?.let { headerMap + it } ?: headerMap)))
-        return converter.convertToPdfUsingLibreOffice(copiedFile)
+        return converter.fodsToPdf(copiedFile)
     }
 
     protected fun <H, B> process(head: H?, bodies : List<B>, isRowType: Boolean?=null) : File {
@@ -47,7 +47,7 @@ abstract class AbstractPrint(
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (totalBodyMap + totalHeaderMap))
-        return converter.convertToPdfUsingLibreOffice(copiedFile)
+        return converter.fodsToPdf(copiedFile)
     }
 
     private fun replaceFods(fods: File, map: Map<String, String?>) {

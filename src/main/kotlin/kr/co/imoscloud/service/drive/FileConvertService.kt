@@ -21,7 +21,7 @@ class FileConvertService(
         return outputFile
     }
 
-    fun convertToPdfUsingLibreOffice(fods: File): File {
+    fun fodsToPdf(fods: File): File {
         val outputPdf = File(fods.absolutePath.replaceAfterLast(".", "pdf"))
 
         LocalConverter.make(officeManager)
@@ -31,4 +31,16 @@ class FileConvertService(
 
         return outputPdf
     }
+
+    fun fodsToPng(fods: File): File {
+        val outputPng = File(fods.absolutePath.replaceAfterLast(".", "png"))
+
+        LocalConverter.make(officeManager)
+            .convert(fods)
+            .to(outputPng)
+            .execute()
+
+        return outputPng
+    }
+
 }

@@ -46,20 +46,9 @@ type WarehouseSummery {
 }
 
 type MaterialSummery {
-    seq: Int
-    materialType: String
-    materialCategory: String
     systemMaterialId: String
-    userMaterialId: String
     materialName: String
-    materialStandard: String
-    unit: String
-    minQuantity: Int
-    maxQuantity: Int
-    baseQuantity: Int
-    manufacturerName: String
-    supplierId: String
-    materialStorage: String
+    orderSubNo: String
 }
 
 input ShipmentSearchRequest {
@@ -93,14 +82,15 @@ input ShipmentDetailRequest {
 }
 
 input ShipmentDetailEntryRequest {
-    orderNo: String
-    warehouseId: String
+    orderNo: String!
+    orderSubNo: String!
+    warehouseId: String!
 }
 
 extend type Query {
     getShipmentHeaders(req: ShipmentSearchRequest): [ShipmentHeader]
     getShipmentDetails(id: Int): [ShipmentDetail]
-    prepareShipmentDetailsForEntry(req: ShipmentDetailEntryRequest): [ShipmentDetail]
+    prepareShipmentDetailsForEntry(req: ShipmentDetailEntryRequest!): ShipmentDetail
     getWarehouseByMaterialId(materialId: String!): [WarehouseSummery]
     getMaterialByOrderNo(orderNo: String!): [MaterialSummery]
 }

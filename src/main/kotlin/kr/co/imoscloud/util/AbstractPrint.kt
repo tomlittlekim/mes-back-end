@@ -1,9 +1,14 @@
 package kr.co.imoscloud.util
 
+import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.service.drive.FileConvertService
 import java.io.File
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
@@ -14,7 +19,9 @@ abstract class AbstractPrint(
     private val converter: FileConvertService
 ) {
 
+    //TODO :: 추후 메뉴와 연결해서 제거할 필요가 있음
     abstract fun getFodsFile(): FileManagement
+
     abstract fun <B> entityToPrintDto(body : B): PrintDto
     abstract fun <H> extractAdditionalHeaderFields(header: H?): MutableMap<String, String>?
     abstract fun <B> extractAdditionalBodyFields(bodies : List<B>): MutableMap<String, String>?
@@ -137,6 +144,24 @@ abstract class AbstractPrint(
         dto.col11, dto.col12, dto.col13, dto.col14, dto.col15,
         dto.col16, dto.col17, dto.col18, dto.col19, dto.col20
     )
+
+    protected fun <D> formattedDate(date: D, format: CoreEnum.DateTimeFormat): String {
+        val formatter = DateTimeFormatter.ofPattern(format.value)
+
+        return when (date) {
+            is LocalDate -> formatter.format(date)
+            is LocalDateTime -> formatter.format(date)
+            is YearMonth -> formatter.format(date)
+            else -> ""
+        }
+    }
+
+    protected fun stringToInt(str: String?): Int {
+        if (str == null) return 0
+
+        val regex = Regex("""^\d+$""")
+        return if (regex.matches(str)) str.toInt() else 0
+    }
 }
 
 data class PrintDto(

@@ -14,4 +14,6 @@ interface DriveRepository: JpaRepository<FileManagement, Long>{
     ): Boolean
 
     fun findAllByIdInAndFlagActiveIsTrue(ids: List<Long>): List<FileManagement>
+
+    fun findByMenuIdAndFlagActiveIsTrue(menuId: String): FileManagement?
 }

@@ -6,8 +6,6 @@ import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.model.productionmanagement.DefectInfoFilter
 import kr.co.imoscloud.service.productionmanagement.DefectInfoService
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 /**
  * 불량 정보 GraphQL 데이터 페처

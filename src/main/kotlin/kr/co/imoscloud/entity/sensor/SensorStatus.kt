@@ -2,7 +2,6 @@ package kr.co.imoscloud.entity.sensor
 
 import jakarta.persistence.*
 import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
 import java.time.LocalDateTime
 
 @Entity

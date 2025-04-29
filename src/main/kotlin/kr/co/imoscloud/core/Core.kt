@@ -6,7 +6,9 @@ import kr.co.imoscloud.entity.system.MenuRole
 import kr.co.imoscloud.entity.system.User
 import kr.co.imoscloud.entity.system.UserRole
 import kr.co.imoscloud.repository.system.CompanyRepository
-import kr.co.imoscloud.repository.system.*
+import kr.co.imoscloud.repository.system.MenuRoleRepository
+import kr.co.imoscloud.repository.system.UserRepository
+import kr.co.imoscloud.repository.system.UserRoleRepository
 import kr.co.imoscloud.security.UserPrincipal
 import org.springframework.stereotype.Component
 

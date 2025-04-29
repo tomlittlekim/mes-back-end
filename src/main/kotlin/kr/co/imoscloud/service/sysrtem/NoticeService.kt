@@ -1,7 +1,6 @@
 package kr.co.imoscloud.service.sysrtem
 
 import jakarta.transaction.Transactional
-import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.NoticeSearchRequest
 import kr.co.imoscloud.dto.UpsertNoticeRequest
 import kr.co.imoscloud.entity.system.Notice
@@ -10,8 +9,6 @@ import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
-import java.time.LocalTime
 
 @Service
 class NoticeService(

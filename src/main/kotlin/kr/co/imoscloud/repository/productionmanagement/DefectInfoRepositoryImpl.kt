@@ -6,7 +6,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.DefectInfo
 import kr.co.imoscloud.entity.productionmanagement.QDefectInfo
 import kr.co.imoscloud.entity.productionmanagement.QProductionResult
-import kr.co.imoscloud.entity.productionmanagement.QWorkOrder
 import kr.co.imoscloud.model.productionmanagement.DefectInfoFilter
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import java.time.LocalDate

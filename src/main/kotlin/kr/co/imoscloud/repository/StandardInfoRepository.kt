@@ -1,7 +1,6 @@
 package kr.co.imoscloud.repository
 
 import jakarta.transaction.Transactional
-import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.entity.standardInfo.*
 import kr.co.imoscloud.service.standardInfo.EquipmentResponseModel
 import kr.co.imoscloud.service.standardInfo.LineResponseModel

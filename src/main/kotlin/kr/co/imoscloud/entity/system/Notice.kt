@@ -1,8 +1,5 @@
 package kr.co.imoscloud.entity.system
 
-import jakarta.persistence.Entity
-import jakarta.persistence.Table
-
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
 import org.springframework.data.jpa.domain.support.AuditingEntityListener

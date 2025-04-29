@@ -2,7 +2,6 @@ package kr.co.imoscloud.model.material
 
 import kr.co.imoscloud.entity.material.Bom
 import kr.co.imoscloud.entity.material.BomDetail
-import kr.co.imoscloud.entity.material.MaterialMaster
 
 /**
  * BOM 정보(좌측그리드) 호출 시 필요한 필드만 조회하는 dto

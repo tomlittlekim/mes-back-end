@@ -4,11 +4,10 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.entity.productionmanagement.QProductionResult
 import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter
+import org.slf4j.LoggerFactory
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import org.slf4j.LoggerFactory
 
 class ProductionResultRepositoryImpl(
     private val queryFactory: JPAQueryFactory

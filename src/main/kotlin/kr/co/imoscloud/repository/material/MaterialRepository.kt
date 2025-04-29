@@ -2,7 +2,6 @@ package kr.co.imoscloud.repository.material
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.material.MaterialMaster
-import kr.co.imoscloud.model.productionmanagement.PlanVsActualResponseDto
 import kr.co.imoscloud.service.material.MaterialNameAndSysIdResponseModel
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying

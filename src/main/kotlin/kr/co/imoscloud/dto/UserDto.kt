@@ -1,6 +1,9 @@
 package kr.co.imoscloud.dto
 
-import kr.co.imoscloud.iface.*
+import kr.co.imoscloud.iface.DtoAllInOneBase
+import kr.co.imoscloud.iface.DtoCompCdBase
+import kr.co.imoscloud.iface.DtoLoginIdBase
+import kr.co.imoscloud.iface.DtoRoleIdBase
 import kr.co.imoscloud.iface.ResponseVO.ResponseBase
 
 data class UserInput(

@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.entity.standardInfo.Vendor
+import kr.co.imoscloud.service.standardInfo.VendorDropdownResponse
 import kr.co.imoscloud.service.standardInfo.VendorResponse
 import kr.co.imoscloud.service.standardInfo.VendorService
 
@@ -34,6 +35,11 @@ class VendorFetcher(
 
     @DgsQuery
     fun getVendorsBySameCompany(): List<Vendor> = vendorService.getVendorsBySameCompany()
+
+    @DgsQuery
+    fun getVendorsByType(@InputArgument("vendorType") vendorType: String): List<VendorDropdownResponse> {
+        return vendorService.getVendorsByType(vendorType)
+    }
 }
 
 data class VendorFilter(

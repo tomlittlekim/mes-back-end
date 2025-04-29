@@ -48,11 +48,18 @@ type Code {
     updateDate: String
 }
 
+type CodeClassResponse {
+    codeClassId: String
+    codeClassName: String
+    codeClassDesc: String
+    codes: [Code]
+}
 
 extend type Query {
     getCodeClass(filter:CodeClassFilter): [CodeClass]
     getCodes(codeClassId:String!):[Code]
     getGridCodes(codeClassId:String!):[Code]
+    getGridCodeList(codeClassIds: [String!]): [CodeClassResponse]
     getInitialCodes(codeClassId:String!):[Code]
 }
 

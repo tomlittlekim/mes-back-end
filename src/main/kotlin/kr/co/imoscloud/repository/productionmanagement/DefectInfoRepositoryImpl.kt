@@ -175,7 +175,7 @@ class DefectInfoRepositoryImpl(
                 defectInfo.prodResultId.eq(productionResult.prodResultId)
             )
             .where(whereClause)
-            .orderBy(defectInfo.createDate.desc())
+            .orderBy(defectInfo.id.desc())
             .distinct()
             .fetch()
     }

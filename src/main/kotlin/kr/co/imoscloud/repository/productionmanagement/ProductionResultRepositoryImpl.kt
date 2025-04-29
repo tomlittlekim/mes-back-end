@@ -128,7 +128,7 @@ class ProductionResultRepositoryImpl(
         query.where(productionResult.flagActive.eq(flagActive ?: true))
 
         // 생산실적ID 역순 정렬 추가
-        query.orderBy(productionResult.prodResultId.desc())
+        query.orderBy(productionResult.id.desc())
 
         return query.fetch()
     }
@@ -182,7 +182,7 @@ class ProductionResultRepositoryImpl(
         }
 
         // 생산실적ID 역순 정렬 추가
-        query.orderBy(productionResult.prodResultId.desc())
+        query.orderBy(productionResult.id.desc())
 
         return query.fetch()
     }

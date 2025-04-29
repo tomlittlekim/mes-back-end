@@ -400,6 +400,12 @@ interface InventoryStatusRep : JpaRepository<InventoryStatus, Long> {
         systemMaterialId: String
     ): InventoryStatus?
 
+    fun findByCompCdAndSiteAndSystemMaterialIdIn(
+        ompCd: String,
+        site: String,
+        systemMaterialId: List<String>
+    ): List<InventoryStatus>
+
     @Query("""
         select wh
         from InventoryStatus its

@@ -9,6 +9,7 @@ import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.OrderHeaderRepository
+import kr.co.imoscloud.repository.business.TransactionStatementRepository
 import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
@@ -24,7 +25,7 @@ class OrderService(
     private val materialRepo: MaterialRepository,
     private val codeRep: CodeRep,
     private val shipmentService: ShipmentService,
-    private val transactionStatementService: TransactionStatementService
+    private val transactionStatementRepo: TransactionStatementRepository
 ) {
 
     // orderHeader 조회
@@ -113,7 +114,7 @@ class OrderService(
                         ).apply { createCommonCol(loginUser) }
 
                         shipmentHeaders.add(shipmentService.generateShipmentHeader(orderHeader))
-                        statements.add(transactionStatementService.generateTransactionHeader(orderHeader))
+                        statements.add(generateTransactionHeader(orderHeader))
                         orderHeader
                     } catch (e: NullPointerException) {
                         throw IllegalArgumentException("기본 주문정보를 생성할 필드값이 부족합니다. ")
@@ -122,7 +123,7 @@ class OrderService(
             }
 
         if (shipmentHeaders.isNotEmpty()) shipmentService.headerRepo.saveAll(shipmentHeaders)
-        if (statements.isNotEmpty()) transactionStatementService.headerRepo.saveAll(statements)
+        if (statements.isNotEmpty()) transactionStatementRepo.saveAll(statements)
 
         headerRepo.saveAll(headerList)
         return "기본 주문정보 생성 및 수정 성공"
@@ -320,6 +321,17 @@ class OrderService(
             updateDate = detail.updateDate,
             flagActive = detail.flagActive,
         )
+    }
+
+    private fun generateTransactionHeader(orderHeader: OrderHeader): TransactionStatement = TransactionStatement(
+        site = orderHeader.site,
+        compCd = orderHeader.compCd,
+        orderNo = orderHeader.orderNo,
+    ).apply {
+        createUser = orderHeader.createUser
+        createDate = orderHeader.createDate
+        updateUser = orderHeader.updateUser
+        updateDate = orderHeader.updateDate
     }
 }
 

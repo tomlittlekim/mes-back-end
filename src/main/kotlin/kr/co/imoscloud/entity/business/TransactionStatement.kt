@@ -27,7 +27,7 @@ class TransactionStatement(
     val orderNo: String,
 
     @Column(name = "FLAG_ISSUANCE")
-    val flagIssuance: Boolean = false,
+    val flagIssuance: Boolean? = false,
 
     @Column(name = "ISSUANCE_DATE")
     val issuanceDate: LocalDate? = null,

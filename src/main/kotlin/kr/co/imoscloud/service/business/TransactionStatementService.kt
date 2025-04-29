@@ -3,14 +3,19 @@ package kr.co.imoscloud.service.business
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.business.OrderDetail
+import kr.co.imoscloud.entity.business.TransactionStatement
 import kr.co.imoscloud.entity.drive.FileManagement
+import kr.co.imoscloud.repository.business.ShipmentDetailRepository
 import kr.co.imoscloud.repository.business.TransactionStatementRepository
 import kr.co.imoscloud.repository.drive.DriveRepository
 import kr.co.imoscloud.service.drive.FileConvertService
 import kr.co.imoscloud.util.AbstractPrint
+import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.PrintDto
+import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class TransactionStatementService(
@@ -18,7 +23,8 @@ class TransactionStatementService(
     private val headerRepo: TransactionStatementRepository,
     private val driveRepo: DriveRepository,
     private val orderService: OrderService,
-    private val convertService: FileConvertService
+    private val convertService: FileConvertService,
+    private val shipmentDetailRepo: ShipmentDetailRepository
 ): AbstractPrint(core, convertService) {
 
     private val MENU_ID = ""
@@ -81,6 +87,35 @@ class TransactionStatementService(
         result["finalPrice"] = finalPrice.toString()
         return result
     }
+
+    fun getAllBySearchCondition(req: TransactionStatementSearchCondition): List<TransactionStatementNullableDto> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        val (from, to) = DateUtils.getSearchDateRange(req.fromDate, req.toDate)
+
+        val headers: List<TransactionStatementNullableDto> = headerRepo.getAllBySearchCondition(
+            loginUser.getSite(),
+            loginUser.compCd,
+            req.id,
+            from, to,
+            req.orderNo,
+            req.customerId
+        )
+
+        val indies = headers.mapNotNull { it.orderNo }
+        val supplyPriceMap = shipmentDetailRepo.getAllTotalSupplyPriceByOrderNo(
+            loginUser.getSite(),
+            loginUser.compCd,
+            indies
+        ).groupBy { it.orderNo }
+
+        return headers.map { header ->
+            val supplyPrice: Int = supplyPriceMap[header.orderNo]?.sumOf { it.supplyPrice } ?: 0
+            header.apply {
+                this.supplyPrice = supplyPrice
+                vat = if (header.flagVat == true) (supplyPrice/10) else 0
+            }
+        }
+    }
 }
 
 data class TransactionStatementPrintRequest(
@@ -88,4 +123,36 @@ data class TransactionStatementPrintRequest(
     val customerName: String,
     val transactionDate: LocalDate,
     val detailIds: List<Long>
+)
+
+data class TransactionStatementSearchCondition(
+    val id: Long?=null,
+    val fromDate: String? = null,
+    val toDate: String? = null,
+    val orderNo: String? = null,
+    val customerId: String? = null,
+)
+
+data class TransactionStatementNullableDto(
+    val id: Long? = null,
+    val site: String? = null,
+    val compCd: String? = null,
+    val orderNo: String? = null,
+    val orderDate: LocalDate? = null,
+    val customerName: String? = null,
+    val orderQuantity: Double? = null,
+    val totalAmount: Int? = 0,
+
+    var supplyPrice: Int? = 0,
+    var vat: Int? = 0,
+    val flagIssuance: Boolean? = false,
+    val issuanceDate: LocalDate? = null,
+    val remark: String? = null,
+
+    val flagVat: Boolean? = false,
+)
+
+data class ShipmentWithSupplyPrice(
+    val orderNo: String,
+    val supplyPrice: Int,
 )

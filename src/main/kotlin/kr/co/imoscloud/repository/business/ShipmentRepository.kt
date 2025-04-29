@@ -6,6 +6,7 @@ import kr.co.imoscloud.entity.business.ShipmentHeader
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.service.business.ShipmentDetailNullableDto
 import kr.co.imoscloud.service.business.ShipmentHeaderNullableDto
+import kr.co.imoscloud.service.business.ShipmentWithSupplyPrice
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -191,4 +192,21 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
             and od.flagActive is true
     """)
     fun getMaterialsByOrderNo(site: String, compCd: String, orderNo: String): List<MaterialMaster>
+
+    @Query("""
+        select new kr.co.imoscloud.service.business.ShipmentWithSupplyPrice(
+            sh.orderNo,
+            (od.supplyPrice * sh.shippedQuantity)
+        )
+        from ShipmentDetail sh
+        left join OrderDetail od on sh.orderNo = od.orderNo
+            and sh.orderSubNo = od.orderSubNo
+            and sh.compCd = od.compCd
+            and od.flagActive is true
+        where sh.site = :site
+            and sh.compCd = :compCd
+            and sh.orderNo in :orderNos
+            and sh.flagActive is true
+    """)
+    fun getAllTotalSupplyPriceByOrderNo(site: String, compCd: String, orderNos: List<String>): List<ShipmentWithSupplyPrice>
 }

@@ -88,9 +88,9 @@ class TransactionStatementService(
             finalPrice += ((detail.supplyPrice ?: 0)+(detail.vat ?: 0))
         }
 
-        result["totalQty"] = totalQty.toString()
+        result["totalQty"] = totalQty.toInt().toString()
         result["totalPrice"] = totalPrice.toString()
-        result["totalAmount"] = totalAmount.toString()
+        result["totalSupplyPrice"] = totalAmount.toString()
         result["totalVat"] = totalVat.toString()
         result["finalPrice"] = finalPrice.toString()
         return result

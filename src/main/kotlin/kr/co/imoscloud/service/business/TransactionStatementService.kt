@@ -33,7 +33,7 @@ class TransactionStatementService(
     private val orderService: OrderService,
     private val convertService: FileConvertService,
     private val shipmentDetailRepo: ShipmentDetailRepository
-): AbstractPrint(core, convertService), IDrive {
+): AbstractPrint(core, convertService) {
 
     private val MENU_ID = "TS"
 

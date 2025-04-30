@@ -3,6 +3,7 @@ package kr.co.imoscloud.util
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.drive.FileManagement
+import kr.co.imoscloud.iface.IDrive
 import kr.co.imoscloud.service.drive.FileConvertService
 import java.io.File
 import java.time.LocalDate
@@ -17,7 +18,7 @@ import javax.xml.transform.stream.StreamResult
 abstract class AbstractPrint(
     private val core: Core,
     private val converter: FileConvertService
-) {
+): IDrive {
 
     //TODO :: 추후 메뉴와 연결해서 제거할 필요가 있음
     abstract fun getFodsFile(): FileManagement
@@ -90,7 +91,7 @@ abstract class AbstractPrint(
     }
 
     private fun copyToFile(base: FileManagement, newFilename: String): File {
-        val originalFile = File(base.path)
+        val originalFile = File(getSavePath(base))
         val directory = originalFile.parentFile
         val copiedFile = File(directory, newFilename)
         originalFile.copyTo(copiedFile, overwrite = true)

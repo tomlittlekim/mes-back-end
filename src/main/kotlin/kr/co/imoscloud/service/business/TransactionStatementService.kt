@@ -21,6 +21,7 @@ import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.io.File
 import java.io.FileInputStream
+import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -30,9 +31,7 @@ class TransactionStatementService(
     private val headerRepo: TransactionStatementHeaderRepository,
     private val detailRepo: TransactionStatementDetailRepository,
     private val driveRepo: DriveRepository,
-    private val orderService: OrderService,
     private val convertService: FileConvertService,
-    private val shipmentDetailRepo: ShipmentDetailRepository
 ): AbstractPrint(core, convertService) {
 
     private val MENU_ID = "TS"
@@ -88,11 +87,13 @@ class TransactionStatementService(
             finalPrice += ((detail.supplyPrice ?: 0)+(detail.vat ?: 0))
         }
 
+        val formatter = NumberFormat.getInstance()
+
         result["totalQty"] = totalQty.toInt().toString()
-        result["totalPrice"] = totalPrice.toString()
-        result["totalSupplyPrice"] = totalAmount.toString()
-        result["totalVat"] = totalVat.toString()
-        result["finalPrice"] = finalPrice.toString()
+        result["totalPrice"] = formatter.format(totalPrice)
+        result["totalSupplyPrice"] = formatter.format(totalAmount)
+        result["totalVat"] = formatter.format(totalVat)
+        result["finalPrice"] = formatter.format(finalPrice)
         return result
     }
 

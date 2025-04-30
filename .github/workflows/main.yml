@@ -54,7 +54,7 @@ jobs:
             --name springboot \
             --network imosNetwork \
             -p 8080:8080 \
-            -v spring-data:/app \
+            -v spring-data:/data \
             8pin/imos:springboot
           docker system prune -a -f
           EOF

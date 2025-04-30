@@ -40,7 +40,7 @@ class TransactionStatementService(
     override fun <B> entityToPrintDto(body: B): PrintDto {
         return if (body is TransactionStatementDetailNullableDto) {
             PrintDto(
-                "거래명세서",
+                body.materialName,
                 body.materialStandard,
                 body.shippedQuantity?.toInt().toString(),
                 formattedNumber(body.unitPrice),
@@ -59,6 +59,7 @@ class TransactionStatementService(
             result["no"] = "1"
             result["localDate"] = formattedDate(header.transactionDate, CoreEnum.DateTimeFormat.YEAR_MONTH_DAY_KOR)
             result["customer"] = header.customerName
+            result["title"] = "거레명세서"
         }
 
         return if (result.isEmpty()) null else result

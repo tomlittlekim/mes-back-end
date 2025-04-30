@@ -51,7 +51,7 @@ abstract class AbstractPrint(
         val base: FileManagement = getFodsFile()
         val headerMap = generateHeader(base.menuId!!)
         val extractHeaderMap = head?.let { extractAdditionalHeaderFields(it) }
-        val totalHeaderMap = extractHeaderMap?.let { headerMap + it } ?: totalBodyMap
+        val totalHeaderMap = extractHeaderMap?.let { headerMap + it } ?: headerMap
 
         val uuid = formattedDate(LocalDateTime.now(), CoreEnum.DateTimeFormat.MOS_EVENT_TIME)
         val newFilename = "$uuid.fods"

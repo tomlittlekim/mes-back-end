@@ -71,7 +71,7 @@ class TransactionStatementService(
 
     override fun <B> extractAdditionalBodyFields(bodies: List<B>): MutableMap<String, String>? {
         val result = mutableMapOf<String, String>()
-        val details = bodies.filterIsInstance<OrderDetail>()
+        val details = bodies.filterIsInstance<TransactionStatementDetailNullableDto>()
         if (details.isEmpty()) return null
 
         var totalQty: Double = 0.0
@@ -81,11 +81,11 @@ class TransactionStatementService(
         var finalPrice: Int = 0
 
         for (detail in details) {
-            totalQty += detail.quantity ?: 0.0
+            totalQty += detail.shippedQuantity ?: 0.0
             totalPrice += detail.unitPrice ?: 0
             totalAmount += detail.supplyPrice ?: 0
-            totalVat += detail.vatPrice ?: 0
-            finalPrice += ((detail.supplyPrice ?: 0)+(detail.vatPrice ?: 0))
+            totalVat += detail.vat ?: 0
+            finalPrice += ((detail.supplyPrice ?: 0)+(detail.vat ?: 0))
         }
 
         result["totalQty"] = totalQty.toString()

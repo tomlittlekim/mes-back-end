@@ -50,7 +50,7 @@ abstract class AbstractPrint(
         val extractHeaderMap = head?.let { extractAdditionalHeaderFields(it) }
         val totalHeaderMap = extractHeaderMap?.let { totalBodyMap + it } ?: totalBodyMap
 
-        val newFilename = "${headerMap["companyName"]}_${headerMap["title"]}.fods"
+        val newFilename = "${headerMap["company"]}_${headerMap["title"]}.fods"
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (totalBodyMap + totalHeaderMap))

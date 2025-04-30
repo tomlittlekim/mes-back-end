@@ -4,12 +4,9 @@ import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.core.Core
-import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.business.TransactionStatementDetail
 import kr.co.imoscloud.entity.business.TransactionStatementHeader
 import kr.co.imoscloud.entity.drive.FileManagement
-import kr.co.imoscloud.iface.IDrive
-import kr.co.imoscloud.repository.business.ShipmentDetailRepository
 import kr.co.imoscloud.repository.business.TransactionStatementDetailRepository
 import kr.co.imoscloud.repository.business.TransactionStatementHeaderRepository
 import kr.co.imoscloud.repository.drive.DriveRepository
@@ -21,7 +18,6 @@ import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.io.File
 import java.io.FileInputStream
-import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -44,7 +40,7 @@ class TransactionStatementService(
     override fun <B> entityToPrintDto(body: B): PrintDto {
         return if (body is TransactionStatementDetailNullableDto) {
             PrintDto(
-                body.materialName,
+                "거래명세서",
                 body.materialStandard,
                 body.shippedQuantity?.toInt().toString(),
                 formattedNumber(body.unitPrice),

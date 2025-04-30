@@ -15,5 +15,7 @@ interface IDrive {
 
     fun getSavePath(file: FileManagement): String = "${file.path}/${file.name}.${file.extension}"
     fun getOriginalFilename(file: FileManagement): String = "${file.name}.${file.extension}"
-    fun encodeToString(text: String): String = URLEncoder.encode(text, "UTF-8").replace("+", "%20")
+    fun encodeToString(text: String): String = URLEncoder.encode(text, "UTF-8")
+        .replace("+", "%20")
+        .replace("%2E", ".")
 }

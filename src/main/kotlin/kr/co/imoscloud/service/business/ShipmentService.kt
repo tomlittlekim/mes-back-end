@@ -4,10 +4,12 @@ import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.business.OrderHeader
 import kr.co.imoscloud.entity.business.ShipmentDetail
 import kr.co.imoscloud.entity.business.ShipmentHeader
+import kr.co.imoscloud.entity.business.TransactionStatementDetail
 import kr.co.imoscloud.entity.standardInfo.Warehouse
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentDetailRepository
 import kr.co.imoscloud.repository.business.ShipmentHeaderRepository
+import kr.co.imoscloud.repository.business.TransactionStatementDetailRepository
 import kr.co.imoscloud.repository.inventory.InventoryStatusRep
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.DateUtils
@@ -20,7 +22,8 @@ class ShipmentService(
     val headerRepo: ShipmentHeaderRepository,
     private val detailRepo: ShipmentDetailRepository,
     private val orderDetailRepo: OrderDetailRepository,
-    private val inventoryStatusRep: InventoryStatusRep
+    private val inventoryStatusRep: InventoryStatusRep,
+    private val tsdRepo: TransactionStatementDetailRepository
 ) {
 
     fun getHeadersBySearchRequest(req: ShipmentSearchRequest): List<ShipmentHeaderNullableDto> {
@@ -77,6 +80,7 @@ class ShipmentService(
 
         val quantityMap: MutableMap<String, Double> = HashMap()
         val inventoryMap: MutableMap<String, Double> = HashMap()
+        val tsdList: MutableList<TransactionStatementDetail> = mutableListOf()
         val detailMap = detailRepo.findAllByCompCdAndIdInAndFlagActiveIsTrue(loginUser.compCd, indies).associateBy { it.id }
 
         val detailList = list.map { req ->
@@ -124,6 +128,8 @@ class ShipmentService(
 
                     mapIndex = "${req.shipmentWarehouse}_${req.systemMaterialId}"
                     inventoryMap[mapIndex] = inventoryMap.getOrDefault(mapIndex, 0.0) - cumulativeQty
+
+                    tsdList.add(generateTransactionStatementDetail(detail))
                     detail
                 }
         }
@@ -147,6 +153,8 @@ class ShipmentService(
                 loginUser.loginId
             )
         }
+
+        if (tsdList.isNotEmpty()) tsdRepo.saveAll(tsdList)
 
         detailRepo.saveAll(detailList)
         return "출하등록 정보 생성 및 수정 성공"
@@ -195,6 +203,18 @@ class ShipmentService(
     fun getWarehouseByMaterialId(materialId: String): List<Warehouse> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         return inventoryStatusRep.getWarehouseByMaterialId(loginUser.getSite(), loginUser.compCd, materialId)
+    }
+
+    private fun generateTransactionStatementDetail(shipmentDetail: ShipmentDetail): TransactionStatementDetail {
+        return TransactionStatementDetail(
+            site = shipmentDetail.site,
+            compCd = shipmentDetail.compCd,
+            orderNo = shipmentDetail.orderNo,
+            orderSubNo = shipmentDetail.orderSubNo,
+        ).apply {
+            createUser = shipmentDetail.createUser
+            createDate = shipmentDetail.createDate
+        }
     }
 }
 

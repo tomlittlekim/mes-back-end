@@ -279,8 +279,3 @@ data class ShipmentWithSupplyPrice(
     val orderNo: String,
     val supplyPrice: Int,
 )
-
-data class TransactionStatementAll(
-    val header: TransactionStatementHeader,
-    val details: List<TransactionStatementDetail>
-)

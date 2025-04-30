@@ -6,8 +6,8 @@ import kr.co.imoscloud.iface.DtoCompCdBase
 import java.time.LocalDate
 
 @Entity
-@Table(name = "TRANSACTION_STATEMENT")
-class TransactionStatement(
+@Table(name = "TRANSACTION_STATEMENT_HEADER")
+class TransactionStatementHeader(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,9 +20,6 @@ class TransactionStatement(
     @Column(name = "COMP_CD", unique = true, nullable = false, length = 20)
     override val compCd: String,
 
-    @Column(name = "TRANSACTION_DATE", nullable = false)
-    val transactionDate: LocalDate? = null,
-
     @Column(name = "ORDER_NO", nullable = false, length = 100, unique = true)
     val orderNo: String,
 
@@ -31,8 +28,5 @@ class TransactionStatement(
 
     @Column(name = "ISSUANCE_DATE")
     val issuanceDate: LocalDate? = null,
-
-    @Column(name = "REMARK", length = 125)
-    val remark: String? = null,
 
 ): CommonCol(), DtoCompCdBase

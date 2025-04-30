@@ -1,15 +1,17 @@
 package kr.co.imoscloud.repository.business
 
-import kr.co.imoscloud.entity.business.TransactionStatement
-import kr.co.imoscloud.service.business.TransactionStatementNullableDto
+import kr.co.imoscloud.entity.business.TransactionStatementDetail
+import kr.co.imoscloud.entity.business.TransactionStatementHeader
+import kr.co.imoscloud.service.business.TransactionStatementHeaderNullableDto
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
 
-interface TransactionStatementRepository: JpaRepository<TransactionStatement, Long> {
+interface TransactionStatementHeaderRepository: JpaRepository<TransactionStatementHeader, Long> {
 
-    @Query("""
-        select new kr.co.imoscloud.service.business.TransactionStatementNullableDto(
+    @Query(
+        """
+        select new kr.co.imoscloud.service.business.TransactionStatementHeaderNullableDto(
             ts.id,
             ts.site,
             ts.compCd,
@@ -17,15 +19,14 @@ interface TransactionStatementRepository: JpaRepository<TransactionStatement, Lo
             oh.orderDate,
             v.vendorName,
             oh.orderQuantity,
+            oh.finalAmount,
             oh.totalAmount,
-            0,
-            0,
+            oh.vatAmount,
             ts.flagIssuance,
             ts.issuanceDate,
-            ts.remark,
             oh.flagVatAmount
         )
-        from TransactionStatement ts
+        from TransactionStatementHeader ts
         left join OrderHeader oh on ts.orderNo = oh.orderNo
             and ts.compCd = oh.compCd
             and oh.flagActive is true
@@ -42,7 +43,8 @@ interface TransactionStatementRepository: JpaRepository<TransactionStatement, Lo
             and (:orderNo is null or ts.orderNo = :orderNo)
             and (:customerId is null or oh.customerId = :customerId)
             and ts.flagActive is true
-    """)
+    """
+    )
     fun getAllBySearchCondition(
         site: String,
         compCd: String,
@@ -51,5 +53,8 @@ interface TransactionStatementRepository: JpaRepository<TransactionStatement, Lo
         to: LocalDateTime?=null,
         orderNo: String?=null,
         customerId: String?=null,
-    ): List<TransactionStatementNullableDto>
+    ): List<TransactionStatementHeaderNullableDto>
+}
+
+interface TransactionStatementDetailRepository: JpaRepository<TransactionStatementDetail, Long> {
 }

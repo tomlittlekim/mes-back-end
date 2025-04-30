@@ -4,12 +4,12 @@ import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.business.OrderHeader
 import kr.co.imoscloud.entity.business.ShipmentHeader
-import kr.co.imoscloud.entity.business.TransactionStatement
+import kr.co.imoscloud.entity.business.TransactionStatementHeader
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.OrderHeaderRepository
-import kr.co.imoscloud.repository.business.TransactionStatementRepository
+import kr.co.imoscloud.repository.business.TransactionStatementHeaderRepository
 import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
@@ -25,7 +25,7 @@ class OrderService(
     private val materialRepo: MaterialRepository,
     private val codeRep: CodeRep,
     private val shipmentService: ShipmentService,
-    private val transactionStatementRepo: TransactionStatementRepository
+    private val transactionStatementRepo: TransactionStatementHeaderRepository
 ) {
 
     // orderHeader 조회
@@ -82,7 +82,7 @@ class OrderService(
             .associateBy { it.id }
 
         val shipmentHeaders: MutableList<ShipmentHeader> = mutableListOf()
-        val statements: MutableList<TransactionStatement> = mutableListOf()
+        val statements: MutableList<TransactionStatementHeader> = mutableListOf()
 
         val headerList: List<OrderHeader> = list.map { req ->
             headerMap[req.id]
@@ -323,7 +323,7 @@ class OrderService(
         )
     }
 
-    private fun generateTransactionHeader(orderHeader: OrderHeader): TransactionStatement = TransactionStatement(
+    private fun generateTransactionHeader(orderHeader: OrderHeader): TransactionStatementHeader = TransactionStatementHeader(
         site = orderHeader.site,
         compCd = orderHeader.compCd,
         orderNo = orderHeader.orderNo,

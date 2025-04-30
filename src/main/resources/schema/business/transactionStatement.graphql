@@ -1,0 +1,57 @@
+type TransactionStatementHeaderNullableDto {
+    id: Int
+    site: String
+    compCd: String
+    orderNo: String
+    orderDate: String
+    customerName: String
+    orderQuantity: Float
+    totalAmount: Int
+    supplyPrice: Int
+    vat: Int
+    flagIssuance: Boolean
+    issuanceDate: String
+    flagVat: Boolean
+}
+
+type TransactionStatementDetailNullableDto {
+    id: Int
+    site: String
+    compCd: String
+    orderNo: String
+    orderSubNo: String
+    transactionStatementId: String
+    transactionStatementDate: String
+    systemMaterialId: String
+    materialName: String
+    materialStandard: String
+    unit: String
+    shippedQuantity: Float
+    unitPrice: Int
+    supplyPrice: Int
+    vat: Int
+}
+
+input TransactionStatementPrintRequest {
+    headerId: Int!
+    transactionDate: String!
+    customerName: String!
+    detailIds: [Int!]!
+}
+
+input TransactionStatementSearchCondition {
+    id: Int
+    fromDate: String
+    toDate: String
+    orderNo: String
+    customerId: String
+}
+
+extend type Query {
+    transactionStatementHeaders(req: TransactionStatementSearchCondition): [TransactionStatementHeaderNullableDto]
+    transactionStatementDetails(orderNo: String!): [TransactionStatementDetailNullableDto]
+}
+
+extend type Mutation {
+    deleteTransactionStatement(headerId: Int!): String
+}

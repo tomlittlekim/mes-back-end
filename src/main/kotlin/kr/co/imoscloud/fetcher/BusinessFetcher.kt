@@ -11,7 +11,8 @@ import kr.co.imoscloud.service.business.*
 @DgsComponent
 class BusinessFetcher(
     private val orderService: OrderService,
-    private val shipmentService: ShipmentService
+    private val shipmentService: ShipmentService,
+    private val transactionStatementService: TransactionStatementService,
 ) {
 
     /** 주문헤더 검색 */
@@ -105,5 +106,18 @@ class BusinessFetcher(
 
 
 
+    @DgsQuery
+    fun transactionStatementHeaders(@InputArgument req: TransactionStatementSearchCondition): List<TransactionStatementHeaderNullableDto> {
+        return transactionStatementService.getAllBySearchCondition(req)
+    }
 
+    @DgsQuery
+    fun transactionStatementDetails(@InputArgument orderNo: String): List<TransactionStatementDetailNullableDto> {
+        return transactionStatementService.getAllDetailsByOrderNo(orderNo)
+    }
+
+    @DgsMutation
+    fun deleteTransactionStatement(@InputArgument headerId: Long): String {
+        return transactionStatementService.softDeleteByOrderNo(headerId)
+    }
 }

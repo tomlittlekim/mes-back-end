@@ -44,8 +44,7 @@ interface CompanyRepository: JpaRepository<Company, Long> {
         from Company c
         left join Menu m on m.menuId = :menuId
             and m.flagActive is true
-        where c.site = :site
-            and c.compCd = :compCd
+        where c.compCd = :compCd
             and c.flagActive is true
     """)
     fun getInitialHeader(site: String, compCd: String, menuId: String): Map<String, String>

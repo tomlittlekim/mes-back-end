@@ -6,6 +6,7 @@ import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.iface.IDrive
 import kr.co.imoscloud.service.drive.FileConvertService
 import java.io.File
+import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
@@ -155,6 +156,16 @@ abstract class AbstractPrint(
             is LocalDate -> formatter.format(date)
             is LocalDateTime -> formatter.format(date)
             is YearMonth -> formatter.format(date)
+            else -> ""
+        }
+    }
+
+    protected fun <T> formattedNumber(number: T): String {
+        val formatter = NumberFormat.getInstance()
+
+        return when (number) {
+            is Int -> formatter.format(number)
+            is Double -> formatter.format(number.toInt())
             else -> ""
         }
     }

@@ -46,10 +46,10 @@ class TransactionStatementService(
             PrintDto(
                 body.materialName,
                 body.materialStandard,
-                body.shippedQuantity.toString(),
-                body.unitPrice.toString(),
-                body.supplyPrice.toString(),
-                body.vat.toString()
+                body.shippedQuantity?.toInt().toString(),
+                formattedNumber(body.unitPrice),
+                formattedNumber(body.supplyPrice),
+                formattedNumber(body.vat)
             )
         } else {
             throw IllegalArgumentException("지원하지 않는 객체입니다. ")
@@ -87,13 +87,11 @@ class TransactionStatementService(
             finalPrice += ((detail.supplyPrice ?: 0)+(detail.vat ?: 0))
         }
 
-        val formatter = NumberFormat.getInstance()
-
         result["totalQty"] = totalQty.toInt().toString()
-        result["totalPrice"] = formatter.format(totalPrice)
-        result["totalSupplyPrice"] = formatter.format(totalAmount)
-        result["totalVat"] = formatter.format(totalVat)
-        result["finalPrice"] = formatter.format(finalPrice)
+        result["totalPrice"] = formattedNumber(totalPrice)
+        result["totalSupplyPrice"] = formattedNumber(totalAmount)
+        result["totalVat"] = formattedNumber(totalVat)
+        result["finalPrice"] = formattedNumber(finalPrice)
         return result
     }
 
@@ -147,9 +145,10 @@ class TransactionStatementService(
         finalDetails = finalDetails.filter { selectedDetailIds.contains(it.id) }
 
         val pdfFile: File = process(req, finalDetails)
-        val encodedFileName = encodeToString("${req.transactionDate}_${req.customerName}_거래명세서.pdf")
-        response.setHeader("Content-Disposition", """attachment; filename="$encodedFileName"; filename*=UTF-8''$encodedFileName""")
-        response.contentType = "application/octet-stream"
+        val rawFileName = "${req.transactionDate}_${req.customerName}_거래명세서.pdf"
+        val encodedFileName = encodeToString(rawFileName)
+        response.setHeader("Content-Disposition", """attachment; filename="$rawFileName"; filename*=UTF-8''$encodedFileName""")
+        response.contentType = "application/pdf"
         response.setContentLength(pdfFile.length().toInt())
         FileInputStream(pdfFile).use { it.copyTo(response.outputStream) }
 

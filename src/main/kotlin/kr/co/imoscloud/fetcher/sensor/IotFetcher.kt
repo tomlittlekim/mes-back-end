@@ -3,7 +3,6 @@ package kr.co.imoscloud.fetcher.sensor
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kr.co.imoscloud.entity.sensor.SensorStatus
 import kr.co.imoscloud.service.sensor.IotService
 import kr.co.imoscloud.service.sensor.PowerResponseDto
 

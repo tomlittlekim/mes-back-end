@@ -184,6 +184,32 @@ class CommonCodeService(
         return result
     }
 
+    fun getGridCodeList(codeClassIds: List<String>): List<CodeClassListResponse> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+
+        val codeClassList = codeClassRep.getCodeClassListByIds(
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
+            codeClassIds = codeClassIds
+        )
+
+        return codeClassList.map { codeClass ->
+            val codes = codeRep.getGridCodes(
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.compCd,
+                codeClassId = codeClass?.codeClassId ?: ""
+            )
+
+            CodeClassListResponse(
+                codeClassId = codeClass?.codeClassId,
+                codeClassName = codeClass?.codeClassName,
+                codeClassDesc = codeClass?.codeClassDesc,
+                codes = entityToResponse(codes)
+            )
+        }
+    }
+
+
     fun getInitialCodes(codeClassId: String):List<CodeResponse> {
         val results = codeRep.getInitialCodes(codeClassId)
         return entityToResponse(results)
@@ -212,6 +238,13 @@ data class CodeClassResponse(
     val codeClassId:String ?= null,
     val codeClassName:String ?= null,
     val codeClassDesc:String ?= null
+)
+
+data class CodeClassListResponse(
+    val codeClassId: String? = null,
+    val codeClassName: String? = null,
+    val codeClassDesc: String? = null,
+    val codes: List<CodeResponse> = emptyList(),
 )
 
 data class CodeResponse(

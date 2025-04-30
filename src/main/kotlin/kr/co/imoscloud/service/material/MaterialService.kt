@@ -1,6 +1,5 @@
 package kr.co.imoscloud.service.material
 
-import graphql.com.google.common.collect.ImmutableList
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.material.MaterialMaster

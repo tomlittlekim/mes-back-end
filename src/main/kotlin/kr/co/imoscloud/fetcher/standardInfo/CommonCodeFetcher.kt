@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.service.standardInfo.CodeClassListResponse
 import kr.co.imoscloud.service.standardInfo.CodeClassResponse
 import kr.co.imoscloud.service.standardInfo.CodeResponse
 import kr.co.imoscloud.service.standardInfo.CommonCodeService
@@ -49,6 +50,11 @@ class CommonCodeFetcher(
     @DgsQuery
     fun getGridCodes(@InputArgument("codeClassId") codeClassId: String): List<CodeResponse> {
         return commonCodeService.getGridCodes(codeClassId)
+    }
+
+    @DgsQuery
+    fun getGridCodeList(@InputArgument("codeClassIds") codeClassIds: List<String>): List<CodeClassListResponse> {
+        return commonCodeService.getGridCodeList(codeClassIds)
     }
 
     @DgsQuery

@@ -1,13 +1,13 @@
 package kr.co.imoscloud.service.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.DefectInfo
-import kr.co.imoscloud.model.productionmanagement.*
+import kr.co.imoscloud.model.productionmanagement.DefectInfoFilter
+import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
 import kr.co.imoscloud.repository.productionmanagement.DefectInfoRepository
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
 
 /**
  * 불량 정보 서비스

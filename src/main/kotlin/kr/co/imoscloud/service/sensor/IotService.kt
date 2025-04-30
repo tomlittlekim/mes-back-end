@@ -1,6 +1,5 @@
 package kr.co.imoscloud.service.sensor
 
-import kr.co.imoscloud.entity.sensor.SensorStatus
 import kr.co.imoscloud.fetcher.sensor.PowerHourFilter
 import kr.co.imoscloud.repository.SensorStatusRep
 import kr.co.imoscloud.util.SecurityUtils

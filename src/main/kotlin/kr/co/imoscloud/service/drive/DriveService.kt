@@ -6,7 +6,6 @@ import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.iface.IDrive
 import kr.co.imoscloud.repository.drive.DriveRepository
-import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service

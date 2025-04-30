@@ -5,7 +5,6 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.exceptions.DgsEntityNotFoundException
-import com.querydsl.core.util.MathUtils.result
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
 import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter

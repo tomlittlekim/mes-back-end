@@ -1,7 +1,6 @@
 package kr.co.imoscloud.repository
 
 import jakarta.transaction.Transactional
-import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.entity.standardInfo.*
 import kr.co.imoscloud.service.standardInfo.EquipmentResponseModel
 import kr.co.imoscloud.service.standardInfo.LineResponseModel
@@ -250,6 +249,19 @@ interface VendorRep : JpaRepository<Vendor,Long>{
         vendorIds:List<String?>
     ):List<Vendor?>
 
+    @Query("""
+        SELECT v FROM Vendor v 
+        WHERE v.site = :site 
+        AND v.compCd = :compCd 
+        AND v.vendorType = :vendorType
+        AND v.flagActive = true
+        ORDER BY v.vendorName ASC
+    """)
+    fun getVendorsByType(
+        site: String,
+        compCd: String,
+        vendorType: String
+    ): List<Vendor?>
 
     @Transactional
     @Modifying

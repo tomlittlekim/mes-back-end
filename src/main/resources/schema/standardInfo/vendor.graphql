@@ -48,6 +48,7 @@ type Vendor {
 extend type Query {
     getVendors(filter:VendorFilter): [Vendor]
     getVendorsBySameCompany: [Vendor]
+    getVendorsByType(vendorType : [String!]): [Vendor]
 }
 
 extend type Mutation {

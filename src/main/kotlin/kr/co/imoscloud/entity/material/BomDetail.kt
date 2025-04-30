@@ -2,8 +2,6 @@ package kr.co.imoscloud.entity.material
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
-import kr.co.imoscloud.security.UserPrincipal
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "BOM_DETAIL",)

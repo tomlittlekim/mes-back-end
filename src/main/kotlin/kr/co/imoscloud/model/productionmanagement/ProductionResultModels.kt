@@ -1,6 +1,5 @@
 package kr.co.imoscloud.model.productionmanagement
 
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**

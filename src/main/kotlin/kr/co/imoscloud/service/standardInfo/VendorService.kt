@@ -128,6 +128,23 @@ class VendorService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         return vendorRep.findAllBySiteAndCompCd(loginUser.getSite(), loginUser.compCd);
     }
+
+    fun getVendorsByType(vendorType: String): List<VendorDropdownResponse> {
+        val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
+        
+        val vendorList = vendorRep.getVendorsByType(
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
+            vendorType = vendorType
+        )
+
+        return vendorList.map {
+            VendorDropdownResponse(
+                vendorId = it?.vendorId ?: throw Exception("vendorId가 존재하지 않습니다."),
+                vendorName = it.vendorName ?: throw Exception("거래처명이 존재하지 않습니다.")
+            )
+        }
+    }
 }
 
 data class VendorResponse(
@@ -144,4 +161,9 @@ data class VendorResponse(
     val createDate:String ?= null,
     val updateUser:String ?= null,
     val updateDate:String ?= null,
+)
+
+data class VendorDropdownResponse(
+    val vendorId: String,
+    val vendorName: String
 )

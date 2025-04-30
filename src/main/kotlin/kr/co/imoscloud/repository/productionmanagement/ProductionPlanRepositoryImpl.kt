@@ -151,8 +151,8 @@ class ProductionPlanRepositoryImpl(
         // flagActive 필터링 (기본값은 true)
         query = query.where(plan.flagActive.eq(flagActive ?: true))
 
-        // 생산계획ID 역순 정렬 추가
-        query = query.orderBy(plan.prodPlanId.desc())
+        // seq 역순 정렬 추가
+        query = query.orderBy(plan.id.desc())
 
         // 쿼리 실행 및 DTO 결과 반환
         return query.fetch()

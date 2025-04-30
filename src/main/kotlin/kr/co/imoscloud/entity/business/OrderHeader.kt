@@ -4,7 +4,6 @@ import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
 import kr.co.imoscloud.iface.DtoCompCdBase
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "ORDER_HEADER")

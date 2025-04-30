@@ -1,15 +1,11 @@
 package kr.co.imoscloud.service.productionmanagement.productionresult
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
-import kr.co.imoscloud.model.productionmanagement.*
+import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import org.springframework.stereotype.Service
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 /**
  * 생산실적 조회 관련 서비스

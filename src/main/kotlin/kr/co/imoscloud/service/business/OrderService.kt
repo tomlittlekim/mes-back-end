@@ -243,10 +243,12 @@ class OrderService(
                     ).apply { createCommonCol(loginUser) }
 
                     detail = calculatePrice(req.flagVatAmount, detail, systemVat)
-                    val existsPrice = amountMap[detail.orderNo] ?: CalculateFroOrder()
-                    val finalTotal = existsPrice.total + detail.supplyPrice!!
-                    val finalVat = existsPrice.vat + detail.vatPrice!!
-                    amountMap[detail.orderNo] = CalculateFroOrder(finalTotal, finalVat, detail.quantity)
+                    amountMap[detail.orderNo] = amountMap.getOrDefault(detail.orderNo, CalculateFroOrder())
+                        .apply {
+                            total += (detail.supplyPrice ?: 0)
+                            vat += (detail.vatPrice ?: 0)
+                            quantity += (detail.quantity ?: 0.0)
+                        }
                     detail
                 }
         }

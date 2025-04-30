@@ -113,6 +113,7 @@ interface TransactionStatementDetailRepository: JpaRepository<TransactionStateme
         WHERE sd.SITE = :site
             AND sd.COMP_CD = :compCd
             AND sd.ORDER_NO = :orderNo
+            AND sd.ORDER_SUB_NO = :orderSubNo
             AND sd.FLAG_ACTIVE = true
         ORDER BY sd.CREATE_DATE DESC
         LIMIT 1
@@ -123,7 +124,8 @@ interface TransactionStatementDetailRepository: JpaRepository<TransactionStateme
         site: String,
         compCd: String,
         orderNo: String,
-    ): List<ShipmentDetailWithMaterialDto>
+        orderSubNo: String
+    ): ShipmentDetailWithMaterialDto?
 
     fun findAllByIdInAndFlagActiveIsTrue(ids: List<Long>): List<TransactionStatementDetail>
 

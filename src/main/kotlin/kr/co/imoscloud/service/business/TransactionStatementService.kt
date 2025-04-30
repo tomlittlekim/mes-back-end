@@ -113,18 +113,22 @@ class TransactionStatementService(
     fun getAllDetailsByOrderNo(orderNo: String): List<TransactionStatementDetailNullableDto> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        val latestMap = detailRepo.getAllLatestByOrderNo(loginUser.getSite(), loginUser.compCd, orderNo)
-            .associateBy { it.orderNo }
-
         return detailRepo.getAllInitialByOrderNo(loginUser.getSite(), loginUser.compCd, orderNo)
             .mapNotNull { detail ->
-                latestMap[detail.orderNo]?.let { latest ->
+                detailRepo.getAllLatestByOrderNo(
+                    loginUser.getSite(),
+                    loginUser.compCd,
+                    detail.orderNo!!,
+                    detail.orderSubNo!!
+                )?.let { latest ->
                     detail.apply {
                         systemMaterialId = latest.systemMaterialId
                         materialName = latest.materialName
                         materialStandard = latest.materialStandard
                         unit = latest.unit
-                        shippedQuantity = latest.quantity
+                        shippedQuantity = latest.quantity ?: 0.0
+                        supplyPrice = ((latest.quantity ?: 0.0) * (detail.unitPrice ?: 0)).toInt()
+                        vat = ((latest.quantity ?: 0.0) * (detail.unitPrice ?: 0) /10).toInt()
                     }
                 }
             }
@@ -259,10 +263,10 @@ data class TransactionStatementDetailNullableDto(
     var shippedQuantity: Double? = 0.0,
     //OrderDetail
     val unitPrice: Int? = 0,
-    //공급가 (shippedQuantity * unitPrice).toInt()
-    val supplyPrice: Int? = 0,
+    //공급가 (quantity * unitPrice).toInt()
+    var supplyPrice: Int? = 0,
     //선택한 Header 의 flagVat 분기로 /10
-    val vat: Int? = 0,
+    var vat: Int? = 0,
 )
 
 data class ShipmentDetailWithMaterialDto(

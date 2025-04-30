@@ -295,16 +295,6 @@ data class ShipmentDetailRequest(
     var remark: String? = null,
 )
 
-data class OrderDetailWithMaterialDto(
-    val orderNo: String? = null,
-    val orderSubNo: String? = null,
-    val systemMaterialId: String? = null,
-    val materialName: String? = null,
-    val materialStandard: String? = null,
-    val unit: String? = null,
-    var quantity: Double? = null,
-)
-
 data class ShipmentDetailEntryRequest(
     val orderNo: String,
     val orderSubNo: String,

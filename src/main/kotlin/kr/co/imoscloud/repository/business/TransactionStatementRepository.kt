@@ -2,6 +2,8 @@ package kr.co.imoscloud.repository.business
 
 import kr.co.imoscloud.entity.business.TransactionStatementDetail
 import kr.co.imoscloud.entity.business.TransactionStatementHeader
+import kr.co.imoscloud.service.business.ShipmentDetailWithMaterialDto
+import kr.co.imoscloud.service.business.TransactionStatementDetailNullableDto
 import kr.co.imoscloud.service.business.TransactionStatementHeaderNullableDto
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -57,4 +59,67 @@ interface TransactionStatementHeaderRepository: JpaRepository<TransactionStateme
 }
 
 interface TransactionStatementDetailRepository: JpaRepository<TransactionStatementDetail, Long> {
+
+    @Query("""
+        select new kr.co.imoscloud.service.business.TransactionStatementDetailNullableDto(
+            tsd.id,
+            tsd.site,
+            tsd.compCd,
+            tsd.orderNo,
+            tsd.orderSubNo,
+            tsd.transactionStatementId,
+            tsd.transactionStatementDate,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            od.unitPrice,
+            0,
+            0
+        )
+        from TransactionStatementDetail tsd
+        left join OrderDetail od on tsd.orderNo = od.orderNo
+            and tsd.orderSubNo = od.orderSubNo
+            and od.flagActive is true
+        where tsd.site = :site
+            and tsd.compCd = :compCd
+            and tsd.orderNo = :orderNo
+            and tsd.flagActive is true
+    """)
+    fun getAllInitialByOrderNo(
+        site: String,
+        compCd: String,
+        orderNo: String,
+    ): List<TransactionStatementDetailNullableDto>
+
+    @Query(
+        value = """
+        SELECT 
+            sd.ORDER_NO AS orderNo,
+            sd.ORDER_SUB_NO AS orderSubNo,
+            sd.SYSTEM_MATERIAL_ID AS systemMaterialId,
+            mm.MATERIAL_NAME AS materialName,
+            mm.MATERIAL_STANDARD AS materialStandard,
+            mm.UNIT AS unit,
+            CAST((sd.SHIPPED_QUANTITY + sd.CUMULATIVE_SHIPMENT_QUANTITY) AS DOUBLE) AS quantity
+        FROM SHIPMENT_DETAIL sd
+        LEFT JOIN MATERIAL_MASTER mm
+            ON sd.SYSTEM_MATERIAL_ID = mm.SYSTEM_MATERIAL_ID
+            AND sd.COMP_CD = mm.COMP_CD
+            AND mm.FLAG_ACTIVE = true
+        WHERE sd.SITE = :site
+            AND sd.COMP_CD = :compCd
+            AND sd.ORDER_NO = :orderNo
+            AND sd.FLAG_ACTIVE = true
+        ORDER BY sd.CREATE_DATE DESC
+        LIMIT 1
+    """,
+        nativeQuery = true
+    )
+    fun getAllLatestByOrderNo(
+        site: String,
+        compCd: String,
+        orderNo: String,
+    ): List<ShipmentDetailWithMaterialDto>
 }

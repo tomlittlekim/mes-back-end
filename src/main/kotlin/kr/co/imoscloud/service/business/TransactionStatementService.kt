@@ -6,6 +6,7 @@ import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.business.OrderDetail
 import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.repository.business.ShipmentDetailRepository
+import kr.co.imoscloud.repository.business.TransactionStatementDetailRepository
 import kr.co.imoscloud.repository.business.TransactionStatementHeaderRepository
 import kr.co.imoscloud.repository.drive.DriveRepository
 import kr.co.imoscloud.service.drive.FileConvertService
@@ -20,6 +21,7 @@ import java.time.LocalDate
 class TransactionStatementService(
     val core: Core,
     private val headerRepo: TransactionStatementHeaderRepository,
+    private val detailRepo: TransactionStatementDetailRepository,
     private val driveRepo: DriveRepository,
     private val orderService: OrderService,
     private val convertService: FileConvertService,
@@ -101,6 +103,26 @@ class TransactionStatementService(
         )
     }
 
+    fun getAllDetailsByOrderNo(orderNo: String): List<TransactionStatementDetailNullableDto> {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        val latestMap = detailRepo.getAllLatestByOrderNo(loginUser.getSite(), loginUser.compCd, orderNo)
+            .associateBy { it.orderNo }
+
+        return detailRepo.getAllInitialByOrderNo(loginUser.getSite(), loginUser.compCd, orderNo)
+            .mapNotNull { detail ->
+                latestMap[detail.orderNo]?.let { latest ->
+                    detail.apply {
+                        systemMaterialId = latest.systemMaterialId
+                        materialName = latest.materialName
+                        materialStandard = latest.materialStandard
+                        unit = latest.unit
+                        shippedQuantity = latest.quantity
+                    }
+                }
+            }
+    }
+
     fun printProcess(req: TransactionStatementPrintRequest, response: HttpServletResponse): Unit {
 
     }
@@ -137,6 +159,38 @@ data class TransactionStatementHeaderNullableDto(
     val issuanceDate: LocalDate? = null,
 
     val flagVat: Boolean? = false,
+)
+
+data class TransactionStatementDetailNullableDto(
+    val id: Long? = null,
+    val site: String? = null,
+    val compCd: String? = null,
+    val orderNo: String? = null,
+    val orderSubNo: String? = null,
+    val transactionStatementId: String? = null,
+    val transactionStatementDate: LocalDate? = null,
+    //ShipmentDetail
+    var systemMaterialId: String? = null,
+    var materialName: String? = null,
+    var materialStandard: String? = null,
+    var unit: String? = null,
+    var shippedQuantity: Double? = 0.0,
+    //OrderDetail
+    val unitPrice: Int? = 0,
+    //공급가 (shippedQuantity * unitPrice).toInt()
+    val supplyPrice: Int? = 0,
+    //선택한 Header 의 flagVat 분기로 /10
+    val vat: Int? = 0,
+)
+
+data class ShipmentDetailWithMaterialDto(
+    val orderNo: String? = null,
+    val orderSubNo: String? = null,
+    val systemMaterialId: String? = null,
+    val materialName: String? = null,
+    val materialStandard: String? = null,
+    val unit: String? = null,
+    var quantity: Double? = null,
 )
 
 data class ShipmentWithSupplyPrice(

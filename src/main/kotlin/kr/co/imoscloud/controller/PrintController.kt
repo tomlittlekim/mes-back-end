@@ -14,7 +14,7 @@ class PrintController(
     private val transactionStatementService: TransactionStatementService
 ) {
 
-    @PostMapping("/ts")
+    @PostMapping("/ts", produces = ["application/pdf"])
     fun tsToPrint(@RequestBody req: TransactionStatementPrintRequest, response: HttpServletResponse) =
         transactionStatementService.printProcess(req, response)
 }

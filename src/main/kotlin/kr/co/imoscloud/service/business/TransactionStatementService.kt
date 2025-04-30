@@ -148,7 +148,7 @@ class TransactionStatementService(
 
         val pdfFile: File = process(req, finalDetails)
         val encodedFileName = encodeToString("${req.transactionDate}_${req.customerName}_거래명세서.pdf")
-        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''${encodedFileName}")
+        response.setHeader("Content-Disposition", """attachment; filename="$encodedFileName"; filename*=UTF-8''$encodedFileName""")
         response.contentType = "application/octet-stream"
         response.setContentLength(pdfFile.length().toInt())
         FileInputStream(pdfFile).use { it.copyTo(response.outputStream) }

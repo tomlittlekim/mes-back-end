@@ -27,7 +27,7 @@ abstract class AbstractPrint(
     abstract fun <H> extractAdditionalHeaderFields(header: H?): MutableMap<String, String>?
     abstract fun <B> extractAdditionalBodyFields(bodies : List<B>): MutableMap<String, String>?
 
-    protected fun <H, B> process(head: H?, body : B, isRowType: Boolean?=null) : File {
+    protected fun <H, B> process(head: H?, body : B, isRowType: Boolean?=true) : File {
         val bodyMap = generateBody(listOf(body), false, isRowType)
 
         val base: FileManagement = getFodsFile()
@@ -42,7 +42,7 @@ abstract class AbstractPrint(
         return converter.fodsToPdf(copiedFile)
     }
 
-    protected fun <H, B> process(head: H?, bodies : List<B>, isRowType: Boolean?=null) : File {
+    protected fun <H, B> process(head: H?, bodies : List<B>, isRowType: Boolean?=true) : File {
         val bodyMap = generateBody(bodies, true, isRowType)
         val extractBodyMap = extractAdditionalBodyFields(bodies)
         val totalBodyMap = extractBodyMap?.let { bodyMap + it } ?: bodyMap
@@ -57,6 +57,7 @@ abstract class AbstractPrint(
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (totalBodyMap + totalHeaderMap))
+        copiedFile.delete()
         return converter.fodsToPdf(copiedFile)
     }
 
@@ -112,14 +113,14 @@ abstract class AbstractPrint(
     private fun <B> generateBody(
         list: List<B>,
         isList: Boolean,
-        isRowType: Boolean? = null
+        isRowType: Boolean?=true
     ): MutableMap<String, String?> {
         val resultMap: MutableMap<String, String?> = mutableMapOf()
 
         if (isList) {
             list.forEachIndexed { i, value ->
                 val dto = entityToPrintDto(value)
-                if (isRowType == true) {
+                if (isRowType!!) {
                     // 가로 타입 매핑 (1_1, 2_1, ...)
                     dtoToList(dto).forEachIndexed { index, value ->
                         resultMap["${index + 1}_${i + 1}"] = value

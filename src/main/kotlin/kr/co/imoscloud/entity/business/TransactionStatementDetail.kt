@@ -27,9 +27,9 @@ class TransactionStatementDetail(
     val orderSubNo: String,
 
     @Column(name = "TRANSACTION_STATEMENT_ID")
-    val flagIssuance: String? = null,
+    val transactionStatementId: String? = null,
 
     @Column(name = "TRANSACTION_STATEMENT_DATE")
-    val issuanceDate: LocalDate? = null,
+    val transactionStatementDate: LocalDate? = null,
 
 ): CommonCol(), DtoCompCdBase

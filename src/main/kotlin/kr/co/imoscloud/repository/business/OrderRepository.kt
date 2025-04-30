@@ -143,9 +143,12 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
             its.qty,
             null,
             null,
+            null,
+            null,
+            null,
             its.warehouseId,
-            0.0,
-            0.0
+            null,
+            null
         )
         from OrderDetail od
         left join MaterialMaster mm on od.systemMaterialId = mm.systemMaterialId

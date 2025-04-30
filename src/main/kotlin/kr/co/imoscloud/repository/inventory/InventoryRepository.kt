@@ -409,7 +409,7 @@ interface InventoryStatusRep : JpaRepository<InventoryStatus, Long> {
     @Query("""
         select wh
         from InventoryStatus its
-        left join Warehouse wh on its.warehouseId = wh.warehouseId
+        join Warehouse wh on its.warehouseId = wh.warehouseId
             and its.site = wh.site
             and its.compCd = wh.compCd
             and wh.flagActive is true

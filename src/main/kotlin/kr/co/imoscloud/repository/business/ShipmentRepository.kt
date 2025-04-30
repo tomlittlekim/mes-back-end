@@ -58,7 +58,7 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
             UNSHIPPED_QUANTITY = UNSHIPPED_QUANTITY - :quantity,
             SHIPMENT_STATUS = 
                 CASE 
-                    WHEN (UNSHIPPED_QUANTITY - :quantity) = 0.0 THEN 'completed'
+                    WHEN ((UNSHIPPED_QUANTITY - :quantity) = 0.0 OR (UNSHIPPED_QUANTITY - :quantity) < 0.0) THEN 'completed'
                     WHEN (UNSHIPPED_QUANTITY - :quantity) != 0.0 AND (SHIPPED_QUANTITY + :quantity) > 0.0 THEN 'partial'
                     ELSE 'not'
                 END,

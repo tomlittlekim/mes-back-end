@@ -35,7 +35,7 @@ class TransactionStatementService(
     private val shipmentDetailRepo: ShipmentDetailRepository
 ): AbstractPrint(core, convertService), IDrive {
 
-    private val MENU_ID = ""
+    private val MENU_ID = "TS"
 
     override fun getFodsFile(): FileManagement {
         return driveRepo.findByMenuIdAndFlagActiveIsTrue(MENU_ID)
@@ -43,14 +43,14 @@ class TransactionStatementService(
     }
 
     override fun <B> entityToPrintDto(body: B): PrintDto {
-        return if (body is OrderDetailNullableDto) {
+        return if (body is TransactionStatementDetailNullableDto) {
             PrintDto(
                 body.materialName,
                 body.materialStandard,
-                body.quantity.toString(),
+                body.shippedQuantity.toString(),
                 body.unitPrice.toString(),
                 body.supplyPrice.toString(),
-                body.vatPrice.toString()
+                body.vat.toString()
             )
         } else {
             throw IllegalArgumentException("지원하지 않는 객체입니다. ")

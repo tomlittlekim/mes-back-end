@@ -3,13 +3,13 @@ package kr.co.imoscloud.controller
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.service.drive.DriveService
 import kr.co.imoscloud.service.drive.LabelExcelRequest
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
-@Controller
+@RestController
 @RequestMapping("/api/drive")
 class DriveController(
     private val driveService: DriveService,

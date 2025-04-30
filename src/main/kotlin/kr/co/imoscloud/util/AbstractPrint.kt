@@ -170,11 +170,11 @@ abstract class AbstractPrint(
         }
     }
 
-    protected fun stringToInt(str: String?): Int {
+    protected fun convertToInt(str: String?): Int {
         if (str == null) return 0
 
         val regex = Regex("""^\d+$""")
-        return if (regex.matches(str)) str.toInt() else 0
+        return if (regex.matches(str)) str.toInt() else throw IllegalArgumentException("숫자 만으로 이루어진 형태가 아닙니다. ")
     }
 }
 

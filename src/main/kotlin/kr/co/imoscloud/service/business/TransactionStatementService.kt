@@ -1,10 +1,14 @@
 package kr.co.imoscloud.service.business
 
 import jakarta.servlet.http.HttpServletResponse
+import jakarta.transaction.Transactional
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.business.OrderDetail
+import kr.co.imoscloud.entity.business.TransactionStatementDetail
+import kr.co.imoscloud.entity.business.TransactionStatementHeader
 import kr.co.imoscloud.entity.drive.FileManagement
+import kr.co.imoscloud.iface.IDrive
 import kr.co.imoscloud.repository.business.ShipmentDetailRepository
 import kr.co.imoscloud.repository.business.TransactionStatementDetailRepository
 import kr.co.imoscloud.repository.business.TransactionStatementHeaderRepository
@@ -15,7 +19,10 @@ import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.PrintDto
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
+import java.io.File
+import java.io.FileInputStream
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class TransactionStatementService(
@@ -26,7 +33,7 @@ class TransactionStatementService(
     private val orderService: OrderService,
     private val convertService: FileConvertService,
     private val shipmentDetailRepo: ShipmentDetailRepository
-): AbstractPrint(core, convertService) {
+): AbstractPrint(core, convertService), IDrive {
 
     private val MENU_ID = ""
 
@@ -123,15 +130,61 @@ class TransactionStatementService(
             }
     }
 
+    @Transactional
     fun printProcess(req: TransactionStatementPrintRequest, response: HttpServletResponse): Unit {
+        val header = headerRepo.findByIdAndFlagActiveIsTrue(req.headerId)
+            ?: throw IllegalArgumentException("선택한 거래 명세서 정보가 존재하지 않습니다. ")
 
+        var finalDetails = getAllDetailsByOrderNo(header.orderNo)
+
+        val details = detailRepo.findAllByIdInAndFlagActiveIsTrue(req.detailIds)
+        val selectedDetailIds = details.map { it.id }
+        finalDetails = finalDetails.filter { selectedDetailIds.contains(it.id) }
+
+        val pdfFile: File = process(req, finalDetails)
+        val encodedFileName = encodeToString("${req.transactionDate}_${req.customerName}_거래명세서.pdf")
+        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''${encodedFileName}")
+        response.contentType = "application/octet-stream"
+        response.setContentLength(pdfFile.length().toInt())
+        FileInputStream(pdfFile).use { it.copyTo(response.outputStream) }
+
+        pdfFile.delete()
+        updateHeaderAndDetails(header, details, req)
+    }
+
+    private fun updateHeaderAndDetails(
+        header: TransactionStatementHeader,
+        details: List<TransactionStatementDetail>,
+        req: TransactionStatementPrintRequest
+    ): Unit {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+        val localDate = DateUtils.parseDate(req.transactionDate)
+        val today = LocalDateTime.now()
+        val formatDate = formattedDate(today, CoreEnum.DateTimeFormat.MOS_EVENT_TIME)
+        val tsId = formatDate.substring(2, formatDate.length - 1)
+
+        headerRepo.save(header.apply {
+            flagIssuance = true
+            issuanceDate = today.toLocalDate()
+            updateCommonCol(loginUser)
+        })
+        if (details.isNotEmpty()){
+            val updates = details.map { detail ->
+                detail.apply {
+                    transactionStatementId = tsId
+                    transactionStatementDate = localDate
+                    updateCommonCol(loginUser)
+                }
+            }
+            detailRepo.saveAll(updates)
+        }
     }
 }
 
 data class TransactionStatementPrintRequest(
-    val orderNo: String,
+    val headerId: Long,
+    val transactionDate: String,
     val customerName: String,
-    val transactionDate: LocalDate,
     val detailIds: List<Long>
 )
 

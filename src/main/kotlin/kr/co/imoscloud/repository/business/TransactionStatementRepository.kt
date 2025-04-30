@@ -56,6 +56,8 @@ interface TransactionStatementHeaderRepository: JpaRepository<TransactionStateme
         orderNo: String?=null,
         customerId: String?=null,
     ): List<TransactionStatementHeaderNullableDto>
+
+    fun findByIdAndFlagActiveIsTrue(id: Long): TransactionStatementHeader?
 }
 
 interface TransactionStatementDetailRepository: JpaRepository<TransactionStatementDetail, Long> {
@@ -122,4 +124,6 @@ interface TransactionStatementDetailRepository: JpaRepository<TransactionStateme
         compCd: String,
         orderNo: String,
     ): List<ShipmentDetailWithMaterialDto>
+
+    fun findAllByIdInAndFlagActiveIsTrue(ids: List<Long>): List<TransactionStatementDetail>
 }

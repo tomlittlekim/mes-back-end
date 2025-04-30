@@ -24,9 +24,9 @@ class TransactionStatementHeader(
     val orderNo: String,
 
     @Column(name = "FLAG_ISSUANCE")
-    val flagIssuance: Boolean? = false,
+    var flagIssuance: Boolean? = false,
 
     @Column(name = "ISSUANCE_DATE")
-    val issuanceDate: LocalDate? = null,
+    var issuanceDate: LocalDate? = null,
 
 ): CommonCol(), DtoCompCdBase

@@ -33,7 +33,8 @@ abstract class AbstractPrint(
         val headerMap = generateHeader(base.menuId!!)
         val etcMap = head?.let { extractAdditionalHeaderFields(it) }
 
-        val newFilename = "${headerMap["companyName"]}_${headerMap["title"]}.fods"
+        val uuid = formattedDate(LocalDateTime.now(), CoreEnum.DateTimeFormat.MOS_EVENT_TIME)
+        val newFilename = "$uuid.fods"
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (bodyMap + (etcMap?.let { headerMap + it } ?: headerMap)))
@@ -48,9 +49,10 @@ abstract class AbstractPrint(
         val base: FileManagement = getFodsFile()
         val headerMap = generateHeader(base.menuId!!)
         val extractHeaderMap = head?.let { extractAdditionalHeaderFields(it) }
-        val totalHeaderMap = extractHeaderMap?.let { totalBodyMap + it } ?: totalBodyMap
+        val totalHeaderMap = extractHeaderMap?.let { headerMap + it } ?: totalBodyMap
 
-        val newFilename = "${headerMap["company"]}_${headerMap["title"]}.fods"
+        val uuid = formattedDate(LocalDateTime.now(), CoreEnum.DateTimeFormat.MOS_EVENT_TIME)
+        val newFilename = "$uuid.fods"
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (totalBodyMap + totalHeaderMap))

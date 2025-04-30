@@ -88,7 +88,6 @@ abstract class AbstractPrint(
         val source = DOMSource(doc)
         val result = StreamResult(fods)
         transformer.transform(source, result)
-        fods.delete()
     }
 
     private fun copyToFile(base: FileManagement, newFilename: String): File {

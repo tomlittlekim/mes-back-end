@@ -29,6 +29,7 @@ class FileConvertService(
             .to(outputPdf)
             .execute()
 
+        fods.delete()
         return outputPdf
     }
 

@@ -152,6 +152,35 @@ class TransactionStatementService(
         updateHeaderAndDetails(header, details, req)
     }
 
+    @Transactional
+    fun softDeleteByOrderNo(headerId: Long): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        val header = headerRepo.findByIdAndFlagActiveIsTrue(headerId)
+            ?.let { it.apply {
+                flagIssuance = false
+                issuanceDate = null
+                updateCommonCol(loginUser)
+            } }
+            ?: throw IllegalArgumentException("선택한 거래 명세서 정보가 존재하지 않습니다. ")
+
+        val details = detailRepo.findAllBySiteAndCompCdAndOrderNoAndFlagActiveIsTrue(
+            header.site,
+            header.compCd,
+            header.orderNo
+        ).map { detail ->
+            detail.apply {
+                transactionStatementId = null
+                transactionStatementDate = null
+                updateCommonCol(loginUser)
+            }
+        }
+
+        headerRepo.save(header)
+        detailRepo.saveAll(details)
+        return "삭제 성공"
+    }
+
     private fun updateHeaderAndDetails(
         header: TransactionStatementHeader,
         details: List<TransactionStatementDetail>,
@@ -249,4 +278,9 @@ data class ShipmentDetailWithMaterialDto(
 data class ShipmentWithSupplyPrice(
     val orderNo: String,
     val supplyPrice: Int,
+)
+
+data class TransactionStatementAll(
+    val header: TransactionStatementHeader,
+    val details: List<TransactionStatementDetail>
 )

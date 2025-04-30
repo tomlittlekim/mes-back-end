@@ -3,6 +3,7 @@ package kr.co.imoscloud.repository.business
 import kr.co.imoscloud.entity.business.TransactionStatementDetail
 import kr.co.imoscloud.entity.business.TransactionStatementHeader
 import kr.co.imoscloud.service.business.ShipmentDetailWithMaterialDto
+import kr.co.imoscloud.service.business.TransactionStatementAll
 import kr.co.imoscloud.service.business.TransactionStatementDetailNullableDto
 import kr.co.imoscloud.service.business.TransactionStatementHeaderNullableDto
 import org.springframework.data.jpa.repository.JpaRepository
@@ -126,4 +127,10 @@ interface TransactionStatementDetailRepository: JpaRepository<TransactionStateme
     ): List<ShipmentDetailWithMaterialDto>
 
     fun findAllByIdInAndFlagActiveIsTrue(ids: List<Long>): List<TransactionStatementDetail>
+
+    fun findAllBySiteAndCompCdAndOrderNoAndFlagActiveIsTrue(
+        site: String,
+        compCd: String,
+        orderNo: String
+    ): List<TransactionStatementDetail>
 }

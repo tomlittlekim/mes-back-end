@@ -111,7 +111,7 @@ class WarehouseService(
 
 data class WarehouseResponse(
     val factoryId: String,
-    val factoryName: String,
+    val factoryName: String?,
     val warehouseId: String,
     val warehouseName: String,
     val warehouseType: String,

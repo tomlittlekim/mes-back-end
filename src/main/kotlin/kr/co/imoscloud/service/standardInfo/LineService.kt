@@ -112,7 +112,7 @@ class LineService(
 data class LineResponseModel(
     val factoryId: String?,
     val factoryName: String?,
-    val factoryCode: String?,
+//    val factoryCode: String?,
     val lineId: String?,
     val lineName: String?,
     val lineDesc: String?,

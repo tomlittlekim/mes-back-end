@@ -292,9 +292,8 @@ interface LineRep : JpaRepository<Line,Long>{
     @Query(
         value = """
             select new kr.co.imoscloud.service.standardInfo.LineResponseModel(
-                f.factoryId,
+                l.factoryId,
                 f.factoryName,
-                f.factoryCode,
                 l.lineId,
                 l.lineName,
                 l.lineDesc,
@@ -304,15 +303,14 @@ interface LineRep : JpaRepository<Line,Long>{
                 l.updateDate
             )
             from  Line l
-            join  Factory  f
+            left join  Factory  f
             on  l.site = f.site
             and l.compCd = f.compCd
             and l.factoryId = f.factoryId
             where l.site = :site
             and   l.compCd = :compCd
             and   (l.factoryId like concat ('%',:factoryId,'%'))
-            and   (f.factoryName like concat ('%',:factoryName,'%'))
-            and   (f.factoryCode like concat ('%',:factoryCode,'%'))
+            and   (f.factoryName like concat ('%',:factoryName,'%') OR :factoryName = '') 
             and   (l.lineId like concat ('%',:lineId,'%'))
             and   (l.lineName like concat ('%',:lineName,'%'))
             and   l.flagActive = true
@@ -396,14 +394,14 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
                 w.updateDate
             )
             from  Warehouse w
-            join  Factory  f
+            left join  Factory  f
             on  w.site = f.site
             and w.compCd = f.compCd
             and w.factoryId = f.factoryId
             where w.site = :site
             and   w.compCd = :compCd
             and   (w.factoryId like concat ('%',:factoryId,'%'))
-            and   (f.factoryName like concat ('%',:factoryName,'%'))
+            and   (f.factoryName like concat ('%',:factoryName,'%') OR :factoryName = '')
             and   (w.warehouseId like concat ('%',:warehouseId,'%'))
             and   (w.warehouseName like concat ('%',:warehouseName,'%'))
             and   (:warehouseType is null or w.warehouseType = :warehouseType)
@@ -511,11 +509,11 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
                 e.updateDate
             )
             from  Equipment e
-            join  Factory  f
+            left join  Factory  f
             on  e.site = f.site
             and e.compCd = f.compCd
             and e.factoryId = f.factoryId
-            join Line l
+            left join Line l
             on e.site = l.site
             and e.compCd = l.compCd
             and e.factoryId = l.factoryId
@@ -523,9 +521,9 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
             where e.site = :site
             and   e.compCd = :compCd
             and   (e.factoryId like concat ('%',:factoryId,'%'))
-            and   (f.factoryName like concat ('%',:factoryName,'%'))
+            and   (f.factoryName like concat ('%',:factoryName,'%') OR :factoryName = '')
             and   (e.lineId like concat ('%',:lineId,'%'))
-            and   (l.lineName like concat ('%',:lineName,'%'))
+            and   (l.lineName like concat ('%',:lineName,'%') OR :lineName = '')
             and   (e.equipmentId like concat ('%',:equipmentId,'%'))
             and   (e.equipmentName like concat ('%',:equipmentName,'%'))
             and   (e.equipmentSn like concat ('%',:equipmentSn,'%'))

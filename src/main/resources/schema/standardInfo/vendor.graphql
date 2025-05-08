@@ -2,7 +2,7 @@ input VendorFilter {
     vendorId: String!,
     vendorName: String!,
     ceoName: String!,
-    businessType: String!,
+    businessRegNo: String!,
 #    flagActive: String,
 }
 

@@ -272,13 +272,13 @@ interface VendorRep : JpaRepository<Vendor,Long>{
             v.updateDate = :updateDate
         where v.site = :site
         and   v.compCd = :compCd
-        and   v.vendorId = :vendorId
+        and   v.vendorId IN :vendorIds
         """
     )
     fun deleteByVendorId(
         site:String,
         compCd:String,
-        vendorId: String,
+        vendorIds: List<String>,
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now()
     ): Int

@@ -113,13 +113,13 @@ class VendorService(
         vendorRep.saveAll(vendorList)
     }
 
-    fun deleteVendor(vendorId:String): Boolean {
+    fun deleteVendor(vendorIds: List<String>): Boolean {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
 
         return vendorRep.deleteByVendorId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            vendorId = vendorId,
+            vendorIds = vendorIds,
             updateUser = userPrincipal.loginId
         ) > 0
     }

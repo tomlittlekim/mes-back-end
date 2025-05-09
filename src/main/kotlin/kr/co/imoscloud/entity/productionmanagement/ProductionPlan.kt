@@ -30,12 +30,6 @@ class ProductionPlan : CommonCol() {
     @Column(name = "PRODUCT_ID", length = 100)
     var productId: String? = null
 
-    @Transient
-    var productName: String? = null
-
-    @Transient
-    var materialCategory: String? = null
-
     @Column(name = "SHIFT_TYPE", length = 10)
     var shiftType: String? = null
 

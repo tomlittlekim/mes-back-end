@@ -37,8 +37,5 @@ class DefectInfo : CommonCol() {
 
     @Column(name = "DEFECT_CAUSE", columnDefinition = "TEXT")
     var defectCause: String? = null
-    
-    // 설비ID는 DB 필드에 없지만 조회 결과에 포함하기 위한 트랜지언트 필드
-    @Transient
-    var equipmentId: String? = null
+
 }

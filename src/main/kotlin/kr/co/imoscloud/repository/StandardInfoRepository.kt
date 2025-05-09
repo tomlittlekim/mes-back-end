@@ -351,13 +351,13 @@ interface LineRep : JpaRepository<Line,Long>{
               l.updateUser = :updateUser
         where l.site = :site
         and   l.compCd = :compCd
-        and   l.lineId = :lineId
+        and   l.lineId IN (:lineIds)
         """
     )
     fun deleteByLineId(
         site:String,
         compCd:String,
-        lineId: String,
+        lineIds: List<String>,
         updateDate: LocalDateTime = LocalDateTime.now(),
         updateUser: String
     ): Int

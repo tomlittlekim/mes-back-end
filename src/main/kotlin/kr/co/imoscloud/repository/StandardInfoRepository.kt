@@ -442,13 +442,13 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
             w.updateDate = :updateDate
         where w.site = :site
         and   w.compCd = :compCd
-        and   w.warehouseId = :warehouseId
+        and   w.warehouseId IN :warehouseIds
         """
     )
     fun deleteByWarehouseId(
         site:String,
         compCd:String,
-        warehouseId: String,
+        warehouseIds: List<String>,
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now(),
     ): Int

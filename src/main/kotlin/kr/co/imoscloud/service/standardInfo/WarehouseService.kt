@@ -87,13 +87,13 @@ class WarehouseService(
 
     }
 
-    fun deleteWarehouse(warehouseId:String): Boolean {
+    fun deleteWarehouse(warehouseIds: List<String>): Boolean {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
 
         return warehouseRep.deleteByWarehouseId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            warehouseId = warehouseId,
+            warehouseIds = warehouseIds,
             updateUser = userPrincipal.loginId
         ) > 0
     }

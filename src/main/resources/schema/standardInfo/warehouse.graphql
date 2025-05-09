@@ -4,14 +4,12 @@ input WarehouseFilter{
     warehouseId:String!
     warehouseName:String!
     warehouseType:String
-#    flagActive:String
 }
 
 input WarehouseInput{
     factoryId:String!
     warehouseName:String
     warehouseType:String
-#    flagActive:String
 }
 
 input WarehouseUpdate{
@@ -19,7 +17,6 @@ input WarehouseUpdate{
     factoryId:String!
     warehouseName:String
     warehouseType:String
-#    flagActive:String
 }
 
 type Warehouse{
@@ -28,7 +25,6 @@ type Warehouse{
     warehouseId: String
     warehouseName: String
     warehouseType: String
-#    flagActive:String
     createUser:String
     createDate:String
     updateUser:String
@@ -42,5 +38,5 @@ extend type Query {
 
 extend type Mutation {
     saveWarehouse(createdRows: [WarehouseInput], updatedRows: [WarehouseUpdate] ): Boolean
-    deleteWarehouse(warehouseId: String!):Boolean
+    deleteWarehouse(warehouseIds: [String!]!):Boolean
 }

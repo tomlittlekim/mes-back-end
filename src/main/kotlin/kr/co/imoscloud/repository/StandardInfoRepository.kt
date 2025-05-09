@@ -568,13 +568,13 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
             e.updateDate = :updateDate
         where e.site = :site
         and   e.compCd = :compCd
-        and   e.equipmentId = :equipmentId
+        and   e.equipmentId IN :equipmentIds
         """
     )
     fun deleteByEquipmentId(
         site:String,
         compCd:String,
-        equipmentId: String,
+        equipmentIds: List<String>,
         updateUser: String,
         updateDate:LocalDateTime = LocalDateTime.now()
     ): Int

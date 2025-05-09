@@ -26,8 +26,8 @@ class FactoryDataFetcher(
     }
 
     @DgsMutation
-    fun deleteFactory(@InputArgument("factoryId") factoryId: String): Boolean {
-        return factoryService.deleteFactory(factoryId)
+    fun deleteFactory(@InputArgument("factoryIds") factoryIds: List<String>): Boolean {
+        return factoryService.deleteFactory(factoryIds)
     }
 
     @DgsQuery

@@ -69,7 +69,7 @@ interface FactoryRep: JpaRepository<Factory,Long>{
         set f.flagActive = false,
         f.updateUser = :updateUser,
         f.updateDate = :updateDate
-        where f.factoryId = :factoryId
+        where f.factoryId IN (:factoryIds)
         and   f.site = :site
         and   f.compCd = :compCd
         """
@@ -77,7 +77,7 @@ interface FactoryRep: JpaRepository<Factory,Long>{
     fun deleteByFactoryId(
         site:String,
         compCd:String,
-        factoryId: String,
+        factoryIds: List<String>,
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
@@ -168,13 +168,13 @@ interface CodeRep: JpaRepository<Code,Long>{
             c.updateDate = :updateDate
         where c.site = :site
         and   c.compCd = :compCd
-        and   c.codeId = :codeId
+        and   c.codeId IN (:codeIds)
         """
     )
     fun deleteByCodeId(
         site:String,
         compCd:String,
-        codeId: String,
+        codeIds: List<String>,
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now()
     ): Int

@@ -93,14 +93,14 @@ class FactoryService(
         factoryRep.saveAll(factoryList)
     }
 
-    fun deleteFactory(factoryId:String): Boolean {
+    fun deleteFactory(factoryIds:List<String>): Boolean {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
 
         return factoryRep.deleteByFactoryId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
             updateUser = userPrincipal.loginId,
-            factoryId = factoryId
+            factoryIds = factoryIds
         ) > 0
     }
 

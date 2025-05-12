@@ -30,10 +30,9 @@ class TransactionStatementService(
     private val convertService: FileConvertService,
 ): AbstractPrint(core, convertService) {
 
-    private val MENU_ID = "TS"
-
     override fun getFodsFile(): FileManagement {
-        return driveRepo.findByMenuIdAndFlagActiveIsTrue(MENU_ID)
+        val menuId = "TS"
+        return driveRepo.findByMenuIdAndFlagActiveIsTrue(menuId)
             ?: throw IllegalArgumentException("해당 메뉴는 출력 기능을 지원하지 않습니다. ")
     }
 
@@ -142,6 +141,7 @@ class TransactionStatementService(
         finalDetails = finalDetails.filter { selectedDetailIds.contains(it.id) }
 
         val pdfFile: File = process(req, finalDetails)
+
         val rawFileName = "${req.transactionDate}_${req.customerName}_거래명세서.pdf"
         val encodedFileName = encodeToString(rawFileName)
         response.setHeader("Content-Disposition", """attachment; filename="$rawFileName"; filename*=UTF-8''$encodedFileName""")

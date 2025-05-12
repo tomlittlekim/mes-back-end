@@ -87,13 +87,13 @@ class LineService(
         lineRep.saveAll(lineList)
     }
 
-    fun deleteLine(lineId:String):Boolean {
+    fun deleteLine(lineIds:List<String>):Boolean {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
 
         return lineRep.deleteByLineId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            lineId = lineId,
+            lineIds = lineIds,
             updateUser = userPrincipal.loginId
         ) > 0
     }
@@ -112,7 +112,7 @@ class LineService(
 data class LineResponseModel(
     val factoryId: String?,
     val factoryName: String?,
-    val factoryCode: String?,
+//    val factoryCode: String?,
     val lineId: String?,
     val lineName: String?,
     val lineDesc: String?,

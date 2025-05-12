@@ -26,8 +26,8 @@ class WarehouseFetcher(
     }
 
     @DgsMutation
-    fun deleteWarehouse(@InputArgument("warehouseId") warehouseId: String): Boolean {
-        return warehouseService.deleteWarehouse(warehouseId)
+    fun deleteWarehouse(@InputArgument("warehouseIds") warehouseIds: List<String>): Boolean {
+        return warehouseService.deleteWarehouse(warehouseIds)
     }
 
     @DgsQuery

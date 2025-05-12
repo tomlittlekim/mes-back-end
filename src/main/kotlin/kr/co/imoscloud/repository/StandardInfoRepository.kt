@@ -69,7 +69,7 @@ interface FactoryRep: JpaRepository<Factory,Long>{
         set f.flagActive = false,
         f.updateUser = :updateUser,
         f.updateDate = :updateDate
-        where f.factoryId = :factoryId
+        where f.factoryId IN (:factoryIds)
         and   f.site = :site
         and   f.compCd = :compCd
         """
@@ -77,7 +77,7 @@ interface FactoryRep: JpaRepository<Factory,Long>{
     fun deleteByFactoryId(
         site:String,
         compCd:String,
-        factoryId: String,
+        factoryIds: List<String>,
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
@@ -168,13 +168,13 @@ interface CodeRep: JpaRepository<Code,Long>{
             c.updateDate = :updateDate
         where c.site = :site
         and   c.compCd = :compCd
-        and   c.codeId = :codeId
+        and   c.codeId IN (:codeIds)
         """
     )
     fun deleteByCodeId(
         site:String,
         compCd:String,
-        codeId: String,
+        codeIds: List<String>,
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
@@ -221,7 +221,7 @@ interface VendorRep : JpaRepository<Vendor,Long>{
             and   (v.vendorId like concat ('%',:vendorId,'%'))
             and   (v.vendorName like concat ('%',:vendorName,'%'))
             and   (v.ceoName like concat ('%',:ceoName,'%'))
-            and   (v.businessType like concat ('%',:businessType,'%'))
+            and   (v.businessRegNo like concat ('%',:businessRegNo,'%'))
             and   v.flagActive = true
         """
     )
@@ -231,7 +231,7 @@ interface VendorRep : JpaRepository<Vendor,Long>{
         vendorId:String,
         vendorName:String,
         ceoName:String,
-        businessType:String
+        businessRegNo:String
     ):List<Vendor?>
 
     @Query(
@@ -272,13 +272,13 @@ interface VendorRep : JpaRepository<Vendor,Long>{
             v.updateDate = :updateDate
         where v.site = :site
         and   v.compCd = :compCd
-        and   v.vendorId = :vendorId
+        and   v.vendorId IN :vendorIds
         """
     )
     fun deleteByVendorId(
         site:String,
         compCd:String,
-        vendorId: String,
+        vendorIds: List<String>,
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now()
     ): Int
@@ -292,9 +292,8 @@ interface LineRep : JpaRepository<Line,Long>{
     @Query(
         value = """
             select new kr.co.imoscloud.service.standardInfo.LineResponseModel(
-                f.factoryId,
+                l.factoryId,
                 f.factoryName,
-                f.factoryCode,
                 l.lineId,
                 l.lineName,
                 l.lineDesc,
@@ -304,15 +303,14 @@ interface LineRep : JpaRepository<Line,Long>{
                 l.updateDate
             )
             from  Line l
-            join  Factory  f
+            left join  Factory  f
             on  l.site = f.site
             and l.compCd = f.compCd
             and l.factoryId = f.factoryId
             where l.site = :site
             and   l.compCd = :compCd
             and   (l.factoryId like concat ('%',:factoryId,'%'))
-            and   (f.factoryName like concat ('%',:factoryName,'%'))
-            and   (f.factoryCode like concat ('%',:factoryCode,'%'))
+            and   (f.factoryName like concat ('%',:factoryName,'%') OR :factoryName = '') 
             and   (l.lineId like concat ('%',:lineId,'%'))
             and   (l.lineName like concat ('%',:lineName,'%'))
             and   l.flagActive = true
@@ -353,13 +351,13 @@ interface LineRep : JpaRepository<Line,Long>{
               l.updateUser = :updateUser
         where l.site = :site
         and   l.compCd = :compCd
-        and   l.lineId = :lineId
+        and   l.lineId IN (:lineIds)
         """
     )
     fun deleteByLineId(
         site:String,
         compCd:String,
-        lineId: String,
+        lineIds: List<String>,
         updateDate: LocalDateTime = LocalDateTime.now(),
         updateUser: String
     ): Int
@@ -396,14 +394,14 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
                 w.updateDate
             )
             from  Warehouse w
-            join  Factory  f
+            left join  Factory  f
             on  w.site = f.site
             and w.compCd = f.compCd
             and w.factoryId = f.factoryId
             where w.site = :site
             and   w.compCd = :compCd
             and   (w.factoryId like concat ('%',:factoryId,'%'))
-            and   (f.factoryName like concat ('%',:factoryName,'%'))
+            and   (f.factoryName like concat ('%',:factoryName,'%') OR :factoryName = '')
             and   (w.warehouseId like concat ('%',:warehouseId,'%'))
             and   (w.warehouseName like concat ('%',:warehouseName,'%'))
             and   (:warehouseType is null or w.warehouseType = :warehouseType)
@@ -444,13 +442,13 @@ interface WarehouseRep : JpaRepository<Warehouse, Long>{
             w.updateDate = :updateDate
         where w.site = :site
         and   w.compCd = :compCd
-        and   w.warehouseId = :warehouseId
+        and   w.warehouseId IN :warehouseIds
         """
     )
     fun deleteByWarehouseId(
         site:String,
         compCd:String,
-        warehouseId: String,
+        warehouseIds: List<String>,
         updateUser: String,
         updateDate: LocalDateTime = LocalDateTime.now(),
     ): Int
@@ -511,11 +509,11 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
                 e.updateDate
             )
             from  Equipment e
-            join  Factory  f
+            left join  Factory  f
             on  e.site = f.site
             and e.compCd = f.compCd
             and e.factoryId = f.factoryId
-            join Line l
+            left join Line l
             on e.site = l.site
             and e.compCd = l.compCd
             and e.factoryId = l.factoryId
@@ -523,9 +521,9 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
             where e.site = :site
             and   e.compCd = :compCd
             and   (e.factoryId like concat ('%',:factoryId,'%'))
-            and   (f.factoryName like concat ('%',:factoryName,'%'))
+            and   (f.factoryName like concat ('%',:factoryName,'%') OR :factoryName = '')
             and   (e.lineId like concat ('%',:lineId,'%'))
-            and   (l.lineName like concat ('%',:lineName,'%'))
+            and   (l.lineName like concat ('%',:lineName,'%') OR :lineName = '')
             and   (e.equipmentId like concat ('%',:equipmentId,'%'))
             and   (e.equipmentName like concat ('%',:equipmentName,'%'))
             and   (e.equipmentSn like concat ('%',:equipmentSn,'%'))
@@ -570,13 +568,13 @@ interface EquipmentRep:JpaRepository<Equipment,Long>{
             e.updateDate = :updateDate
         where e.site = :site
         and   e.compCd = :compCd
-        and   e.equipmentId = :equipmentId
+        and   e.equipmentId IN :equipmentIds
         """
     )
     fun deleteByEquipmentId(
         site:String,
         compCd:String,
-        equipmentId: String,
+        equipmentIds: List<String>,
         updateUser: String,
         updateDate:LocalDateTime = LocalDateTime.now()
     ): Int

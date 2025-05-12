@@ -32,8 +32,8 @@ class LineFetcher (
     }
 
     @DgsMutation
-    fun deleteLine(@InputArgument("lineId") lineId: String): Boolean{
-        return lineService.deleteLine(lineId)
+    fun deleteLine(@InputArgument("lineIds") lineIds: List<String>): Boolean{
+        return lineService.deleteLine(lineIds)
     }
 
 }

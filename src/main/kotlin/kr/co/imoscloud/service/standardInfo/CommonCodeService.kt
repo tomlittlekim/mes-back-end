@@ -159,13 +159,13 @@ class CommonCodeService(
         codeRep.saveAll(codeList)
     }
 
-    fun deleteCode(codeId:String): Boolean {
+    fun deleteCode(codeIds:List<String>): Boolean {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
 
         return codeRep.deleteByCodeId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            codeId = codeId,
+            codeIds = codeIds,
             updateUser = userPrincipal.loginId
         ) > 0
     }

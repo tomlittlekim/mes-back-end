@@ -102,13 +102,13 @@ class EquipmentService(
         equipmentRep.saveAll(equipmentList)
     }
 
-    fun deleteEquipment(equipmentId: String):Boolean {
+    fun deleteEquipment(equipmentIds: List<String>):Boolean {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
 
         return equipmentRep.deleteByEquipmentId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            equipmentId = equipmentId,
+            equipmentIds = equipmentIds,
             updateUser = userPrincipal.loginId
         ) > 0
     }

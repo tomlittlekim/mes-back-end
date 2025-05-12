@@ -2,8 +2,7 @@ input VendorFilter {
     vendorId: String!,
     vendorName: String!,
     ceoName: String!,
-    businessType: String!,
-#    flagActive: String,
+    businessRegNo: String!,
 }
 
 input VendorInput {
@@ -14,7 +13,6 @@ input VendorInput {
     businessType: String
     address: String
     telNo: String
-#    flagActive: String
 }
 
 input VendorUpdate {
@@ -26,7 +24,6 @@ input VendorUpdate {
     businessType: String
     address: String
     telNo: String
-#    flagActive: String
 }
 
 type Vendor {
@@ -38,7 +35,6 @@ type Vendor {
     businessType: String
     address: String
     telNo: String
-#    flagActive:String
     createUser:String
     createDate:String
     updateUser:String
@@ -53,5 +49,5 @@ extend type Query {
 
 extend type Mutation {
     saveVendor(createdRows: [VendorInput], updatedRows: [VendorUpdate] ): Boolean
-    deleteVendor(vendorId:String!):Boolean
+    deleteVendor(vendorIds: [String!]!):Boolean
 }

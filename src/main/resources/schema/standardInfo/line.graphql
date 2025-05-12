@@ -5,14 +5,12 @@ input LineFilter {
     factoryCode: String!,
     lineId: String!,
     lineName: String!,
-#    flagActive: String,
 }
 
 input LineInput {
     factoryId: String
     lineName: String
     lineDesc: String
-#    flagActive: String
 }
 
 input LineUpdate {
@@ -20,7 +18,6 @@ input LineUpdate {
     factoryId: String
     lineName: String
     lineDesc: String
-#    flagActive: String
 }
 
 type Line{
@@ -30,7 +27,6 @@ type Line{
     lineId: String
     lineName: String
     lineDesc: String
-#    flagActive: String
     createUser: String
     createDate: String
     updateUser: String
@@ -44,5 +40,5 @@ extend type Query {
 
 extend type Mutation {
     saveLine(createdRows: [LineInput], updatedRows: [LineUpdate] ): Boolean
-    deleteLine(lineId:String!):Boolean
+    deleteLine(lineIds:[String!]!):Boolean
 }

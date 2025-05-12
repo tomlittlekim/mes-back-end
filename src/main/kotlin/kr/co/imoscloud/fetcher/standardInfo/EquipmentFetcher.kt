@@ -26,8 +26,8 @@ class EquipmentFetcher(
     }
 
     @DgsMutation
-    fun deleteEquipment(@InputArgument("equipmentId") equipmentId: String): Boolean{
-        return equipmentService.deleteEquipment(equipmentId)
+    fun deleteEquipment(@InputArgument("equipmentIds") equipmentIds: List<String>): Boolean{
+        return equipmentService.deleteEquipment(equipmentIds)
     }
 
 }

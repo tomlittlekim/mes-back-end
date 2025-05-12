@@ -26,7 +26,7 @@ class VendorService(
             vendorId = vendorFilter.vendorId,
             vendorName = vendorFilter.vendorName,
             ceoName = vendorFilter.ceoName,
-            businessType = vendorFilter.businessType
+            businessRegNo = vendorFilter.businessRegNo
         )
 
         return vendorList.map {
@@ -113,13 +113,13 @@ class VendorService(
         vendorRep.saveAll(vendorList)
     }
 
-    fun deleteVendor(vendorId:String): Boolean {
+    fun deleteVendor(vendorIds: List<String>): Boolean {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
 
         return vendorRep.deleteByVendorId(
             site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd,
-            vendorId = vendorId,
+            vendorIds = vendorIds,
             updateUser = userPrincipal.loginId
         ) > 0
     }

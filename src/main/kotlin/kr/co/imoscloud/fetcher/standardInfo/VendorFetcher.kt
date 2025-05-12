@@ -29,8 +29,8 @@ class VendorFetcher(
     }
 
     @DgsMutation
-    fun deleteVendor(@InputArgument("vendorId") vendorId: String): Boolean {
-        return vendorService.deleteVendor(vendorId)
+    fun deleteVendor(@InputArgument("vendorIds") vendorIds: List<String>): Boolean {
+        return vendorService.deleteVendor(vendorIds)
     }
 
     @DgsQuery
@@ -46,7 +46,7 @@ data class VendorFilter(
     val vendorId:String,
     val vendorName:String,
     val ceoName:String,
-    val businessType:String,
+    val businessRegNo:String,
 //    val flagActive:String? = null
 )
 

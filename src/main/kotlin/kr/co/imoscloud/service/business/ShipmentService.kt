@@ -94,6 +94,7 @@ class ShipmentService(
                         shipmentDate = DateUtils.parseDate(req.shipmentDate) ?: this.shipmentDate
                         cumulativeShipmentQuantity = req.cumulativeShipmentQuantity ?: this.cumulativeShipmentQuantity
                         shipmentHandler = req.shipmentHandler ?: this.shipmentHandler
+                        updateCommonCol(loginUser)
                     }
 
                     val newQty = (req.cumulativeShipmentQuantity?:0.0)-(oldCumulativeShipmentQuantity?:0.0)
@@ -120,7 +121,7 @@ class ShipmentService(
                         shipmentHandler = req.shipmentHandler,
                         shipmentWarehouse = req.shipmentWarehouse,
                         remark = req.remark
-                    )
+                    ).apply { createCommonCol(loginUser) }
 
                     var mapIndex = "${req.shipmentId}-${req.orderNo}"
                     val cumulativeQty = detail.cumulativeShipmentQuantity!!

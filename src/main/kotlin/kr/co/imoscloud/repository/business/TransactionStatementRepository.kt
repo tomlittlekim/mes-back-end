@@ -6,7 +6,9 @@ import kr.co.imoscloud.service.business.ShipmentDetailWithMaterialDto
 import kr.co.imoscloud.service.business.TransactionStatementDetailNullableDto
 import kr.co.imoscloud.service.business.TransactionStatementHeaderNullableDto
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 interface TransactionStatementHeaderRepository: JpaRepository<TransactionStatementHeader, Long> {
@@ -127,11 +129,30 @@ interface TransactionStatementDetailRepository: JpaRepository<TransactionStateme
         orderSubNo: String
     ): ShipmentDetailWithMaterialDto?
 
-    fun findAllByIdInAndFlagActiveIsTrue(ids: List<Long>): List<TransactionStatementDetail>
-
     fun findAllBySiteAndCompCdAndOrderNoAndFlagActiveIsTrue(
         site: String,
         compCd: String,
         orderNo: String
     ): List<TransactionStatementDetail>
+
+    @Modifying
+    @Query("""
+        update TransactionStatementDetail tsd
+        set
+            tsd.transactionStatementId = :tsId,
+            tsd.transactionStatementDate = :tsDate,
+            tsd.updateDate = :localDateTime,
+            tsd.updateUser = :user
+        where tsd.compCd = :compCd
+            and tsd.id in :ids
+            and tsd.flagActive is true 
+    """)
+    fun updateTSByIdIn(
+        tsId: String,
+        tsDate: LocalDate,
+        user: String,
+        compCd: String,
+        ids: List<Long>,
+        localDateTime: LocalDateTime?=LocalDateTime.now()
+    ): Int
 }

@@ -1,11 +1,13 @@
 package kr.co.imoscloud.util
 
+import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.iface.IDrive
 import kr.co.imoscloud.service.drive.FileConvertService
 import java.io.File
+import java.io.FileInputStream
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -28,7 +30,7 @@ abstract class AbstractPrint(
     abstract fun <H> extractAdditionalHeaderFields(header: H?): MutableMap<String, String>?
     abstract fun <B> extractAdditionalBodyFields(bodies : List<B>): MutableMap<String, String>?
 
-    protected fun <H, B> process(head: H?, body : B, isRowType: Boolean?=true) : File {
+    protected fun <H, B> process(head: H?, body : B, hsr: HttpServletResponse, isRowType: Boolean?=true): Unit {
         val bodyMap = generateBody(listOf(body), false, isRowType)
 
         val base: FileManagement = getFodsFile()
@@ -40,10 +42,11 @@ abstract class AbstractPrint(
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (bodyMap + (etcMap?.let { headerMap + it } ?: headerMap)))
-        return converter.fodsToPdf(copiedFile)
+        val pdf = converter.fodsToPdf(copiedFile)
+        download(pdf, hsr)
     }
 
-    protected fun <H, B> process(head: H?, bodies : List<B>, isRowType: Boolean?=true) : File {
+    protected fun <H, B> process(head: H?, bodies : List<B>, hsr: HttpServletResponse, isRowType: Boolean?=true): Unit {
         val bodyMap = generateBody(bodies, true, isRowType)
         val extractBodyMap = extractAdditionalBodyFields(bodies)
         val totalBodyMap = extractBodyMap?.let { bodyMap + it } ?: bodyMap
@@ -58,7 +61,8 @@ abstract class AbstractPrint(
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (totalBodyMap + totalHeaderMap))
-        return converter.fodsToPdf(copiedFile)
+        val pdf = converter.fodsToPdf(copiedFile)
+        download(pdf, hsr)
     }
 
     private fun replaceFods(fods: File, map: Map<String, String?>) {
@@ -175,6 +179,17 @@ abstract class AbstractPrint(
 
         val regex = Regex("""^\d+$""")
         return if (regex.matches(str)) str.toInt() else throw IllegalArgumentException("숫자 만으로 이루어진 형태가 아닙니다. ")
+    }
+
+    protected fun download(pdf: File, res: HttpServletResponse): Unit {
+        if (!pdf.exists()) throw IllegalArgumentException("출력할 파일이 존재하지 않습니다. ")
+
+        res.setHeader("Content-Disposition", "attachment")
+        res.contentType = "application/pdf"
+        res.setContentLength(pdf.length().toInt())
+        FileInputStream(pdf).use { it.copyTo(res.outputStream) }
+
+        pdf.delete()
     }
 }
 

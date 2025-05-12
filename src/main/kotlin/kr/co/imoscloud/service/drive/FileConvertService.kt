@@ -22,7 +22,7 @@ class FileConvertService(
     }
 
     fun fodsToPdf(fods: File): File {
-        val outputPdf = File(fods.absolutePath.replaceAfterLast(".", "pdf"))
+        val outputPdf = File(fods.absolutePath.replaceAfterLast('.', "pdf"))
 
         LocalConverter.make(officeManager)
             .convert(fods)
@@ -34,7 +34,7 @@ class FileConvertService(
     }
 
     fun fodsToPng(fods: File): File {
-        val outputPng = File(fods.absolutePath.replaceAfterLast(".", "png"))
+        val outputPng = File(fods.absolutePath.replaceAfterLast('.', "png"))
 
         LocalConverter.make(officeManager)
             .convert(fods)

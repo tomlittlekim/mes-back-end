@@ -17,7 +17,6 @@ import kr.co.imoscloud.util.PrintDto
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.io.File
-import java.io.FileInputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -134,23 +133,12 @@ class TransactionStatementService(
         val header = headerRepo.findByIdAndFlagActiveIsTrue(req.headerId)
             ?: throw IllegalArgumentException("선택한 거래 명세서 정보가 존재하지 않습니다. ")
 
-        var finalDetails = getAllDetailsByOrderNo(header.orderNo)
+        val finalDetails = getAllDetailsByOrderNo(header.orderNo)
+        val checkedDetails = finalDetails.filter { req.detailIds.contains(it.id) }
 
-        val details = detailRepo.findAllByIdInAndFlagActiveIsTrue(req.detailIds)
-        val selectedDetailIds = details.map { it.id }
-        finalDetails = finalDetails.filter { selectedDetailIds.contains(it.id) }
+        process(req, checkedDetails, response)
 
-        val pdfFile: File = process(req, finalDetails)
-
-        val rawFileName = "${req.transactionDate}_${req.customerName}_거래명세서.pdf"
-        val encodedFileName = encodeToString(rawFileName)
-        response.setHeader("Content-Disposition", """attachment; filename="$rawFileName"; filename*=UTF-8''$encodedFileName""")
-        response.contentType = "application/pdf"
-        response.setContentLength(pdfFile.length().toInt())
-        FileInputStream(pdfFile).use { it.copyTo(response.outputStream) }
-
-        pdfFile.delete()
-        updateHeaderAndDetails(header, details, req)
+        updateHeaderAndDetails(header, req.detailIds, req)
     }
 
     @Transactional
@@ -184,7 +172,7 @@ class TransactionStatementService(
 
     private fun updateHeaderAndDetails(
         header: TransactionStatementHeader,
-        details: List<TransactionStatementDetail>,
+        detailIds: List<Long>,
         req: TransactionStatementPrintRequest
     ): Unit {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
@@ -198,16 +186,16 @@ class TransactionStatementService(
             issuanceDate = today.toLocalDate()
             updateCommonCol(loginUser)
         })
-        if (details.isNotEmpty()){
-            val updates = details.map { detail ->
-                detail.apply {
-                    transactionStatementId = tsId
-                    transactionStatementDate = localDate
-                    updateCommonCol(loginUser)
-                }
-            }
-            detailRepo.saveAll(updates)
-        }
+
+        val result = detailRepo.updateTSByIdIn(
+            tsId,
+            (localDate?:today.toLocalDate()),
+            loginUser.loginId,
+            loginUser.compCd,
+            detailIds
+        )
+
+        if (result==0) throw IllegalArgumentException("거래명세서 상세 저장에 오류가 발생했습니다. ")
     }
 }
 

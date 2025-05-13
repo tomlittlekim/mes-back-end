@@ -39,10 +39,6 @@ class WorkOrderRepositoryImpl(
         shiftType: String?,
         state: List<String>?,
         flagActive: Boolean?,
-        planStartDateFrom: LocalDateTime?,
-        planStartDateTo: LocalDateTime?,
-        planEndDateFrom: LocalDateTime?,
-        planEndDateTo: LocalDateTime?,
     ): List<WorkOrder> {
         val workOrder = QWorkOrder.workOrder
 
@@ -90,14 +86,6 @@ class WorkOrderRepositoryImpl(
 
         // flagActive 필터링 (기본값은 true)
         query.where(workOrder.flagActive.eq(flagActive ?: true))
-
-        if(planStartDateFrom != null && planStartDateTo != null) {
-            query.where(workOrder.createDate.between(planStartDateFrom, planStartDateTo))
-        }
-
-        if(planEndDateFrom != null && planEndDateTo != null) {
-            query.where(workOrder.updateDate.between(planEndDateFrom, planEndDateTo))
-        }
 
         // seq 역순 정렬 추가
         query.orderBy(workOrder.id.desc())

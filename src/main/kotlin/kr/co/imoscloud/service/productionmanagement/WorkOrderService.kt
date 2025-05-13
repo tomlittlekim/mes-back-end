@@ -30,8 +30,6 @@ class WorkOrderService(
         val currentUser = getCurrentUserPrincipal()
         // flagActive가 명시적으로 설정되지 않은 경우 true로 설정하여 활성화된 데이터만 조회
         val activeFilter = filter.copy(flagActive = filter.flagActive ?: true)
-        val (fromDate , toDate) = getSearchDateRange(filter.planStartDateFrom,filter.planStartDateTo)
-        val (endFromDate, endToDate) = getSearchDateRange(filter.planEndDateFrom, filter.planEndDateTo)
 
         return workOrderRepository.getWorkOrderList(
             site = currentUser.getSite(),
@@ -42,10 +40,6 @@ class WorkOrderService(
             shiftType = activeFilter.shiftType,
             state = activeFilter.state,
             flagActive = activeFilter.flagActive,
-            planStartDateFrom = fromDate,
-            planStartDateTo = toDate,
-            planEndDateFrom = endFromDate,
-            planEndDateTo = endToDate,
         )
     }
 

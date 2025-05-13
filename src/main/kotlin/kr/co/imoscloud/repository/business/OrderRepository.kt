@@ -31,7 +31,6 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
         select oh.orderNo
         from OrderHeader oh
         where oh.compCd = :compCd
-            and oh.flagActive is true
         order by oh.createDate desc limit 1
     """)
     fun getLatestOrderNo(compCd: String): String?
@@ -105,7 +104,6 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
         from OrderDetail od
         where od.compCd = :compCd
             and od.orderNo = :orderNo
-            and od.flagActive is true
         order by od.createDate desc limit 1
     """)
     fun getLatestOrderSubNo(compCd: String, orderNo: String): String?

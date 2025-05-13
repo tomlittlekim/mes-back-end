@@ -214,9 +214,9 @@ class OrderService(
                         deliveryDate = DateUtils.parseDate(req.deliveryDate) ?: this.deliveryDate
                         quantity = req.quantity ?: this.quantity
                         unitPrice = req.unitPrice ?: this.unitPrice
-                        supplyPrice = (if(req.quantity != null || req.unitPrice != null) {
-                            (req.quantity ?: this.quantity) * (req.unitPrice ?: this.unitPrice)
-                        } else this.supplyPrice) as Int?
+                        supplyPrice = if (req.quantity != null || req.unitPrice != null) {
+                            (req.quantity ?: this.quantity).toInt() * (req.unitPrice ?: this.unitPrice)
+                        } else this.supplyPrice
                         remark = req.remark ?: this.remark
                         updateCommonCol(loginUser)
                     }

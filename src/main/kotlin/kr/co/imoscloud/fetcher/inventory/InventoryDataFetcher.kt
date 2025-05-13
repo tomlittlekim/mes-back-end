@@ -103,7 +103,7 @@ data class InventoryInManagementFilter(
 data class InventoryStatusFilter(
     val warehouseName: String? = null,
     val supplierName: String? = null,
-    val manufactureName: String? = null,
+    val manufacturerName: String? = null,
     val materialName: String? = null,
 )
 data class InventoryHistoryFilter(

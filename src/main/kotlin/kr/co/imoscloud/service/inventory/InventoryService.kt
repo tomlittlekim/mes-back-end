@@ -1257,7 +1257,7 @@ class InventoryService(
             compCd = currentUser.compCd,
             warehouseName = filter.warehouseName ?: "",
             supplierName = filter.supplierName ?: "",
-            manufacturerName = filter.manufactureName ?: "",
+            manufacturerName = filter.manufacturerName ?: "",
             materialName = filter.materialName ?: "",
         )
     }

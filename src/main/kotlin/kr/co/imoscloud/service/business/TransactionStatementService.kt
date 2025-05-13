@@ -106,24 +106,12 @@ class TransactionStatementService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         return detailRepo.getAllInitialByOrderNo(loginUser.getSite(), loginUser.compCd, orderNo)
-            .mapNotNull { detail ->
-                detailRepo.getAllLatestByOrderNo(
-                    loginUser.getSite(),
-                    loginUser.compCd,
-                    detail.orderNo!!,
-                    detail.orderSubNo!!
-                )?.let { latest ->
-                    detail.apply {
-                        systemMaterialId = latest.systemMaterialId
-                        materialName = latest.materialName
-                        materialStandard = latest.materialStandard
-                        unit = latest.unit
-                        shippedQuantity = latest.quantity ?: 0.0
-                        supplyPrice = ((latest.quantity ?: 0.0) * (detail.unitPrice ?: 0)).toInt()
-                        vat = ((latest.quantity ?: 0.0) * (detail.unitPrice ?: 0) /10).toInt()
-                    }
-                }
-            }
+            .map { it.apply {
+                val qty = it.shippedQuantity?.toInt() ?: 0
+                val price = qty * it.unitPrice!!
+                supplyPrice = price
+                vat = price / 10
+            } }
     }
 
     @Transactional

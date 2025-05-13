@@ -26,6 +26,12 @@ class TransactionStatementDetail(
     @Column(name = "ORDER_SUB_NO", nullable = false, length = 100, unique = true)
     val orderSubNo: String,
 
+    @Column(name = "SHIPMENT_DETAIL_ID", nullable = false, unique = true)
+    val shipmentDetailId: Long,
+
+    @Column(name = "SHIPMENT_DATE", nullable = false, unique = true)
+    var shipmentDate: LocalDate? = null,
+
     @Column(name = "TRANSACTION_STATEMENT_ID")
     var transactionStatementId: String? = null,
 

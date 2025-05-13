@@ -117,7 +117,6 @@ class ShipmentService(
 
         val quantityMap: MutableMap<String, Double> = HashMap()
         val inventoryMap: MutableMap<String, Double> = HashMap()
-        val tsdList: MutableList<TransactionStatementDetail> = mutableListOf()
         val detailMap = detailRepo.findAllByCompCdAndIdInAndFlagActiveIsTrue(loginUser.compCd, indies).associateBy { it.id }
 
         val detailList = list.map { req ->
@@ -167,7 +166,6 @@ class ShipmentService(
                     mapIndex = "${req.shipmentWarehouse}_${req.systemMaterialId}"
                     inventoryMap[mapIndex] = inventoryMap.getOrDefault(mapIndex, 0.0) - cumulativeQty
 
-                    tsdList.add(generateTransactionStatementDetail(detail))
                     detail
                 }
         }
@@ -176,7 +174,7 @@ class ShipmentService(
             val split = key.split("-")
             val shipmentId = split.first()
             val orderNo = split.last()
-            headerRepo.updateQuantity(shipmentId, orderNo, value, loginUser.compCd)
+            headerRepo.updateQuantity(shipmentId, orderNo, value, loginUser.loginId)
         }
 
         inventoryMap.entries.forEach { (key, value) ->
@@ -192,9 +190,10 @@ class ShipmentService(
             )
         }
 
+        val details: List<ShipmentDetail> = detailRepo.saveAll(detailList)
+        val tsdList = details.map { generateTransactionStatementDetail(it) }
         if (tsdList.isNotEmpty()) tsdRepo.saveAll(tsdList)
 
-        detailRepo.saveAll(detailList)
         return "출하등록 정보 생성 및 수정 성공"
     }
 
@@ -249,6 +248,8 @@ class ShipmentService(
             compCd = shipmentDetail.compCd,
             orderNo = shipmentDetail.orderNo,
             orderSubNo = shipmentDetail.orderSubNo,
+            shipmentDetailId = shipmentDetail.id!!,
+            shipmentDate = shipmentDetail.shipmentDate,
         ).apply {
             createUser = shipmentDetail.createUser
             createDate = shipmentDetail.createDate

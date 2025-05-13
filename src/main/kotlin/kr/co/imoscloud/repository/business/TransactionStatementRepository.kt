@@ -74,19 +74,28 @@ interface TransactionStatementDetailRepository: JpaRepository<TransactionStateme
             tsd.orderSubNo,
             tsd.transactionStatementId,
             tsd.transactionStatementDate,
-            null,
-            null,
-            null,
-            null,
-            0.0,
+            sh.systemMaterialId,
+            mm.materialName,
+            mm.materialStandard,
+            mm.unit,
+            sh.cumulativeShipmentQuantity,
             od.unitPrice,
-            0,
-            0
+            null,
+            null
         )
         from TransactionStatementDetail tsd
-        left join OrderDetail od on tsd.orderNo = od.orderNo
+        left join OrderDetail od on tsd.compCd = od.compCd
+            and tsd.orderNo = od.orderNo
             and tsd.orderSubNo = od.orderSubNo
             and od.flagActive is true
+        left join ShipmentDetail sh on tsd.compCd = sh.compCd
+            and tsd.orderNo = sh.orderNo
+            and tsd.orderSubNo = sh.orderSubNo
+            and tsd.shipmentDetailId = sh.id
+            and sh.flagActive is true
+        left join MaterialMaster mm on tsd.compCd = mm.compCd
+            and sh.systemMaterialId = mm.systemMaterialId
+            and mm.flagActive is true
         where tsd.site = :site
             and tsd.compCd = :compCd
             and tsd.orderNo = :orderNo

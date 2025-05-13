@@ -227,7 +227,7 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
             AND sd.COMP_CD = tsd.COMP_CD
             AND sd.ORDER_NO = tsd.ORDER_NO
             AND sd.ORDER_SUB_NO = tsd.ORDER_SUB_NO
-            AND sd.ID = tsd.SHIPMENT_DETAIL_ID
+            AND tsd.SHIPMENT_DETAIL_ID = :id
             AND tsd.FLAG_ACTIVE = TRUE
         SET 
             tsd.FLAG_ACTIVE = FALSE,

@@ -245,9 +245,9 @@ class BomService(
                 remark = dto.bom.remark,
                 flagActive = if (dto.bom.flagActive) "Y" else "N",
                 createUser = dto.bom.createUser,
-                createDate = DateUtils.formatLocalDate(dto.bom.createDate),
+                createDate = DateUtils.formatLocalDateTime(dto.bom.createDate),
                 updateUser = dto.bom.updateUser,
-                updateDate = DateUtils.formatLocalDate(dto.bom.updateDate),
+                updateDate = DateUtils.formatLocalDateTime(dto.bom.updateDate),
             )
         }
     }
@@ -273,9 +273,9 @@ class BomService(
                 remark = dto.bomDetail.remark,
                 flagActive = if (dto.bomDetail.flagActive) "Y" else "N",
                 createUser = dto.bomDetail.createUser,
-                createDate = DateUtils.formatLocalDate(dto.bomDetail.createDate),
+                createDate = DateUtils.formatLocalDateTime(dto.bomDetail.createDate),
                 updateUser = dto.bomDetail.updateUser,
-                updateDate = DateUtils.formatLocalDate(dto.bomDetail.updateDate),
+                updateDate = DateUtils.formatLocalDateTime(dto.bomDetail.updateDate),
             )
         }
     }

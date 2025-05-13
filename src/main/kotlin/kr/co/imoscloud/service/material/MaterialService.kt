@@ -106,9 +106,9 @@ class MaterialService(
                 it?.supplierName,
 //                if (it?.flagActive == true) "Y" else "N",
                 it?.createUser,
-                DateUtils.formatLocalDate(it?.createDate),
+                DateUtils.formatLocalDateTime(it?.createDate),
                 it?.updateUser,
-                DateUtils.formatLocalDate(it?.updateDate)
+                DateUtils.formatLocalDateTime(it?.updateDate)
             )
         }
     }

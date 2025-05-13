@@ -13,10 +13,6 @@ interface WorkOrderRepositoryCustom {
         shiftType: String?,
         state: List<String>?,
         flagActive: Boolean?,
-        planStartDateFrom: LocalDateTime?,
-        planStartDateTo: LocalDateTime?,
-        planEndDateFrom: LocalDateTime?,
-        planEndDateTo: LocalDateTime?,
     ): List<WorkOrder>
 
     fun getWorkOrdersByProdPlanId(

@@ -75,6 +75,8 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
         updateUser: String,
         updateDate: LocalDateTime?= LocalDateTime.now()
     ): Int
+
+    fun findBySiteAndCompCdAndOrderNoAndFlagActiveIsTrue(site: String, compCd: String, orderNo: String): ShipmentHeader?
 }
 
 interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
@@ -116,7 +118,6 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
     """)
     fun findAllByCompCdAndShipmentIdAndFlagActiveIsTrue(compCd: String, shipmentId: Long): List<ShipmentDetailNullableDto>
 
-    @Transactional
     @Modifying
     @Query("""
         UPDATE SHIPMENT_DETAIL sd
@@ -146,6 +147,7 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
     ): Int
 
     fun findAllByCompCdAndIdInAndFlagActiveIsTrue(compCd: String, ids: List<Long>): List<ShipmentDetail>
+    fun findAllByShipmentIdAndFlagActiveIsTrueOrderByCreateDate(shipmentId: Long): List<ShipmentDetail>
 
     @Query("""
         SELECT EXISTS (
@@ -215,4 +217,32 @@ interface ShipmentDetailRepository: JpaRepository<ShipmentDetail, Long> {
             and sh.flagActive is true
     """)
     fun getAllTotalSupplyPriceByOrderNo(site: String, compCd: String, orderNos: List<String>): List<ShipmentWithSupplyPrice>
+
+    @Modifying
+    @Query(
+        value = """
+        UPDATE SHIPMENT_DETAIL sd
+        JOIN TRANSACTION_STATEMENT_DETAIL tsd
+            ON sd.SITE = tsd.SITE
+            AND sd.COMP_CD = tsd.COMP_CD
+            AND sd.ORDER_NO = tsd.ORDER_NO
+            AND sd.ORDER_SUB_NO = tsd.ORDER_SUB_NO
+            AND tsd.FLAG_ACTIVE = TRUE
+        SET 
+            tsd.FLAG_ACTIVE = FALSE,
+            tsd.UPDATE_DATE = :updateDate,
+            tsd.UPDATE_USER = :updateUser
+        WHERE sd.SITE = :site
+            AND sd.COMP_CD = :compCd
+            AND sd.ID = :id
+    """,
+        nativeQuery = true
+    )
+    fun softDeleteToTSD(
+        site: String,
+        compCd: String,
+        id: Long,
+        updateUser: String,
+        updateDate: LocalDateTime?=LocalDateTime.now()
+    ): Int
 }

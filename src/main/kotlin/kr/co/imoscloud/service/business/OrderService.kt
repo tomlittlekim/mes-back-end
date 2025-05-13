@@ -9,7 +9,6 @@ import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.repository.business.OrderDetailRepository
 import kr.co.imoscloud.repository.business.OrderHeaderRepository
-import kr.co.imoscloud.repository.business.TransactionStatementHeaderRepository
 import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
@@ -25,7 +24,7 @@ class OrderService(
     private val materialRepo: MaterialRepository,
     private val codeRep: CodeRep,
     private val shipmentService: ShipmentService,
-    private val transactionStatementRepo: TransactionStatementHeaderRepository
+    private val tsdService: TransactionStatementService
 ) {
 
     // orderHeader 조회
@@ -65,9 +64,17 @@ class OrderService(
     fun deleteHeader(id: Long): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        headerRepo.deleteOrderHeader(loginUser.getSite(), loginUser.compCd, id, loginUser.loginId)
-            .let { if (it == 0) throw IllegalArgumentException("기본 주문정보가 존재하지 않습니다. ") }
-        detailRepo.deleteAllByOrderHeaderId(loginUser.getSite(), loginUser.compCd, id, loginUser.loginId)
+        val orderHeader = headerRepo
+            .findBySiteAndCompCdAndIdAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, id)
+            ?.let { it.apply { this.flagActive = false; updateCommonCol(loginUser) } }
+            ?: throw IllegalArgumentException("주문정보가 존재하지 않습니다")
+
+        headerRepo.save(orderHeader)
+        detailRepo.deleteAllByOrderHeaderId(orderHeader.site, orderHeader.compCd, id, loginUser.loginId)
+
+        shipmentService.cancelShipment(orderHeader.orderNo)
+
+        tsdService.softDeleteByOrderNo(orderHeader.orderNo, true)
 
         return "삭제 성공"
     }
@@ -123,7 +130,7 @@ class OrderService(
             }
 
         if (shipmentHeaders.isNotEmpty()) shipmentService.headerRepo.saveAll(shipmentHeaders)
-        if (statements.isNotEmpty()) transactionStatementRepo.saveAll(statements)
+        if (statements.isNotEmpty()) tsdService.headerRepo.saveAll(statements)
 
         headerRepo.saveAll(headerList)
         return "기본 주문정보 생성 및 수정 성공"
@@ -207,9 +214,9 @@ class OrderService(
                         deliveryDate = DateUtils.parseDate(req.deliveryDate) ?: this.deliveryDate
                         quantity = req.quantity ?: this.quantity
                         unitPrice = req.unitPrice ?: this.unitPrice
-                        supplyPrice = (if(req.quantity != null || req.unitPrice != null) {
-                            (req.quantity ?: this.quantity) * (req.unitPrice ?: this.unitPrice)
-                        } else this.supplyPrice) as Int?
+                        supplyPrice = if (req.quantity != null || req.unitPrice != null) {
+                            (req.quantity ?: this.quantity).toInt() * (req.unitPrice ?: this.unitPrice)
+                        } else this.supplyPrice
                         remark = req.remark ?: this.remark
                         updateCommonCol(loginUser)
                     }

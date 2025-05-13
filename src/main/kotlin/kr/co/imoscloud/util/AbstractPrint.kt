@@ -70,23 +70,34 @@ abstract class AbstractPrint(
         val builder = factory.newDocumentBuilder()
         val doc = builder.parse(fods)
 
-        val nodeList = doc.getElementsByTagName("text:p")
-        for (i in 0 until nodeList.length) {
-            val node = nodeList.item(i)
-            val textContent = node.textContent
-            var updatedTextContent = textContent
+        val cellList = doc.getElementsByTagName("table:table-cell")
+        for (i in 0 until cellList.length) {
+            val cell = cellList.item(i)
+            val cellType = cell.attributes?.getNamedItem("office:value-type")?.nodeValue
 
-            val regex = Regex("""\$\{([^${'$'}{}]*?)\}""")
-            val matches = regex.findAll(textContent)
+            if (cellType != "string") continue  // 텍스트 셀만 처리
 
-            for (match in matches) {
-                val key = match.groupValues[1]
-                map[key].let { replacement ->
-                    updatedTextContent = updatedTextContent.replace(match.value, replacement?:"")
+            // 셀 서식 - 택스트 만을 반복문 처리
+            val paragraphs = cell.childNodes
+            for (j in 0 until paragraphs.length) {
+                val node = paragraphs.item(j)
+                if (node.nodeName == "text:p") {
+                    val textContent = node.textContent
+                    var updatedTextContent = textContent
+
+                    val regex = Regex("""\$\{([^${'$'}{}]*?)\}""")
+                    val matches = regex.findAll(textContent)
+
+                    for (match in matches) {
+                        val key = match.groupValues[1]
+                        map[key].let { replacement ->
+                            updatedTextContent = updatedTextContent.replace(match.value, replacement ?: "")
+                        }
+                    }
+
+                    node.textContent = updatedTextContent
                 }
             }
-
-            node.textContent = updatedTextContent
         }
 
         val transformer = TransformerFactory.newInstance().newTransformer()

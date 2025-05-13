@@ -60,11 +60,48 @@ class ShipmentService(
     }
 
     @AuthLevel(minLevel = 2)
+    @Transactional
     fun softDeleteByShipmentId(id: Long): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         detailRepo.softDelete(loginUser.getSite(), loginUser.compCd, id, loginUser.loginId)
             .let { if (it==0) throw IllegalArgumentException("삭제할 출하정보가 존재하지 않습니다. ") }
+
+        detailRepo.softDeleteToTSD(
+            loginUser.getSite(),
+            loginUser.compCd,
+            id,
+            loginUser.loginId
+        )
+        return "삭제 성공"
+    }
+
+    @AuthLevel(minLevel = 2)
+    @Transactional
+    fun cancelShipment(orderNo: String): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        val header = headerRepo
+            .findBySiteAndCompCdAndOrderNoAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, orderNo)
+            ?.let { it.apply { flagActive = false; updateCommonCol(loginUser) } }
+            ?: throw IllegalArgumentException("출하정보가 존재하지 않습니다. ")
+        headerRepo.save(header)
+
+        val details = detailRepo.findAllByShipmentIdAndFlagActiveIsTrueOrderByCreateDate(header.shipmentId!!)
+            .map { it.apply { flagActive = false; updateCommonCol(loginUser) } }
+
+        if (details.isNotEmpty()) {
+            val latest = details.last()
+            inventoryStatusRep.updateQtyByIdAndSystemMaterialId(
+                loginUser.compCd,
+                latest.shipmentWarehouse!!,
+                latest.systemMaterialId!!,
+                latest.cumulativeShipmentQuantity ?: 0.0,
+                loginUser.loginId
+            )
+
+            detailRepo.saveAll(details)
+        }
 
         return "삭제 성공"
     }

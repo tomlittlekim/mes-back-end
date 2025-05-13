@@ -1263,24 +1263,61 @@ class InventoryService(
     }
 
     //재고 상세 이력 조회
-    fun getInventoryHistoryList(filter: InventoryHistoryFilter?) : List<InventoryHistory?>{
-
-        val materialNameList = filter?.materialNames?.filterNotNull()
+    fun getInventoryHistoryList(filter: InventoryHistoryFilter?): List<InventoryHistory?> {
+        val materialNames = filter?.materialNames
+            ?.filterNotNull()
+            ?.map { it.trim() }
+            ?.filter { it.isNotBlank() }
 
         val currentUser = getCurrentUserPrincipal()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-        return inventoryHistoryRep.searchInventoryHistory(
-             site = currentUser.getSite(),
-             compCd = currentUser.compCd,
-             warehouseName = filter?.warehouseName,
-             inOutType = filter?.inOutType,
-             supplierName = filter?.supplierName,
-             manufacturerName = filter?.manufacturerName,
-             materialNames = materialNameList,
-             startDate = filter?.startDate,
-             endDate = filter?.endDate,
-        )
+        return when {
+            materialNames.isNullOrEmpty() -> {
+                // 전체 조회
+                inventoryHistoryRep.searchInventoryHistoryLike(
+                    site = currentUser.getSite(),
+                    compCd = currentUser.compCd,
+                    warehouseName = filter?.warehouseName,
+                    inOutType = filter?.inOutType,
+                    supplierName = filter?.supplierName,
+                    manufacturerName = filter?.manufacturerName,
+                    materialNames = null, // null 처리 시 조건 무시
+                    startDate = filter?.startDate,
+                    endDate = filter?.endDate,
+                )
+            }
+
+            materialNames.size == 1 -> {
+                // LIKE 조회
+                inventoryHistoryRep.searchInventoryHistoryLike(
+                    site = currentUser.getSite(),
+                    compCd = currentUser.compCd,
+                    warehouseName = filter.warehouseName,
+                    inOutType = filter.inOutType,
+                    supplierName = filter.supplierName,
+                    manufacturerName = filter.manufacturerName,
+                    materialNames = materialNames.first(), // 문자열 하나만 넘김
+                    startDate = filter.startDate,
+                    endDate = filter.endDate,
+                )
+            }
+
+            else -> {
+                // IN 조회
+                inventoryHistoryRep.searchInventoryHistoryIn(
+                    site = currentUser.getSite(),
+                    compCd = currentUser.compCd,
+                    warehouseName = filter.warehouseName,
+                    inOutType = filter.inOutType,
+                    supplierName = filter.supplierName,
+                    manufacturerName = filter.manufacturerName,
+                    materialNames = materialNames,
+                    startDate = filter.startDate,
+                    endDate = filter.endDate,
+                )
+            }
+        }
     }
 
 

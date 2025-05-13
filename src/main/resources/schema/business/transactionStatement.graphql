@@ -53,5 +53,5 @@ extend type Query {
 }
 
 extend type Mutation {
-    deleteTransactionStatement(headerId: Int!): String
+    deleteTransactionStatement(orderNo: String!): String
 }

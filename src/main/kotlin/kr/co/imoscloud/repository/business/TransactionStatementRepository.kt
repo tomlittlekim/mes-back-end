@@ -60,6 +60,7 @@ interface TransactionStatementHeaderRepository: JpaRepository<TransactionStateme
     ): List<TransactionStatementHeaderNullableDto>
 
     fun findByIdAndFlagActiveIsTrue(id: Long): TransactionStatementHeader?
+    fun findBySiteAndCompCdAndOrderNoAndFlagActiveIsTrue(site: String, compCd: String, orderNo: String): TransactionStatementHeader?
 }
 
 interface TransactionStatementDetailRepository: JpaRepository<TransactionStatementDetail, Long> {

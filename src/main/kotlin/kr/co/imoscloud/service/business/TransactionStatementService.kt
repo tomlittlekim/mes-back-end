@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.core.Core
-import kr.co.imoscloud.entity.business.TransactionStatementDetail
 import kr.co.imoscloud.entity.business.TransactionStatementHeader
 import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.repository.business.TransactionStatementDetailRepository
@@ -16,15 +15,14 @@ import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.PrintDto
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
-import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
 class TransactionStatementService(
     val core: Core,
-    private val headerRepo: TransactionStatementHeaderRepository,
-    private val detailRepo: TransactionStatementDetailRepository,
+    val headerRepo: TransactionStatementHeaderRepository,
+    val detailRepo: TransactionStatementDetailRepository,
     private val driveRepo: DriveRepository,
     private val convertService: FileConvertService,
 ): AbstractPrint(core, convertService) {
@@ -142,13 +140,15 @@ class TransactionStatementService(
     }
 
     @Transactional
-    fun softDeleteByOrderNo(headerId: Long): String {
+    fun softDeleteByOrderNo(orderNo: String, isRemoveParent: Boolean?=false): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        val header = headerRepo.findByIdAndFlagActiveIsTrue(headerId)
+        val header = headerRepo
+            .findBySiteAndCompCdAndOrderNoAndFlagActiveIsTrue(loginUser.getSite(), loginUser.compCd, orderNo)
             ?.let { it.apply {
                 flagIssuance = false
                 issuanceDate = null
+                if (isRemoveParent == true) flagActive = false
                 updateCommonCol(loginUser)
             } }
             ?: throw IllegalArgumentException("선택한 거래 명세서 정보가 존재하지 않습니다. ")
@@ -161,6 +161,7 @@ class TransactionStatementService(
             detail.apply {
                 transactionStatementId = null
                 transactionStatementDate = null
+                if (isRemoveParent == true) flagActive = false
                 updateCommonCol(loginUser)
             }
         }

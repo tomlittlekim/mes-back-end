@@ -129,7 +129,7 @@ object DateUtils {
         }
     }
 
-    fun getSearchDateRange(formDateStr: String?, toDateStr: String?): Pair<LocalDateTime, LocalDateTime> {
+    fun getSearchDateTimeRange(formDateStr: String?, toDateStr: String?): Pair<LocalDateTime, LocalDateTime> {
         val fromDateTime: LocalDateTime? = formDateStr
             ?.let { dateStr -> parseDate(dateStr) }
             ?.let { LocalDateTime.of(it, LocalTime.MIN) }
@@ -144,6 +144,22 @@ object DateUtils {
             fromDateTime == null && toDateTime != null -> Pair(LocalDateTime.of(2024,1,1,0,0,0), toDateTime)
             fromDateTime != null && toDateTime != null -> Pair(fromDateTime, toDateTime)
             else -> Pair(LocalDateTime.of(today.year, today.monthValue, 1,0,0,0), today.plusMinutes(1))
+        }
+    }
+
+    fun getSearchDateRange(formDateStr: String?, toDateStr: String?): Pair<LocalDate, LocalDate> {
+        val fromDate: LocalDate? = formDateStr
+            ?.let { dateStr -> parseDate(dateStr) }
+
+        val toDate: LocalDate? = toDateStr
+            ?.let { dateStr -> parseDate(dateStr) }
+
+        val today = LocalDate.now()
+        return when {
+            fromDate != null && toDate == null -> Pair(fromDate, LocalDate.now().plusDays(1))
+            fromDate == null && toDate != null -> Pair(LocalDate.of(2024,1,1), toDate)
+            fromDate != null && toDate != null -> Pair(fromDate, toDate)
+            else -> Pair(today.withDayOfMonth(1), today.plusDays(1))
         }
     }
 

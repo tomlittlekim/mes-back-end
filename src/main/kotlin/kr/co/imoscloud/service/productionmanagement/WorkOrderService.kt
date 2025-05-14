@@ -5,7 +5,6 @@ import kr.co.imoscloud.model.productionmanagement.WorkOrderFilter
 import kr.co.imoscloud.model.productionmanagement.WorkOrderInput
 import kr.co.imoscloud.model.productionmanagement.WorkOrderUpdate
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
-import kr.co.imoscloud.util.DateUtils.getSearchDateRange
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

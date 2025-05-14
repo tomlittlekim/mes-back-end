@@ -53,7 +53,7 @@ class TransactionStatementService(
 
         if (header != null && header is TransactionStatementPrintRequest) {
             result["no"] = "1"
-            result["localDate"] = formattedDate(header.transactionDate, CoreEnum.DateTimeFormat.YEAR_MONTH_DAY_KOR)
+            result["localDate"] = DateUtils.formattedDate(header.transactionDate, CoreEnum.DateTimeFormat.YEAR_MONTH_DAY_KOR)
             result["customer"] = header.customerName
             result["title"] = "거레명세서"
         }
@@ -90,7 +90,7 @@ class TransactionStatementService(
 
     fun getAllBySearchCondition(req: TransactionStatementSearchCondition): List<TransactionStatementHeaderNullableDto> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        val (from, to) = DateUtils.getSearchDateRange(req.fromDate, req.toDate)
+        val (from, to) = DateUtils.getSearchDateTimeRange(req.fromDate, req.toDate)
 
         return headerRepo.getAllBySearchCondition(
             loginUser.getSite(),
@@ -167,7 +167,7 @@ class TransactionStatementService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val localDate = DateUtils.parseDate(req.transactionDate)
         val today = LocalDateTime.now()
-        val formatDate = formattedDate(today, CoreEnum.DateTimeFormat.MOS_EVENT_TIME)
+        val formatDate = DateUtils.formattedDate(today, CoreEnum.DateTimeFormat.MOS_EVENT_TIME)
         val tsId = formatDate.substring(2, formatDate.length - 1)
 
         headerRepo.save(header.apply {

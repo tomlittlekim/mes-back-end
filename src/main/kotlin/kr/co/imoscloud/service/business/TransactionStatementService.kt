@@ -115,14 +115,14 @@ class TransactionStatementService(
     }
 
     @Transactional
-    fun printProcess(req: TransactionStatementPrintRequest, response: HttpServletResponse): Unit {
+    fun printProcess(req: TransactionStatementPrintRequest, hsr: HttpServletResponse): Unit {
         val header = headerRepo.findByIdAndFlagActiveIsTrue(req.headerId)
             ?: throw IllegalArgumentException("선택한 거래 명세서 정보가 존재하지 않습니다. ")
 
         val finalDetails = getAllDetailsByOrderNo(header.orderNo)
-        val checkedDetails = finalDetails.filter { req.detailIds.contains(it.id) }
+        val bodies = finalDetails.filter { req.detailIds.contains(it.id) }
 
-        process(req, checkedDetails, response)
+        process(req, bodies, hsr)
 
         updateHeaderAndDetails(header, req.detailIds, req)
     }

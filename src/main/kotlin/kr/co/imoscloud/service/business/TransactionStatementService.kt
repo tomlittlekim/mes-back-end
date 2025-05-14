@@ -90,7 +90,7 @@ class TransactionStatementService(
 
     fun getAllBySearchCondition(req: TransactionStatementSearchCondition): List<TransactionStatementHeaderNullableDto> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        val (from, to) = DateUtils.getSearchDateTimeRange(req.fromDate, req.toDate)
+        val (from, to) = DateUtils.getSearchDateRange(req.fromDate, req.toDate)
 
         return headerRepo.getAllBySearchCondition(
             loginUser.getSite(),

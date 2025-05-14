@@ -10,6 +10,7 @@ import kr.co.imoscloud.service.business.ShipmentWithSupplyPrice
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
@@ -38,7 +39,7 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
             and (:orderNo is null or sh.orderNo = :orderNo)
             and (:customerId is null or oh.customerId = :customerId)
             and (:shipmentStatus is null or sh.shipmentStatus = :shipmentStatus)
-            and sh.createDate between :from and :to
+            and oh.orderDate between :from and :to
             and sh.flagActive is true 
     """)
     fun getAllBySearchCondition(
@@ -46,8 +47,8 @@ interface ShipmentHeaderRepository: JpaRepository<ShipmentHeader, Long> {
         orderNo: String?=null,
         customerId: String?=null,
         shipmentStatus: String?=null,
-        from: LocalDateTime,
-        to: LocalDateTime,
+        from: LocalDate,
+        to: LocalDate,
     ): List<ShipmentHeaderNullableDto>
 
     @Modifying

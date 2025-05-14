@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
@@ -15,15 +16,15 @@ interface OrderHeaderRepository: JpaRepository<OrderHeader, Long> {
         from OrderHeader oh
         where oh.compCd = :compCd
             and (:orderNo is null or oh.orderNo = :orderNo)
-            and (:fromDate is null or (oh.createDate between :fromDate and :toDate))
+            and (:fromDate is null or (oh.orderDate between :fromDate and :toDate))
             and (:customerId is null or oh.customerId = :customerId)
             and oh.flagActive is true 
     """)
     fun findAllBySearchCondition(
         compCd: String,
         orderNo: String?=null,
-        fromDate: LocalDateTime?,
-        toDate: LocalDateTime?,
+        fromDate: LocalDate,
+        toDate: LocalDate,
         customerId: String?=null,
     ): List<OrderHeader>
 
@@ -91,8 +92,8 @@ interface OrderDetailRepository: JpaRepository<OrderDetail, Long> {
     fun findAllBySearchCondition(
         compCd: String,
         orderNo: String?=null,
-        fromDate: LocalDateTime?,
-        toDate: LocalDateTime?,
+        fromDate: LocalDate,
+        toDate: LocalDate,
         customerId: String?=null,
         materialId: String?=null,
     ): List<OrderHeader>

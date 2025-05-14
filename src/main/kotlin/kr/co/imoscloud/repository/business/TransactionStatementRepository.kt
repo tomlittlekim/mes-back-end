@@ -43,7 +43,7 @@ interface TransactionStatementHeaderRepository: JpaRepository<TransactionStateme
         where ts.site = :site
             and ts.compCd = :compCd
             and (:id is null or ts.id = :id)
-            and ts.createDate between :from and :to
+            and oh.orderDate between :from and :to
             and (:orderNo is null or ts.orderNo = :orderNo)
             and (:customerId is null or oh.customerId = :customerId)
             and ts.flagActive is true
@@ -53,8 +53,8 @@ interface TransactionStatementHeaderRepository: JpaRepository<TransactionStateme
         site: String,
         compCd: String,
         id: Long?=null,
-        from: LocalDateTime?=null,
-        to: LocalDateTime?=null,
+        from: LocalDate,
+        to: LocalDate,
         orderNo: String?=null,
         customerId: String?=null,
     ): List<TransactionStatementHeaderNullableDto>

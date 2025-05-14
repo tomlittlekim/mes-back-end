@@ -9,10 +9,7 @@ import kr.co.imoscloud.service.drive.FileConvertService
 import java.io.File
 import java.io.FileInputStream
 import java.text.NumberFormat
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
@@ -35,15 +32,16 @@ abstract class AbstractPrint(
 
         val base: FileManagement = getFodsFile()
         val headerMap = generateHeader(base.menuId!!)
-        val etcMap = head?.let { extractAdditionalHeaderFields(it) }
+        val extractHeaderMap = head?.let { extractAdditionalHeaderFields(it) }
+        val totalHeaderMap = extractHeaderMap?.let { headerMap + it } ?: headerMap
 
-        val uuid = formattedDate(LocalDateTime.now(), CoreEnum.DateTimeFormat.MOS_EVENT_TIME)
+        val uuid = DateUtils.formattedDate(LocalDateTime.now(), CoreEnum.DateTimeFormat.MOS_EVENT_TIME)
         val newFilename = "$uuid.fods"
         val copiedFile = copyToFile(base, newFilename)
 
-        replaceFods(copiedFile, (bodyMap + (etcMap?.let { headerMap + it } ?: headerMap)))
+        replaceFods(copiedFile, (bodyMap + totalHeaderMap))
         val pdf = converter.fodsToPdf(copiedFile)
-        download(pdf, hsr)
+        pdfDownload(pdf, hsr)
     }
 
     protected fun <H, B> process(head: H?, bodies : List<B>, hsr: HttpServletResponse, isRowType: Boolean?=true): Unit {
@@ -56,13 +54,13 @@ abstract class AbstractPrint(
         val extractHeaderMap = head?.let { extractAdditionalHeaderFields(it) }
         val totalHeaderMap = extractHeaderMap?.let { headerMap + it } ?: headerMap
 
-        val uuid = formattedDate(LocalDateTime.now(), CoreEnum.DateTimeFormat.MOS_EVENT_TIME)
+        val uuid = DateUtils.formattedDate(LocalDateTime.now(), CoreEnum.DateTimeFormat.MOS_EVENT_TIME)
         val newFilename = "$uuid.fods"
         val copiedFile = copyToFile(base, newFilename)
 
         replaceFods(copiedFile, (totalBodyMap + totalHeaderMap))
         val pdf = converter.fodsToPdf(copiedFile)
-        download(pdf, hsr)
+        pdfDownload(pdf, hsr)
     }
 
     private fun replaceFods(fods: File, map: Map<String, String?>) {
@@ -153,17 +151,6 @@ abstract class AbstractPrint(
         dto.col16, dto.col17, dto.col18, dto.col19, dto.col20
     )
 
-    protected fun <D> formattedDate(date: D, format: CoreEnum.DateTimeFormat): String {
-        val formatter = DateTimeFormatter.ofPattern(format.value)
-
-        return when (date) {
-            is LocalDate -> formatter.format(date)
-            is LocalDateTime -> formatter.format(date)
-            is YearMonth -> formatter.format(date)
-            else -> ""
-        }
-    }
-
     protected fun <T> formattedNumber(number: T): String {
         val formatter = NumberFormat.getInstance()
 
@@ -181,7 +168,7 @@ abstract class AbstractPrint(
         return if (regex.matches(str)) str.toInt() else throw IllegalArgumentException("숫자 만으로 이루어진 형태가 아닙니다. ")
     }
 
-    protected fun download(pdf: File, res: HttpServletResponse): Unit {
+    private fun pdfDownload(pdf: File, res: HttpServletResponse): Unit {
         if (!pdf.exists()) throw IllegalArgumentException("출력할 파일이 존재하지 않습니다. ")
 
         res.setHeader("Content-Disposition", "attachment")

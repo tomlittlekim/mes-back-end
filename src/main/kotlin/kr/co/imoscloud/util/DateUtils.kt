@@ -2,10 +2,7 @@ package kr.co.imoscloud.util
 
 import kr.co.imoscloud.constants.CoreEnum
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZonedDateTime
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
@@ -147,6 +144,17 @@ object DateUtils {
             fromDateTime == null && toDateTime != null -> Pair(LocalDateTime.of(2024,1,1,0,0,0), toDateTime)
             fromDateTime != null && toDateTime != null -> Pair(fromDateTime, toDateTime)
             else -> Pair(LocalDateTime.of(today.year, today.monthValue, 1,0,0,0), today.plusMinutes(1))
+        }
+    }
+
+    fun <D> formattedDate(date: D, format: CoreEnum.DateTimeFormat): String {
+        val formatter = DateTimeFormatter.ofPattern(format.value)
+
+        return when (date) {
+            is LocalDate -> formatter.format(date.atStartOfDay())
+            is LocalDateTime -> formatter.format(date)
+            is YearMonth -> formatter.format(LocalDate.of(date.year, date.monthValue, 1).atStartOfDay())
+            else -> ""
         }
     }
 }

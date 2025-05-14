@@ -28,10 +28,10 @@ abstract class AbstractPrint(
     abstract fun <B> extractAdditionalBodyFields(bodies : List<B>): MutableMap<String, String>?
 
     protected fun <H, B> process(head: H?, body : B, hsr: HttpServletResponse, isRowType: Boolean?=true): Unit {
-        val bodyMap = generateBody(listOf(body), false, isRowType)
+        val bodyMap = buildIndexedBodyMap(listOf(body), false, isRowType)
 
         val base: FileManagement = getFodsFile()
-        val headerMap = generateHeader(base.menuId!!)
+        val headerMap = getHeaderBaseMap(base.menuId!!)
         val extractHeaderMap = head?.let { extractAdditionalHeaderFields(it) }
         val totalHeaderMap = extractHeaderMap?.let { headerMap + it } ?: headerMap
 
@@ -45,12 +45,12 @@ abstract class AbstractPrint(
     }
 
     protected fun <H, B> process(head: H?, bodies : List<B>, hsr: HttpServletResponse, isRowType: Boolean?=true): Unit {
-        val bodyMap = generateBody(bodies, true, isRowType)
+        val bodyMap = buildIndexedBodyMap(bodies, true, isRowType)
         val extractBodyMap = extractAdditionalBodyFields(bodies)
         val totalBodyMap = extractBodyMap?.let { bodyMap + it } ?: bodyMap
 
         val base: FileManagement = getFodsFile()
-        val headerMap = generateHeader(base.menuId!!)
+        val headerMap = getHeaderBaseMap(base.menuId!!)
         val extractHeaderMap = head?.let { extractAdditionalHeaderFields(it) }
         val totalHeaderMap = extractHeaderMap?.let { headerMap + it } ?: headerMap
 
@@ -101,7 +101,7 @@ abstract class AbstractPrint(
         return copiedFile
     }
 
-    private fun generateHeader(menuId: String): MutableMap<String, String> {
+    private fun getHeaderBaseMap(menuId: String): MutableMap<String, String> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         val map: MutableMap<String, String> = core.companyRepo
@@ -112,7 +112,7 @@ abstract class AbstractPrint(
         return map
     }
 
-    private fun <B> generateBody(
+    private fun <B> buildIndexedBodyMap(
         list: List<B>,
         isList: Boolean,
         isRowType: Boolean?=true
@@ -151,6 +151,17 @@ abstract class AbstractPrint(
         dto.col16, dto.col17, dto.col18, dto.col19, dto.col20
     )
 
+    private fun pdfDownload(pdf: File, res: HttpServletResponse): Unit {
+        if (!pdf.exists()) throw IllegalArgumentException("출력할 파일이 존재하지 않습니다. ")
+
+        res.setHeader("Content-Disposition", "attachment")
+        res.contentType = "application/pdf"
+        res.setContentLength(pdf.length().toInt())
+        FileInputStream(pdf).use { it.copyTo(res.outputStream) }
+
+        pdf.delete()
+    }
+
     protected fun <T> formattedNumber(number: T): String {
         val formatter = NumberFormat.getInstance()
 
@@ -166,17 +177,6 @@ abstract class AbstractPrint(
 
         val regex = Regex("""^\d+$""")
         return if (regex.matches(str)) str.toInt() else throw IllegalArgumentException("숫자 만으로 이루어진 형태가 아닙니다. ")
-    }
-
-    private fun pdfDownload(pdf: File, res: HttpServletResponse): Unit {
-        if (!pdf.exists()) throw IllegalArgumentException("출력할 파일이 존재하지 않습니다. ")
-
-        res.setHeader("Content-Disposition", "attachment")
-        res.contentType = "application/pdf"
-        res.setContentLength(pdf.length().toInt())
-        FileInputStream(pdf).use { it.copyTo(res.outputStream) }
-
-        pdf.delete()
     }
 }
 

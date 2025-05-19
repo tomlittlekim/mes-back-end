@@ -133,6 +133,7 @@ data class MenuRoleDto(
     var id: Long?=null,
     var roleId: Long?=null,
     var menuId: String,
+    var upMenuId: String? = null,
     var isOpen: Boolean?=null,
     var isDelete: Boolean?=null,
     var isInsert: Boolean?=null,

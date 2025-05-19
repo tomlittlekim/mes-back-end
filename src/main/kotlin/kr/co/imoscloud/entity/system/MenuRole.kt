@@ -8,7 +8,8 @@ class MenuRole(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = 0L,
+    @Column(name = "ID")
+    val id: Long? = null,
 
     @Column(name = "ROLE_ID", length = 40, nullable = false)
     var roleId: Long,

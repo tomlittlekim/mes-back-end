@@ -19,17 +19,6 @@ class MenuService(
     val menuRoleRepo: MenuRoleRepository,
 ) {
 
-    companion object {
-        var menuTotalCnt = AtomicInteger(0)
-        private fun upCnt() { menuTotalCnt.incrementAndGet() }
-    }
-
-    init {
-        getMenuTotalCnt()
-    }
-
-    fun getCnt(): Int = menuTotalCnt.get()
-
     fun getMenus(menuId: String?, menuName: String?): List<Menu> {
         return if (menuId==null&&menuName==null) menuRepo.findAll()
         else menuRepo.findAllByParms(menuId, "%${menuName}%")
@@ -85,7 +74,6 @@ class MenuService(
                     }
 
                     menuRoleRepo.saveAll(menuRoleList)
-                    upCnt()
                     newMenu
                 }
 
@@ -105,6 +93,4 @@ class MenuService(
         menuRepo.delete(menu)
         return "${menu.menuName} 및 해당 메뉴에 대한 권한들 삭제 성공"
     }
-
-    private fun getMenuTotalCnt() { menuTotalCnt = AtomicInteger(menuRepo.findAll().size) }
 }

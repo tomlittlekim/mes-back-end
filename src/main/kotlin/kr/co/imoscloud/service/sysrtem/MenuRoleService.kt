@@ -3,7 +3,10 @@ package kr.co.imoscloud.service.sysrtem
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.core.Core
 import kr.co.imoscloud.dto.MenuRoleDto
+import kr.co.imoscloud.entity.system.Menu
 import kr.co.imoscloud.entity.system.MenuRole
+import kr.co.imoscloud.repository.system.MenuRepository
+import kr.co.imoscloud.repository.system.MenuRoleRepository
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
@@ -11,42 +14,48 @@ import org.springframework.stereotype.Service
 @Service
 class MenuRoleService(
     private val core: Core,
-    private val menuService: MenuService
+    private val menuRepo: MenuRepository,
+    private val menuRoleRepo: MenuRoleRepository
 ) {
 
     fun getMenuRoleGroup(roleId: Long): List<Any> {
-        val menuRoleList = core.getAllMenuRoleByRoleId(roleId)
+        val allMenu: List<Menu> = menuRepo.findAll()
+        val allMenuMap = allMenu.associateBy { it.menuId }
 
-        val defaultMenuRoles = if (menuRoleList.size < menuService.getCnt()) {
+        val menuRoleList = core.getAllMenuRoleByRoleId(roleId).map {
+            MenuRoleDto(
+                roleId = roleId,
+                menuId = it.menuId,
+                upMenuId = allMenuMap[it.menuId]?.upMenuId,
+                isOpen = it.isOpen,
+                isDelete = it.isDelete,
+                isInsert = it.isInsert,
+                isAdd = it.isAdd,
+                isPopup = it.isPopup,
+                isPrint = it.isPrint,
+                isSelect = it.isSelect,
+                isUpdate = it.isUpdate,
+                flagCategory = it.flagCategory
+            )
+        }
+
+        val defaultMenuRoles = if (menuRoleList.size < allMenu.size) {
             val savedMenuIds = menuRoleList.map { it.menuId }
-            menuService.menuRepo.getAllByMenuIdNotIn(savedMenuIds).map {
-                MenuRole(
+            allMenu
+                .filter { menu -> !savedMenuIds.contains(menu.menuId) }
+                .map {
+                MenuRoleDto(
                     roleId = roleId,
                     menuId = it.menuId,
+                    upMenuId = allMenuMap[it.menuId]?.upMenuId,
                     flagCategory = it.upMenuId == null
                 )
             }
         } else null
 
-        val finalList = defaultMenuRoles
+        return defaultMenuRoles
             ?.let { menuRoleList + defaultMenuRoles }
             ?: menuRoleList
-
-        return finalList.map { mr ->
-            MenuRoleDto(
-                roleId = roleId,
-                menuId = mr.menuId,
-                isOpen = mr.isOpen,
-                isDelete = mr.isDelete,
-                isInsert = mr.isInsert,
-                isAdd = mr.isAdd,
-                isPopup = mr.isPopup,
-                isPrint = mr.isPrint,
-                isSelect = mr.isSelect,
-                isUpdate = mr.isUpdate,
-                flagCategory = mr.flagCategory
-            )
-        }
     }
 
     fun getMenuRole(menuId: String): MenuRole {
@@ -61,7 +70,7 @@ class MenuRoleService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         val ids = list.mapNotNull { it.id }
-        val menuRoleMap = if (ids.isEmpty()) emptyMap() else menuService.menuRoleRepo.findByIdIn(ids).associateBy { it.id }
+        val menuRoleMap = if (ids.isEmpty()) emptyMap() else menuRoleRepo.findByIdIn(ids).associateBy { it.id }
 
         var upsertStr: String?=null
         val menuRoleList: List<MenuRole> = try {
@@ -103,7 +112,7 @@ class MenuRoleService(
             throw IllegalArgumentException("메뉴 권한 생성 시 필요한 정보가 부족합니다. ")
         }
 
-        menuService.menuRoleRepo.saveAll(menuRoleList)
+        menuRoleRepo.saveAll(menuRoleList)
         core.upsertMenuRoleFromInMemory(menuRoleList)
         return "메뉴 권한 ${upsertStr} 성공"
     }

@@ -5,10 +5,11 @@ import jakarta.persistence.*
 @Entity
 @Table(name = "MENU")
 class Menu(
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
-    val id: Long = 0,
+    val id: Long? = null,
 
     @Column(name = "MENU_ID", length = 100, nullable = false)
     var menuId: String,

@@ -10,13 +10,25 @@ import kr.co.imoscloud.repository.system.MenuRoleRepository
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
+import java.util.concurrent.atomic.AtomicInteger
 
 @Service
 class MenuService(
     private val core: Core,
-    private val menuRepo: MenuRepository,
-    private val menuRoleRepo: MenuRoleRepository,
+    val menuRepo: MenuRepository,
+    val menuRoleRepo: MenuRoleRepository,
 ) {
+
+    companion object {
+        var menuTotalCnt = AtomicInteger(0)
+        private fun upCnt() { menuTotalCnt.incrementAndGet() }
+    }
+
+    init {
+        getMenuTotalCnt()
+    }
+
+    fun getCnt(): Int = menuTotalCnt.get()
 
     fun getMenus(menuId: String?, menuName: String?): List<Menu> {
         return if (menuId==null&&menuName==null) menuRepo.findAll()
@@ -30,14 +42,21 @@ class MenuService(
             val menu: Menu = req.id
                 ?.let { id ->
                     menuRepo.findByIdAndFlagActiveIsTrue(id)
-                        ?.let { menu -> menu.apply {
-                            menuId = req.menuId ?: this.menuId
-                            upMenuId = req.upMenuId ?: this.upMenuId
-                            menuName = req.menuName ?: this.menuName
-                            flagSubscribe = req.flagSubscribe ?: this.flagSubscribe
-                            sequence = req.sequence ?: this.sequence
-                            flagActive = req.flagActive
-                        }  }
+                        ?.let { menu ->
+                            if (menu.upMenuId != req.upMenuId) menuRoleRepo.updateAllByMenuId(
+                                menu.menuId,
+                                req.upMenuId.isNullOrBlank()
+                            )
+
+                            menu.apply {
+                                menuId = req.menuId ?: this.menuId
+                                upMenuId = req.upMenuId ?: this.upMenuId
+                                menuName = req.menuName ?: this.menuName
+                                flagSubscribe = req.flagSubscribe ?: this.flagSubscribe
+                                sequence = req.sequence ?: this.sequence
+                                flagActive = req.flagActive
+                            }
+                        }
                         ?: throw IllegalArgumentException("수정하려는 대상이 존재하지 않습니다. ")
                 }
                 ?:run {
@@ -60,17 +79,13 @@ class MenuService(
                         MenuRole(
                             roleId = id,
                             menuId = newMenu.menuId,
-                            isOpen = req.isOpen!!,
-                            isDelete = req.isDelete!!,
-                            isInsert = req.isInsert!!,
-                            isAdd = req.isAdd!!,
-                            isPopup = req.isPopup!!,
-                            isPrint = req.isPrint!!,
-                            isSelect = req.isSelect!!,
-                            isUpdate = req.isUpdate!!,
+                            isOpen = true,
+                            flagCategory = newMenu.upMenuId == null
                         )
                     }
+
                     menuRoleRepo.saveAll(menuRoleList)
+                    upCnt()
                     newMenu
                 }
 
@@ -90,4 +105,6 @@ class MenuService(
         menuRepo.delete(menu)
         return "${menu.menuName} 및 해당 메뉴에 대한 권한들 삭제 성공"
     }
+
+    private fun getMenuTotalCnt() { menuTotalCnt = AtomicInteger(menuRepo.findAll().size) }
 }

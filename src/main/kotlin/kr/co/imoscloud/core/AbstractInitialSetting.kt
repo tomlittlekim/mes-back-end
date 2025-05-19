@@ -236,7 +236,7 @@ abstract class AbstractInitialSetting(
     }
 
     private fun encodeMenuRolePermissions(mr: MenuRole): Int {
-        val permissions = listOf(mr.isOpen, mr.isDelete, mr.isInsert, mr.isAdd, mr.isPopup, mr.isPrint, mr.isSelect, mr.isUpdate)
+        val permissions = listOf(mr.isOpen, mr.isDelete, mr.isInsert, mr.isAdd, mr.isPopup, mr.isPrint, mr.isSelect, mr.isUpdate, mr.flagCategory)
         val binary = permissions.joinToString(separator = "") { booleanToTinyintStr(it) }
         return binary.toInt(2)
     }
@@ -246,7 +246,7 @@ abstract class AbstractInitialSetting(
         roleId: Long,
         menuId: String
     ): MenuRole {
-        val bits = encoded.toString(2).padStart(8, '0').map { it == '1' }
+        val bits = encoded.toString(2).padStart(9, '0').map { it == '1' }
         return MenuRole(
             id = -1L,
             roleId = roleId,
@@ -258,7 +258,8 @@ abstract class AbstractInitialSetting(
             isPopup = bits[4],
             isPrint = bits[5],
             isSelect = bits[6],
-            isUpdate = bits[7]
+            isUpdate = bits[7],
+            flagCategory = bits[8]
         )
     }
 

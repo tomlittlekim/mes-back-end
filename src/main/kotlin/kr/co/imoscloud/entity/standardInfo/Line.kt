@@ -26,9 +26,6 @@ class Line (
     @Column(name = "LINE_NAME", length = 100)
     var lineName: String? = null,
 
-    @Column(name = "STATUS", length = 50)
-    var status: String? = null,
-
     @Column(name = "LINE_DESC", length = 20)
     var lineDesc: String? = null,
 ):CommonCol()

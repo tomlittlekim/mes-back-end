@@ -8,7 +8,7 @@ class MenuRole(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0L,
+    val id: Long? = 0L,
 
     @Column(name = "ROLE_ID", length = 40, nullable = false)
     var roleId: Long,
@@ -38,5 +38,8 @@ class MenuRole(
     var isSelect: Boolean = false,
 
     @Column(name = "IS_UPDATE")
-    var isUpdate: Boolean = false
+    var isUpdate: Boolean = false,
+
+    @Column(name = "FLAG_CATEGORY")
+    var flagCategory: Boolean = false
 )

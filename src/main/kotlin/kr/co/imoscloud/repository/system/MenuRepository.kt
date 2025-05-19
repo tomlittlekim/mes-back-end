@@ -8,6 +8,13 @@ interface MenuRepository : JpaRepository<Menu, Long> {
     fun findByIdAndFlagActiveIsTrue(id: Long): Menu?
 
     @Query("""
+        select m
+        from Menu m
+        where (:#{#menuIds == null || #menuIds.size() == 0} = true or m.menuId not in :menuIds)
+    """)
+    fun getAllByMenuIdNotIn(menuIds: List<String>): List<Menu>
+
+    @Query("""
         SELECT m FROM Menu m
         WHERE (:menuId IS NULL OR m.menuId = :menuId)
           AND (:menuName IS NULL OR m.menuName LIKE %:menuName%)

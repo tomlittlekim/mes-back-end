@@ -126,17 +126,7 @@ data class MenuRequest(
     val menuName: String? = null,
     val flagSubscribe: Boolean?=null,
     val sequence: Int? = null,
-    val flagActive: Boolean = true,
-
-    // 신규 메뉴 생성 시 default 값을 위함 필드들
-    var isOpen: Boolean?=null,
-    var isDelete: Boolean?=null,
-    var isInsert: Boolean?=null,
-    var isAdd: Boolean?=null,
-    var isPopup: Boolean?=null,
-    var isPrint: Boolean?=null,
-    var isSelect: Boolean?=null,
-    var isUpdate: Boolean?=null
+    val flagActive: Boolean = true
 )
 
 data class MenuRoleDto(
@@ -150,7 +140,8 @@ data class MenuRoleDto(
     var isPopup: Boolean?=null,
     var isPrint: Boolean?=null,
     var isSelect: Boolean?=null,
-    var isUpdate: Boolean?=null
+    var isUpdate: Boolean?=null,
+    var flagCategory: Boolean?=false
 )
 
 data class RoleSearchRequest(

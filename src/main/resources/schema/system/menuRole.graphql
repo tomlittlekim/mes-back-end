@@ -24,6 +24,7 @@ type MenuRole {
     isPrint: Boolean
     isSelect: Boolean
     isUpdate: Boolean
+    flagCategory: Boolean
 }
 
 extend type Mutation {

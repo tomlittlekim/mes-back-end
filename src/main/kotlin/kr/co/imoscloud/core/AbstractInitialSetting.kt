@@ -65,6 +65,7 @@ abstract class AbstractInitialSetting(
     init {
         initialSettings()
     }
+
     fun <T: DtoLoginIdBase> getAllUserMap(vararg req: T?): MutableMap<String, UserSummery?> = getAllUserMap(req.filterNotNull())
     fun <T: DtoLoginIdBase> getAllUserMap(req: List<T?>): MutableMap<String, UserSummery?> {
         return if (getIsInspect()) {

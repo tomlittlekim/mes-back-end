@@ -10,7 +10,7 @@ import kr.co.imoscloud.repository.system.MenuRoleRepository
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class MenuService(
@@ -19,9 +19,43 @@ class MenuService(
     val menuRoleRepo: MenuRoleRepository,
 ) {
 
-    fun getMenus(menuId: String?, menuName: String?): List<Menu> {
-        return if (menuId==null&&menuName==null) menuRepo.findAll()
-        else menuRepo.findAllByParms(menuId, "%${menuName}%")
+    companion object {
+        var allMenuMap: MutableMap<String, Menu> = ConcurrentHashMap()
+
+        private fun upsert(key: String, value: Menu) { allMenuMap[key] = value }
+        private fun delete(key: String) = allMenuMap.remove(key)
+        private fun convertToIdMap(): Map<Long?, Menu> {
+            val menuList = allMenuMap.values.toList()
+            return menuList.associateBy { it.id }
+        }
+    }
+
+    init {
+        initialSetting()
+    }
+
+    fun getAllMenuFromMemory(): Map<String, Menu> {
+        return allMenuMap.mapValues { (_, menu) ->
+            Menu(
+                id = menu.id,
+                menuId = menu.menuId,
+                upMenuId = menu.upMenuId,
+                menuName = menu.menuName,
+                flagSubscribe = menu.flagSubscribe,
+                sequence = menu.sequence,
+                flagActive = menu.flagActive
+            )
+        }
+    }
+
+    fun getMenus(menuId: String?, menuName: String?): List<Menu>? {
+        val menuList = allMenuMap.values.toList()
+
+        return if (menuId==null&&menuName==null) menuList
+        else {
+            val menu = menuId?.let { allMenuMap[it]?.let { menu -> listOf(menu) } } ?: menuList
+            menuName?.let { menu.filter { menu -> menu.menuName.contains(it) } }
+        }
     }
 
     @AuthLevel(minLevel = 5)
@@ -30,7 +64,7 @@ class MenuService(
         try {
             val menu: Menu = req.id
                 ?.let { id ->
-                    menuRepo.findByIdAndFlagActiveIsTrue(id)
+                    convertToIdMap()[id]
                         ?.let { menu ->
                             if (menu.upMenuId != req.upMenuId) menuRoleRepo.updateAllByMenuId(
                                 menu.menuId,
@@ -77,6 +111,7 @@ class MenuService(
                     newMenu
                 }
 
+            upsert(menu.menuId, menu)
             menuRepo.save(menu)
             "${menu.menuName} 메뉴 수정 성공"
         } catch (e: NullPointerException) {
@@ -86,11 +121,14 @@ class MenuService(
     @AuthLevel(minLevel = 5)
     @Transactional
     fun deleteMenu(id: Long): String {
-        val menu = menuRepo.findByIdAndFlagActiveIsTrue(id)
+        val menu = convertToIdMap()[id]
             ?.let { menu -> menuRoleRepo.deleteAllByMenuId(menu.menuId); menu }
             ?: throw IllegalArgumentException("삭제하려는 메뉴가 존재하지 않습니다. ")
 
         menuRepo.delete(menu)
+        delete(menu.menuId)
         return "${menu.menuName} 및 해당 메뉴에 대한 권한들 삭제 성공"
     }
+
+    private fun initialSetting() { allMenuMap = menuRepo.findAll().associateBy { it.menuId }.toMutableMap() }
 }

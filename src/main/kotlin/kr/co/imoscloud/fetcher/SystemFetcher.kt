@@ -84,7 +84,7 @@ class SystemFetcher(
 
 
     @DgsQuery
-    fun getMenus(@InputArgument("menuId") menuId: String?, @InputArgument("menuName") menuName: String?): List<Menu> =
+    fun getMenus(@InputArgument("menuId") menuId: String?, @InputArgument("menuName") menuName: String?): List<Menu>? =
         menuService.getMenus(menuId, menuName)
 
     @DgsMutation

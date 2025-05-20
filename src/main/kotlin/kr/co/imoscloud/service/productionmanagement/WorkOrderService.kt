@@ -103,49 +103,30 @@ class WorkOrderService(
     }
 
     /**
-     * 작업 상태 변경 메서드 - 작업 시작 또는 완료 처리를 위한 메서드
-     *
-     * @param workOrderId 작업지시 ID
-     * @param newState 변경할 상태 (IN_PROGRESS, COMPLETED 등)
-     * @return 상태 변경 성공 여부
-     */
-    private fun updateWorkOrderState(workOrderId: String, newState: String): Boolean {
-        try {
-            val currentUser = getCurrentUserPrincipal()
-
-            // 특정 조건에 맞는 작업지시를 직접 찾는 쿼리 사용
-            val existingWorkOrder = workOrderRepository.findBySiteAndCompCdAndWorkOrderId(
-                currentUser.getSite(),
-                currentUser.compCd,
-                workOrderId
-            )
-
-            existingWorkOrder?.let { workOrder ->
-                workOrder.apply {
-                    state = newState
-                    updateCommonCol(currentUser)
-                }
-
-                workOrderRepository.save(workOrder)
-                return true
-            }
-
-            log.warn("상태를 변경할 작업지시를 찾을 수 없습니다: {}", workOrderId)
-            return false
-        } catch (e: Exception) {
-            log.error("작업지시 상태 변경 중 오류 발생", e)
-            return false
-        }
-    }
-
-    /**
      * 작업 시작 메서드
      *
      * @param workOrderId 작업지시 ID
      * @return 작업 시작 성공 여부
      */
     fun startWorkOrder(workOrderId: String): Boolean {
-        return updateWorkOrderState(workOrderId, "IN_PROGRESS")
+        try {
+            val currentUser = getCurrentUserPrincipal()
+            val existingWorkOrder = workOrderRepository.findBySiteAndCompCdAndWorkOrderId(
+                currentUser.getSite(),
+                currentUser.compCd,
+                workOrderId
+            )
+
+            existingWorkOrder?.let {
+                it.start(currentUser)
+                workOrderRepository.save(it)
+                return true
+            } ?: log.warn("시작할 작업지시를 찾을 수 없습니다: {}", workOrderId)
+            return false
+        } catch (e: Exception) {
+            log.error("작업지시 시작 중 오류 발생: {}", workOrderId, e)
+            return false
+        }
     }
 
     /**
@@ -155,7 +136,24 @@ class WorkOrderService(
      * @return 작업 완료 성공 여부
      */
     fun completeWorkOrder(workOrderId: String): Boolean {
-        return updateWorkOrderState(workOrderId, "COMPLETED")
+        try {
+            val currentUser = getCurrentUserPrincipal()
+            val existingWorkOrder = workOrderRepository.findBySiteAndCompCdAndWorkOrderId(
+                currentUser.getSite(),
+                currentUser.compCd,
+                workOrderId
+            )
+
+            existingWorkOrder?.let {
+                it.complete(currentUser)
+                workOrderRepository.save(it)
+                return true
+            } ?: log.warn("완료할 작업지시를 찾을 수 없습니다: {}", workOrderId)
+            return false
+        } catch (e: Exception) {
+            log.error("작업지시 완료 중 오류 발생: {}", workOrderId, e)
+            return false
+        }
     }
 
     /**
@@ -164,8 +162,6 @@ class WorkOrderService(
     fun softDeleteWorkOrder(workOrderId: String): Boolean {
         try {
             val currentUser = getCurrentUserPrincipal()
-
-            // 특정 조건에 맞는 작업지시를 직접 찾는 쿼리 사용
             val existingWorkOrder = workOrderRepository.findBySiteAndCompCdAndWorkOrderId(
                 currentUser.getSite(),
                 currentUser.compCd,
@@ -173,18 +169,14 @@ class WorkOrderService(
             )
 
             existingWorkOrder?.let {
-                // flagActive를 false로 설정
-                it.flagActive = false
-                it.updateCommonCol(currentUser)
-
+                it.softDelete(currentUser)
                 workOrderRepository.save(it)
                 return true
-            }
+            } ?: log.warn("삭제(비활성화)할 작업지시를 찾을 수 없습니다: {}", workOrderId)
 
-            log.warn("삭제(비활성화)할 작업지시를 찾을 수 없습니다: {}", workOrderId)
             return false
         } catch (e: Exception) {
-            log.error("작업지시 소프트 삭제 중 오류 발생", e)
+            log.error("작업지시 소프트 삭제 중 오류 발생: {}", workOrderId, e)
             return false
         }
     }

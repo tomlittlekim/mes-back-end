@@ -6,6 +6,7 @@ import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.fetcher.material.MaterialFilter
 import kr.co.imoscloud.fetcher.material.MaterialInput
 import kr.co.imoscloud.fetcher.material.MaterialUpdate
+import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
@@ -16,6 +17,7 @@ import java.time.format.DateTimeFormatter
 @Service
 class MaterialService(
     private val materialRep: MaterialRepository,
+    private val codeRep: CodeRep
 ) {
     private val DEFAULT_SITE = "imos"
     private val DEFAULT_COMP_CD = "8Pin"
@@ -225,6 +227,9 @@ class MaterialService(
             compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD
         )
 
+        val codeClassIds = listOf("CD20250428144831625")
+        val codeMap = codeRep.findAllByCodeClassIdIn(codeClassIds).associate { it?.codeId to it?.codeName }
+
         // 먼저 materialType으로 그룹화
         val typeGroups = materials.groupBy { it.materialType }
 
@@ -238,6 +243,7 @@ class MaterialService(
                 categories = categoryGroups.map { (materialCategory, categoryMaterials) ->
                     MaterialCategoryGroupResponseModel(
                         materialCategory = materialCategory,
+                        materialCategoryName = codeMap[materialCategory],
                         materials = categoryMaterials.map { material ->
                             MaterialResponseModel(
                                 systemMaterialId = material.systemMaterialId,
@@ -263,6 +269,7 @@ data class MaterialTypeGroupResponseModel(
 
 data class MaterialCategoryGroupResponseModel(
     val materialCategory: String?,
+    val materialCategoryName: String?,
     val materials: List<MaterialResponseModel>
 )
 

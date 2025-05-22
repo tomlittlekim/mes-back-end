@@ -66,13 +66,12 @@ class IotService(
         return result.map{
             ChartResponseModel(
                 timeLabel = it?.createDate.toString(),
-                deviceId = it?.deviceId,
-                power = it?.power?:0.0
+                label = it?.deviceId?: throw IllegalArgumentException("라벨이 존재하지 않습니다. "),
+                value = it.power?:0.0
             )
         }
 
     }
-
 
     /**
      * 전력 상세보기 MongoDB

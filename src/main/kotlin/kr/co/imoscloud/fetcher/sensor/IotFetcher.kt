@@ -8,7 +8,7 @@ import kr.co.imoscloud.service.sensor.*
 @DgsComponent
 class IotFetcher(
     val iotService: IotService,
-    val iotInfluxService: IotInfluxService,
+//    val iotInfluxService: IotInfluxService,
 ) {
 
     /**

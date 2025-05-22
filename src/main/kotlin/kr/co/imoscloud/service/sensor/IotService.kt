@@ -18,10 +18,10 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class IotService(
+    val mongoTemplate: MongoTemplate,
+    val companyService: CompanyService,
     val sensorStatusRep: SensorStatusRep,
     val productionResultRep: ProductionResultRepository,
-    val mongoTemplate: MongoTemplate,
-    val companyService: CompanyService
 )
 {
     val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -185,7 +185,6 @@ class IotService(
             )
         }
     }
-
     
     /**
      * 제품 불량률 구하기

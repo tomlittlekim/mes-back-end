@@ -95,8 +95,8 @@ class ProductionResultCommandService(
                         warehouseId = input.warehouseId
                         resultInfo = input.resultInfo
                         defectCause = input.defectCause
-                        prodStartTime = parseDateTimeFromString(input.prodStartTime)
-                        prodEndTime = parseDateTimeFromString(input.prodEndTime)
+                        prodStartTime = parseDateTimeFromString(input.prodStartTime!!)
+                        prodEndTime = parseDateTimeFromString(input.prodEndTime!!)
                         flagActive = true
                         createCommonCol(currentUser)
                     }
@@ -213,8 +213,9 @@ class ProductionResultCommandService(
                 }
                 
                 // flagActive를 false로 설정
-                it.flagActive = false
-                it.updateCommonCol(currentUser)
+                // it.flagActive = false
+                // it.updateCommonCol(currentUser)
+                it.softDelete(currentUser) // 엔티티 메소드 호출
                 productionResultRepository.save(it)
 
                 // 관련 불량정보도 비활성화 처리

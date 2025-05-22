@@ -71,6 +71,7 @@ type MaterialTypeGroup {
 
 type MaterialCategoryGroup {
     materialCategory: String
+    materialCategoryName: String
     materials: [Material]
 }
 

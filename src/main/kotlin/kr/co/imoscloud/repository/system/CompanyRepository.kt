@@ -11,6 +11,8 @@ interface CompanyRepository: JpaRepository<Company, Long> {
     fun findAllByFlagActiveIsTrue(): List<Company>
     fun findByIdAndFlagActiveIsTrue(id: Long): Company?
     fun findByCompCdAndFlagActiveIsTrue(compCd: String): Company?
+    fun findBySiteAndCompCdAndFlagActiveIsTrue(site: String, compCd: String): Company?
+
 
     @Query("""
         select c

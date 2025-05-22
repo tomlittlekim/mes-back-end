@@ -153,8 +153,9 @@ class ProductionPlanService(
 
             existingPlan?.let {
                 // flagActive를 false로 설정
-                it.flagActive = false
-                it.updateCommonCol(currentUser)
+                // it.flagActive = false
+                // it.updateCommonCol(currentUser)
+                it.softDelete(currentUser) // 엔티티 메소드 호출
 
                 productionPlanRepository.save(it)
                 return true

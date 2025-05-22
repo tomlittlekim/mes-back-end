@@ -19,6 +19,7 @@ class CustomUserDetailsService(
         val roleSummery = core.getUserRoleFromInMemory(loginUser.roleId)
             ?: throw UsernameNotFoundException("권한 정보가 메모리상에 존재하지 않습니다. ")
 
-        return UserPrincipal.create(loginUser, roleSummery)
+        val companySummery = core.getCompanyFromInMemory(loginUser.compCd)
+        return UserPrincipal.create(loginUser, roleSummery, companySummery?.companyName)
     }
 } 

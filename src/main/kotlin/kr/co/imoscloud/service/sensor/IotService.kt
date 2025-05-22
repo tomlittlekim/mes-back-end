@@ -41,6 +41,22 @@ class IotService(
 
     }
 
+    fun getPowerDataForWS(site: String, compCd: String): List<PowerResponseDto?> {
+        val result =  sensorStatusRep.getPowerData(
+            site = site,
+            compCd = compCd
+        )
+
+        return result.map{
+            PowerResponseDto(
+                timeLabel = it?.createDate.toString(),
+                deviceId = it?.deviceId,
+                power = it?.power?:0.0
+            )
+        }
+
+    }
+
     fun getPopupPowerData(filter:PowerHourFilter): List<PowerResponseDto> {
         val localDate = LocalDate.parse(filter.date, dateFormatter)
 

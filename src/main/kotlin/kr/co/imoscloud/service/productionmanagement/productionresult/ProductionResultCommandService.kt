@@ -95,8 +95,8 @@ class ProductionResultCommandService(
                         warehouseId = input.warehouseId
                         resultInfo = input.resultInfo
                         defectCause = input.defectCause
-                        prodStartTime = parseDateTimeFromString(input.prodStartTime)
-                        prodEndTime = parseDateTimeFromString(input.prodEndTime)
+                        prodStartTime = parseDateTimeFromString(input.prodStartTime!!)
+                        prodEndTime = parseDateTimeFromString(input.prodEndTime!!)
                         flagActive = true
                         createCommonCol(currentUser)
                     }

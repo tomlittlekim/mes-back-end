@@ -31,7 +31,7 @@ data class ProductionResultInput(
     val resultInfo: String? = null,
     val defectCause: String? = null,
     // 타입을 LocalDateTime에서 String으로 변경
-    val prodStartTime: String? = null,
-    val prodEndTime: String? = null,
+    val prodStartTime: String,
+    val prodEndTime: String,
     val flagActive: Boolean? = true
 )

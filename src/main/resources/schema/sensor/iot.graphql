@@ -1,16 +1,17 @@
-input PowerHourFilter{
+input KpiFilter{
     date:String,
     range:String
 }
 
-
-type Iot{
+type Graph{
     timeLabel:String,
-    deviceId:String,
-    power:String
+    label:String,
+    value:String
 }
 
 extend type Query {
-    getPowerData:[Iot]
-    getPopupPowerData(filter:PowerHourFilter):[Iot]
+    getPowerData:[Graph]
+    getProductDefect(filter: KpiFilter):[Graph]
+    getPopupPowerData(filter: KpiFilter):[Graph]
+    getEquipmentOperationData(filter: KpiFilter):[Graph]
 }

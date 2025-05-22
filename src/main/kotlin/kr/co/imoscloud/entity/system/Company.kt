@@ -58,6 +58,12 @@ class Company(
     var phoneNumber: String? = null,
 
     @Column(name = "DEFAULT_USER_PWD", length = 100)
-    var defaultUserPwd: String? = null
+    var defaultUserPwd: String? = null,
+
+    @Column(name = "WORK_START_TIME")
+    var workStartTime: String? = null,
+
+    @Column(name = "WORK_END_TIME")
+    var workEndTime: String? = null,
 
     ) : CommonCol(), DtoLoginIdBase, DtoCompCdBase

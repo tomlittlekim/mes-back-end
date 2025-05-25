@@ -17,6 +17,7 @@ class UserPrincipal(
     private val password: String,
     override val roleId: Long,
     val priorityLevel: Int,
+    val companyName: String?,
     private val authorities: Collection<GrantedAuthority>
 ) : UserDetails, DtoAllInOneBase {
 
@@ -38,7 +39,7 @@ class UserPrincipal(
     fun getId(): Long = id
 
     companion object {
-        fun create(user: User, role: RoleSummery): UserPrincipal {
+        fun create(user: User, role: RoleSummery, companyName: String?=null): UserPrincipal {
             val authorities = listOf(SimpleGrantedAuthority(role.roleName))
 
             return UserPrincipal(
@@ -49,12 +50,13 @@ class UserPrincipal(
                 loginId = user.loginId,
                 password = user.userPwd,
                 roleId = user.roleId,
-                priorityLevel = role.priorityLevel!!,
+                priorityLevel = role.priorityLevel,
+                companyName = companyName,
                 authorities = authorities
             )
         }
 
-        fun create(user: UserSummery, role: RoleSummery): UserPrincipal {
+        fun create(user: UserSummery, role: RoleSummery, companyName: String?=null): UserPrincipal {
             val authorities = listOf(SimpleGrantedAuthority(role.roleName))
 
             return UserPrincipal(
@@ -65,7 +67,8 @@ class UserPrincipal(
                 loginId = user.loginId,
                 password = user.userPwd,
                 roleId = user.roleId,
-                priorityLevel = role.priorityLevel!!,
+                priorityLevel = role.priorityLevel,
+                companyName = companyName,
                 authorities = authorities
             )
         }

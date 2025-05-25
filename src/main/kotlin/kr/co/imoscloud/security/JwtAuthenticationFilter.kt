@@ -18,7 +18,7 @@ class JwtAuthenticationFilter(
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
         // /api/login 경로는 필터링 제외
-        return request.servletPath.startsWith("/api/login")
+        return request.servletPath.startsWith("/api/login") || request.servletPath.startsWith("/ws/power")
     }
 
     /** 작동 흐름

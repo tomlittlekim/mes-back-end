@@ -54,7 +54,7 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     // 공개 엔드포인트 설정
-                    .requestMatchers("/api/auth/**", "/api/login", "/api/register").permitAll()
+                    .requestMatchers("/api/auth/**", "/api/login", "/api/register", "/ws/**").permitAll()
                     // GraphQL 엔드포인트는 인증 필요
                     .requestMatchers("/graphql").authenticated()
                     // 그 외 모든 요청은 인증 필요

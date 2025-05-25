@@ -57,8 +57,24 @@ class IotService(
         )
     }
 
+    fun getPowerDataForWS(site: String, compCd: String): List<ChartResponseModel?> {
+        val result =  sensorStatusRep.getPowerData(
+            site = site,
+            compCd = compCd
+        )
+
+        return result.map{
+            ChartResponseModel(
+                timeLabel = it?.createDate.toString(),
+                label = it?.deviceId?: throw IllegalArgumentException("라벨이 존재하지 않습니다. "),
+                value = it.power?:0.0
+            )
+        }
+
+    }
+
     /**
-     * 전력 상세보기 MongoDB 
+     * 전력 상세보기 MongoDB
      * */
     fun getPowerGroupedData(
         localDate: LocalDate,
@@ -100,7 +116,7 @@ class IotService(
             )
         }
     }
-    
+
     fun getEquipmentOperationData(filter:KpiFilter): List<ChartResponseModel> {
         val localDate = LocalDate.parse(filter.date, dateFormatter)
         val params = getParams(filter.range)
@@ -185,7 +201,7 @@ class IotService(
             )
         }
     }
-    
+
     /**
      * 제품 불량률 구하기
      * */
@@ -193,13 +209,14 @@ class IotService(
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
         val site = userPrincipal.getSite()
         val compCd = userPrincipal.compCd
+        val companyName = userPrincipal.companyName ?: throw IllegalArgumentException("회사명이 존재하지 않습니다. ")
         val (startDate, endDate) = getDateRange(filter)
 
         return when (filter.range) {
             "week", "month" -> {
                 val entity = productionResultRep.findDayDefectRates(site, compCd, startDate, endDate)
                 fillGroupData(
-                    entity, compCd,
+                    entity, companyName,
                     generateSequence(startDate.toLocalDate()) { it.plusDays(1) }
                         .takeWhile { !it.isAfter(endDate.toLocalDate().minusDays(1)) }
                         .asIterable()
@@ -208,7 +225,7 @@ class IotService(
             else -> {
                 val entity = productionResultRep.findHourlyDefectRates(site, compCd, startDate, endDate)
                 fillGroupData(
-                    entity, compCd,
+                    entity, companyName,
                     0..23
                 ) { it.toString().padStart(2, '0') }
             }

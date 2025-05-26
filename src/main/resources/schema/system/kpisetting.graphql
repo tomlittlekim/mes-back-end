@@ -1,0 +1,56 @@
+extend type Query {
+    getBranchCompanies: [Branch]
+    getKpiIndicators: [KpiIndicator]
+    getKpiSubscriptions: [KpiSubscription]
+}
+
+extend type Mutation {
+    saveKpiSettings(settings: [KPISettingInput!]!): KpiSettingResult
+}
+
+type Branch {
+    id: String
+    name: String
+    companies: [KpiCompany]
+}
+
+type KpiCompany {
+    id: String
+    name: String
+}
+
+type KpiIndicator {
+    kpiIndicatorCd: String
+    kpiIndicatorNm: String
+    description: String
+    categoryCd: String
+    categoryNm: String
+    targetValue: Float
+    unit: String
+    chartType: String
+}
+
+type KpiSubscription {
+    site: String
+    compCd: String
+    kpiIndicatorCd: String
+    categoryId: String
+    description: String
+    sort: Int
+    flagActive: Boolean
+}
+
+input KPISettingInput {
+    site: String!
+    compCd: String!
+    kpiIndicatorCd: String!
+    categoryId: String!
+    description: String
+    sort: Int
+    flagActive: Boolean
+}
+
+type KpiSettingResult {
+    success: Boolean
+    message: String
+}

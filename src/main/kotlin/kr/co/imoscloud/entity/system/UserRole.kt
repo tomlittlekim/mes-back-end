@@ -1,6 +1,7 @@
 package kr.co.imoscloud.entity.system
 
 import jakarta.persistence.*
+import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.entity.CommonCol
 import kr.co.imoscloud.iface.DtoCompCdBase
 import kr.co.imoscloud.iface.DtoRoleIdBase
@@ -32,4 +33,14 @@ class UserRole(
     @Column(name = "SEQUENCE")
     var sequence: Int? = null
 
-): CommonCol(), DtoRoleIdBase, DtoCompCdBase
+): CommonCol(), DtoRoleIdBase, DtoCompCdBase {
+
+    companion object {
+        fun toSummery(userRole: UserRole): RoleSummery = RoleSummery(
+            userRole.roleId,
+            userRole.compCd,
+            userRole.roleName,
+            userRole.priorityLevel
+        )
+    }
+}

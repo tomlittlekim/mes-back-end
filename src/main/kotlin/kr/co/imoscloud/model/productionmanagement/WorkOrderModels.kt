@@ -28,3 +28,23 @@ data class WorkOrderUpdate(
     val state: String? = null,
     val flagActive: Boolean? = null
 )
+
+// 삭제 결과 모델 - ProductionPlan과 통일성을 맞춤
+data class WorkOrderDeleteResult(
+    val success: Boolean,
+    val totalRequested: Int,
+    val deletedCount: Int,
+    val skippedCount: Int,
+    val skippedWorkOrders: List<String>,
+    val message: String
+)
+
+// 작업 시작/완료 결과 모델
+data class WorkOrderOperationResult(
+    val success: Boolean,
+    val totalRequested: Int,
+    val processedCount: Int,
+    val skippedCount: Int,
+    val skippedWorkOrders: List<String>,
+    val message: String
+)

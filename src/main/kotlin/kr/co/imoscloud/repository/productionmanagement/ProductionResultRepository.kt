@@ -9,6 +9,16 @@ import org.springframework.data.repository.query.Param
 interface ProductionResultRepository : JpaRepository<ProductionResult, Long>, ProductionResultRepositoryCustom {
     fun findBySiteAndCompCdAndProdResultId(site: String, compCd: String, prodResultId: String): ProductionResult?
 
+    /**
+     * 특정 작업지시에 연결된 활성 생산실적이 존재하는지 확인
+     */
+    fun existsBySiteAndCompCdAndWorkOrderIdAndFlagActive(
+        site: String, 
+        compCd: String, 
+        workOrderId: String, 
+        flagActive: Boolean
+    ): Boolean
+
     @Query(
         value = """
             SELECT

@@ -8,6 +8,8 @@ import kr.co.imoscloud.entity.productionmanagement.WorkOrder
 import kr.co.imoscloud.model.productionmanagement.WorkOrderFilter
 import kr.co.imoscloud.model.productionmanagement.WorkOrderInput
 import kr.co.imoscloud.model.productionmanagement.WorkOrderUpdate
+import kr.co.imoscloud.model.productionmanagement.WorkOrderDeleteResult
+import kr.co.imoscloud.model.productionmanagement.WorkOrderOperationResult
 import kr.co.imoscloud.service.productionmanagement.WorkOrderService
 import org.slf4j.LoggerFactory
 
@@ -55,42 +57,93 @@ class WorkOrderDataFetcher(
         }
     }
 
-    // 작업지시 삭제 (소프트 삭제로 변경)
-    @DgsData(parentType = "Mutation", field = "deleteWorkOrder")
-    fun deleteWorkOrder(
-        @InputArgument("workOrderId") workOrderId: String
-    ): Boolean {
+    // 작업지시 다중 삭제 (소프트 삭제)
+    @DgsData(parentType = "Mutation", field = "deleteWorkOrders")
+    fun deleteWorkOrders(
+        @InputArgument("workOrderIds") workOrderIds: List<String>
+    ): WorkOrderDeleteResult {
         try {
-            return workOrderService.softDeleteWorkOrder(workOrderId)
+            return workOrderService.softDeleteWorkOrders(workOrderIds)
+        } catch (e: SecurityException) {
+            log.error("인증 오류: {}", e.message)
+            return WorkOrderDeleteResult(
+                success = false,
+                totalRequested = workOrderIds.size,
+                deletedCount = 0,
+                skippedCount = 0,
+                skippedWorkOrders = emptyList(),
+                message = "인증 오류가 발생했습니다: ${e.message}"
+            )
         } catch (e: Exception) {
-            log.error("작업지시 삭제 중 오류 발생", e)
-            return false
+            log.error("작업지시 다중 삭제 중 오류 발생", e)
+            return WorkOrderDeleteResult(
+                success = false,
+                totalRequested = workOrderIds.size,
+                deletedCount = 0,
+                skippedCount = 0,
+                skippedWorkOrders = emptyList(),
+                message = "삭제 중 오류가 발생했습니다: ${e.message}"
+            )
         }
     }
 
-    // 작업 시작
-    @DgsData(parentType = "Mutation", field = "startWorkOrder")
-    fun startWorkOrder(
-        @InputArgument("workOrderId") workOrderId: String
-    ): Boolean {
+    // 작업지시 다중 시작
+    @DgsData(parentType = "Mutation", field = "startWorkOrders")
+    fun startWorkOrders(
+        @InputArgument("workOrderIds") workOrderIds: List<String>
+    ): WorkOrderOperationResult {
         try {
-            return workOrderService.startWorkOrder(workOrderId)
+            return workOrderService.startWorkOrders(workOrderIds)
+        } catch (e: SecurityException) {
+            log.error("인증 오류: {}", e.message)
+            return WorkOrderOperationResult(
+                success = false,
+                totalRequested = workOrderIds.size,
+                processedCount = 0,
+                skippedCount = 0,
+                skippedWorkOrders = emptyList(),
+                message = "인증 오류가 발생했습니다: ${e.message}"
+            )
         } catch (e: Exception) {
-            log.error("작업 시작 중 오류 발생", e)
-            return false
+            log.error("작업지시 다중 시작 중 오류 발생", e)
+            return WorkOrderOperationResult(
+                success = false,
+                totalRequested = workOrderIds.size,
+                processedCount = 0,
+                skippedCount = 0,
+                skippedWorkOrders = emptyList(),
+                message = "시작 중 오류가 발생했습니다: ${e.message}"
+            )
         }
     }
 
-    // 작업 완료
-    @DgsData(parentType = "Mutation", field = "completeWorkOrder")
-    fun completeWorkOrder(
-        @InputArgument("workOrderId") workOrderId: String
-    ): Boolean {
+    // 작업지시 다중 완료
+    @DgsData(parentType = "Mutation", field = "completeWorkOrders")
+    fun completeWorkOrders(
+        @InputArgument("workOrderIds") workOrderIds: List<String>
+    ): WorkOrderOperationResult {
         try {
-            return workOrderService.completeWorkOrder(workOrderId)
+            return workOrderService.completeWorkOrders(workOrderIds)
+        } catch (e: SecurityException) {
+            log.error("인증 오류: {}", e.message)
+            return WorkOrderOperationResult(
+                success = false,
+                totalRequested = workOrderIds.size,
+                processedCount = 0,
+                skippedCount = 0,
+                skippedWorkOrders = emptyList(),
+                message = "인증 오류가 발생했습니다: ${e.message}"
+            )
         } catch (e: Exception) {
-            log.error("작업 완료 중 오류 발생", e)
-            return false
+            log.error("작업지시 다중 완료 중 오류 발생", e)
+            return WorkOrderOperationResult(
+                success = false,
+                totalRequested = workOrderIds.size,
+                processedCount = 0,
+                skippedCount = 0,
+                skippedWorkOrders = emptyList(),
+                message = "완료 중 오류가 발생했습니다: ${e.message}"
+            )
         }
     }
 }

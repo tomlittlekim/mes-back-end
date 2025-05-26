@@ -23,6 +23,7 @@ interface UserRepository : JpaRepository<User, Long> {
     fun findByLoginId(loginId: String?): Optional<User>
     fun findAllByCompCdAndFlagActiveIsTrue(compCd: String): List<User>
     fun findByIdAndFlagActiveIsTrue(id: Long): User?
+    fun findAllByFlagActiveIsTrue(): List<User>
 
     @Modifying
     @Query("""
@@ -31,4 +32,16 @@ interface UserRepository : JpaRepository<User, Long> {
         where u.compCd = :compCd
     """)
     fun deleteAllbyCompCd(compCd: String)
+
+    @Modifying
+    @Query("""
+        update User u
+        set 
+            u.flagActive = false,
+            u.updateUser = :updateUser,
+            u.updateDate = :updateDate
+        where u.id = :id
+            and u.flagActive = true
+    """)
+    fun softDeleteByIdAndFlagActiveIsTrue(id: Long): Int
 } 

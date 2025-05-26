@@ -97,14 +97,14 @@ class UserCacheManager(
             users.forEach { u -> upsertByEntry(u.loginId, u) }
             users
         } catch (e: Exception) {
-            throw IllegalArgumentException("DB 저장 및 Mem 동기화에 실패했습니다. ")
+            throw IllegalArgumentException("DB 저장 및 InMemory 동기화에 실패했습니다. ")
         }
     }
 
     @Transactional
-    fun softDeleteAndSyncCache(us: UserSummery): UserSummery {
-        val result: Int = userRepo.softDeleteByIdAndFlagActiveIsTrue(us.id)
-        if (result == 0) throw IllegalArgumentException("삭제하는데 실패했습니다. ")
+    fun softDeleteAndSyncCache(us: UserSummery, loginUserId: String): UserSummery {
+        val result: Int = userRepo.softDeleteByIdAndFlagActiveIsTrue(us.id, loginUserId)
+        if (result == 0) throw IllegalArgumentException("유저를 삭제하는데 실패했습니다. ")
 
         deleteByKey<String, UserSummery?>(us.loginId)
         return us

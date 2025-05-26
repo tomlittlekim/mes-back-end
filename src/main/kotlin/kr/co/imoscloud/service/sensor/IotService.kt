@@ -3,7 +3,7 @@ package kr.co.imoscloud.service.sensor
 import kr.co.imoscloud.fetcher.sensor.KpiFilter
 import kr.co.imoscloud.repository.SensorStatusRep
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
-import kr.co.imoscloud.service.sysrtem.CompanyService
+import kr.co.imoscloud.service.system.CompanyService
 import kr.co.imoscloud.util.SecurityUtils
 import org.bson.Document
 import org.springframework.data.domain.Sort

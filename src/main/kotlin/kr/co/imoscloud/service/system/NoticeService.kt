@@ -1,4 +1,4 @@
-package kr.co.imoscloud.service.sysrtem
+package kr.co.imoscloud.service.system
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.dto.NoticeSearchRequest

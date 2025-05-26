@@ -115,6 +115,8 @@ class CompanyService(
     @AuthLevel(minLevel = 5)
     @Transactional
     fun deleteCompany(id: Long): Boolean {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
         val target = core.companyRepo.findByIdAndFlagActiveIsTrue(id)
             ?.apply {
                 flagActive = false
@@ -123,8 +125,8 @@ class CompanyService(
             ?: throw IllegalArgumentException("삭제할 객체가 존재하지 않습니다. ")
 
         core.companyRepo.save(target)
-        core.userRepo.deleteAllbyCompCd(target.compCd)
-        core.roleRepo.deleteAllByCompCd(target.compCd)
+        core.userRepo.deleteAllByCompCd(target.compCd, loginUser.loginId)
+        core.roleRepo.deleteAllByCompCd(target.compCd, loginUser.loginId)
         return true
     }
 

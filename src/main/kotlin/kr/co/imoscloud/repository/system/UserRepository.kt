@@ -4,6 +4,7 @@ import kr.co.imoscloud.entity.system.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import java.time.LocalDateTime
 import java.util.*
 
 interface UserRepository : JpaRepository<User, Long> {
@@ -28,10 +29,18 @@ interface UserRepository : JpaRepository<User, Long> {
     @Modifying
     @Query("""
         update User u
-        set u.flagActive = false
+        set 
+            u.flagActive = false,
+            u.updateUser = :updateUser,
+            u.updateDate = :updateDate
         where u.compCd = :compCd
+            and u.flagActive is true
     """)
-    fun deleteAllbyCompCd(compCd: String)
+    fun deleteAllByCompCd(
+        compCd: String,
+        updateUser: String,
+        updateDate: LocalDateTime ?= LocalDateTime.now()
+    ): Int
 
     @Modifying
     @Query("""
@@ -43,5 +52,9 @@ interface UserRepository : JpaRepository<User, Long> {
         where u.id = :id
             and u.flagActive = true
     """)
-    fun softDeleteByIdAndFlagActiveIsTrue(id: Long): Int
+    fun softDeleteByIdAndFlagActiveIsTrue(
+        id: Long,
+        updateUser: String,
+        updateDate: LocalDateTime?= LocalDateTime.now()
+    ): Int
 } 

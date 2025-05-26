@@ -30,7 +30,7 @@ class Core(
     override fun getAllRolesDuringInspection(indies: List<Long?>): MutableMap<Long, RoleSummery?> {
         val roleList: List<UserRole> = if (indies.size == 1 && indies.first() != null) {
             roleRepo.findById(indies.first()!!).map(::listOf).orElseGet { emptyList<UserRole>() }
-        } else roleRepo.findAllByRoleIdIn(indies)
+        } else roleRepo.findAllByRoleIdInAndFlagActiveIsTrue(indies)
 
         return roleList.associate { it.roleId to roleToSummery(it) }.toMutableMap()
     }

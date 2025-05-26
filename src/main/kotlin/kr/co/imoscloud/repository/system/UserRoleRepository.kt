@@ -4,9 +4,11 @@ import kr.co.imoscloud.entity.system.UserRole
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import java.time.LocalDateTime
 
 interface UserRoleRepository: JpaRepository<UserRole, Long> {
-    fun findAllByRoleIdIn(idList: List<Long?>): List<UserRole>
+    fun findAllByRoleIdInAndFlagActiveIsTrue(idList: List<Long?>): List<UserRole>
+    fun findAllByFlagActiveIsTrue(): List<UserRole>
 
     @Query("""
         select ur
@@ -52,8 +54,32 @@ interface UserRoleRepository: JpaRepository<UserRole, Long> {
     @Modifying
     @Query("""
         update UserRole ur
-        set ur.flagDefault = false
+        set 
+            ur.flagDefault = false,
+            ur.updateUser = :updateUser,
+            ur.updateDate = :updateDate
         where ur.compCd = :compCd
+            and ur.flagActive is true
     """)
-    fun deleteAllByCompCd(compCd: String)
+    fun deleteAllByCompCd(
+        compCd: String,
+        updateUser: String,
+        updateDate: LocalDateTime ?= LocalDateTime.now()
+    ): Int
+
+    @Modifying
+    @Query("""
+        update UserRole ur
+        set 
+            ur.flagDefault = false,
+            ur.updateUser = :updateUser,
+            ur.updateDate = :updateDate
+        where ur.roleId = :roleId
+            and ur.flagActive is true
+    """)
+    fun deleteAllByRoleId(
+        roleId: Long,
+        updateUser: String,
+        updateDate: LocalDateTime ?= LocalDateTime.now()
+    ): Int
 }

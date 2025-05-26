@@ -1,14 +1,12 @@
 package kr.co.imoscloud.service.system
 
 import kr.co.imoscloud.dto.CompanySearchCondition
-import kr.co.imoscloud.entity.system.KpiCategoryMaster
 import kr.co.imoscloud.entity.system.KpiCompanySubscription
-import kr.co.imoscloud.entity.system.KpiIndicatorMaster
 import kr.co.imoscloud.model.kpisetting.*
+import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.repository.system.KpiCategoryRepository
 import kr.co.imoscloud.repository.system.KpiIndicatorRepository
 import kr.co.imoscloud.repository.system.KpiSubscriptionRepository
-import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
@@ -20,6 +18,7 @@ class KpiSettingService(
     private val kpiIndicatorRepository: KpiIndicatorRepository,
     private val kpiSubscriptionRepository: KpiSubscriptionRepository,
     private val companyService: CompanyService,
+    private val codeRep: CodeRep
 ) {
     
     /**
@@ -32,13 +31,13 @@ class KpiSettingService(
         val companies = companyService.getCompanies(CompanySearchCondition(site = null, companyName = null))
         
         // 지점(site)별로 그룹화
-        val companiesByBranch = companies.groupBy { it.site ?: "" }
+        val companiesByBranch = companies.groupBy { it.site }
         
         // 결과 변환
         return companiesByBranch.map { (site, companyList) ->
             BranchModel(
                 id = site,
-                name = getBranchName(site), // 지점 이름 매핑
+                name = getBranchName(site),
                 companies = companyList.map { company ->
                     KpiCompanyModel(
                         id = company.compCd,
@@ -51,16 +50,14 @@ class KpiSettingService(
     
     /**
      * 지점 ID에 해당하는 지점명 반환
+     * CHAPTER 코드 클래스에서 지점 코드 조회
      */
     private fun getBranchName(siteId: String): String {
-        return when (siteId) {
-            "CLUS_SEOUL" -> "서울본부"
-            "CLUS_NGYENGGI" -> "경기북부"
-            "CLUS_DONGDAEMOON" -> "동대문지부"
-            "CLUS_DEAGU" -> "대구지부"
-            "STND_VENDOR" -> "개별형"
-            else -> siteId
+        val chapterCodes = codeRep.getInitialCodes(codeClassId = "CHAPTER")
+        val siteNameMap = chapterCodes.associate { code ->
+            (code?.codeId ?: "") to (code?.codeName ?: "")
         }
+        return siteNameMap[siteId] ?: siteId
     }
     
     /**
@@ -107,7 +104,7 @@ class KpiSettingService(
                 categoryId = subscription.categoryId,
                 description = subscription.description,
                 sort = subscription.sort,
-                flagActive = subscription.flagActive // CommonCol로부터 상속받은 필드
+                flagActive = subscription.flagActive
             )
         }
     }
@@ -119,14 +116,11 @@ class KpiSettingService(
     @Transactional(rollbackFor = [Exception::class])
     @AuthLevel(minLevel = 5)
     fun saveKpiSettings(settings: List<KpiSettingInput>): KpiSettingResult {
-        // 현재 인증된 사용자 정보 가져오기
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
         
         try {
-            // 회사별로 그룹화
             val settingsByCompany = settings.groupBy { "${it.site}_${it.compCd}" }
-            
-            // 배치 업데이트를 위한 리스트
+
             val toSave = mutableListOf<KpiCompanySubscription>()
             var totalUpdated = 0
             var totalCreated = 0
@@ -134,9 +128,7 @@ class KpiSettingService(
             
             settingsByCompany.forEach { (key, companySettings) ->
                 val (site, compCd) = key.split("_")
-                println("처리 중: site=$site, compCd=$compCd, 설정 수=${companySettings.size}")
-                
-                // 해당 회사의 모든 기존 구독 정보 한 번에 조회
+
                 val existingSubscriptions = kpiSubscriptionRepository.findSubscriptionsBySiteAndCompCd(site, compCd)
                 val existingSubscriptionsMap = existingSubscriptions.associateBy { it.kpiIndicatorCd }
                 
@@ -161,11 +153,9 @@ class KpiSettingService(
                             
                             toSave.add(existingSubscription)
                             totalUpdated++
-                            println("업데이트: $site, $compCd, ${setting.kpiIndicatorCd}, 활성화: ${setting.flagActive}")
                         } else {
                             // 변경 없음
                             totalUnchanged++
-                            println("변경 없음: $site, $compCd, ${setting.kpiIndicatorCd}")
                         }
                     } else {
                         // 새로운 구독 정보 생성
@@ -183,14 +173,10 @@ class KpiSettingService(
                         
                         toSave.add(newSubscription)
                         totalCreated++
-                        println("신규 추가: $site, $compCd, ${setting.kpiIndicatorCd}, 활성화: ${setting.flagActive}")
                     }
                 }
             }
-            
-            // 디버깅 정보
-            println("저장할 항목 수: ${toSave.size} (업데이트: $totalUpdated, 신규: $totalCreated, 변경없음: $totalUnchanged)")
-            
+
             // 변경된 항목이 있는 경우에만 저장
             if (toSave.isNotEmpty()) {
                 kpiSubscriptionRepository.saveAll(toSave)
@@ -198,8 +184,7 @@ class KpiSettingService(
             
             return KpiSettingResult(success = true, message = "KPI 설정이 저장되었습니다. (변경: ${toSave.size}개)")
         } catch (e: Exception) {
-            e.printStackTrace()
-            throw e // 트랜잭션 롤백을 위해 예외를 다시 던짐
+            throw Exception("KPI 설정에 실패했습니다: ${e.message}")
         }
     }
 } 

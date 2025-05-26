@@ -1,6 +1,8 @@
 package kr.co.imoscloud.entity.system
 
 import jakarta.persistence.*
+import kr.co.imoscloud.dto.UserInput
+import kr.co.imoscloud.dto.UserSummery
 import kr.co.imoscloud.entity.CommonCol
 import kr.co.imoscloud.iface.DtoAllInOneBase
 
@@ -48,4 +50,36 @@ class User(
     @Column(name = "FLAG_LOCK")
     var flagLock: Boolean = false
 
-) : CommonCol(), DtoAllInOneBase
+) : CommonCol(), DtoAllInOneBase {
+
+    companion object {
+        fun create(req: UserInput, loginId: String, encodedPwd: String): User = User(
+            site = req.site!!,
+            compCd = req.compCd!!,
+            loginId = loginId,
+            userPwd = encodedPwd,
+            userName = req.userName,
+            userEmail = req.userEmail,
+            roleId = req.roleId!!,
+            phoneNum = req.phoneNum,
+            departmentId = req.departmentId!!,
+            positionId = req.positionId!!,
+        )
+
+        fun toSummery(u: User): UserSummery = UserSummery(
+            u.id,
+            u.site,
+            u.compCd,
+            u.userName,
+            u.loginId,
+            u.userPwd,
+            u.imagePath,
+            u.roleId,
+            u.userEmail,
+            u.phoneNum,
+            u.departmentId,
+            u.positionId,
+            u.flagActive
+        )
+    }
+}

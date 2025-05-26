@@ -52,10 +52,10 @@ class UserService(
                         .build()
                     response.addHeader("Set-Cookie", cookie.toString())
 
-                    userToUserOutput(user, roleSummery)
+                    toUserOutput(user, roleSummery)
                 } catch (e: IllegalArgumentException) {
                     // 비밀번호 불일치 관련 로직 Redis 를 이용한 추가 계발 필요
-                    userToUserOutput()
+                    toUserOutput()
                 }
             }
             ?: throw IllegalArgumentException("유저가 존재하지 않습니다. ")
@@ -173,8 +173,10 @@ class UserService(
 
     @AuthLevel(minLevel = 3)
     fun deleteUser(id: Long): String {
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+
         return core.userRepo.findById(id).map { u ->
-            val loginUser = SecurityUtils.getCurrentUserPrincipal()
             core.validatePriorityIsHigherThan(u.roleId, loginUser)
             core.userRepo.delete(u)
             core.deleteFromInMemory(u)
@@ -252,19 +254,9 @@ class UserService(
 
     private fun generateUser(req: UserInput, loginUser: UserPrincipal): User {
         val passwordEncoder = BCryptPasswordEncoder()
-
-        return User(
-            site = req.site!!,
-            compCd = req.compCd!!,
-            loginId = req.loginId ?: createLoginId(),
-            userPwd = passwordEncoder.encode(req.userPwd),
-            userName = req.userName,
-            userEmail = req.userEmail,
-            roleId = req.roleId!!,
-            phoneNum = req.phoneNum,
-            departmentId = req.departmentId!!,
-            positionId = req.positionId!!,
-        ).apply { createCommonCol(loginUser) }
+        val encodedPwd = passwordEncoder.encode(req.userPwd)
+        val loginId = req.loginId ?: createLoginId()
+        return User.create(req, loginId, encodedPwd).apply { createCommonCol(loginUser) }
     }
 
     private fun validateUser(matchedPWD: String?, target: User) {
@@ -274,15 +266,6 @@ class UserService(
         if (!passwordEncoder.matches(matchedPWD, target.userPwd) && target.userPwd != matchedPWD)
             throw IllegalArgumentException("비밀번호가 일치하지 않습니다. ")
     }
-
-//    private fun userToUserDetail(us: UserSummery?, codeMap: Map<String?, String?>): UserDetail? {
-//        us ?: return null
-//        val r = core.getUserRoleFromInMemory(us.roleId) ?: throw IllegalArgumentException("권한 정보를 찾을 수 없습니다. ")
-//        val departmentNm = codeMap[us.departmentId]
-//        val positionNm = codeMap[us.positionId]
-//        val isActive = if(us.flagActive) "Y" else "N"
-//        return UserDetail(us.id,us.loginId,us.userName?:"",departmentNm!! ,positionNm!! ,r.roleName, us.userEmail, us.phoneNum,isActive)
-//    }
 
     private fun userGroupFilter(req: UserGroupRequest?, it: UserSummery?) =
         (req?.roleId?.let { r -> it?.roleId == r } ?: true)

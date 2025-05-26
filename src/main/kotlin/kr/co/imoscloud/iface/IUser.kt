@@ -23,7 +23,7 @@ interface IUser: ResponseVO {
         }
     }
 
-    fun userToUserOutput(user: User?=null, role: RoleSummery?=null): ResponseEntity<LoginOutput> {
+    fun toUserOutput(user: User?=null, role: RoleSummery?=null): ResponseEntity<LoginOutput> {
         val output = user
             ?.let { LoginOutput(
                 id = user.id,

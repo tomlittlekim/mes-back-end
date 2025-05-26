@@ -10,7 +10,7 @@ extend type Query {
 extend type Mutation {
     # 생산계획 저장 및 수정 관련 뮤테이션 추가
     saveProductionPlan(createdRows: [ProductionPlanInput], updatedRows: [ProductionPlanUpdate]): Boolean
-    deleteProductionPlan(prodPlanId: String!): Boolean
+    deleteProductionPlans(prodPlanIds: [String!]!): ProductionPlanDeleteResult
 }
 
 # ProductionPlan 타입 정의 - DTO와 매핑됨
@@ -99,4 +99,14 @@ input ProductionPlanUpdate {
     planStartDate: String
     planEndDate: String
     flagActive: Boolean
+}
+
+# 생산계획 삭제 결과 타입
+type ProductionPlanDeleteResult {
+    success: Boolean!
+    totalRequested: Int!
+    deletedCount: Int!
+    skippedCount: Int!
+    skippedPlans: [String!]!
+    message: String!
 }

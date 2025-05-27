@@ -30,8 +30,8 @@ data class ProductionResultInput(
     val warehouseId: String? = null,
     val resultInfo: String? = null,
     val defectCause: String? = null,
-    // 타입을 LocalDateTime에서 String으로 변경
+    // 생산시작일시는 필수, 생산종료일시는 비필수 (모바일에서 생산시작 시에는 null 가능)
     val prodStartTime: String,
-    val prodEndTime: String,
+    val prodEndTime: String? = null,
     val flagActive: Boolean? = true
 )

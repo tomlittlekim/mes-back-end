@@ -73,7 +73,7 @@ input ProductionResultInput {
     warehouseId: String
     resultInfo: String
     defectCause: String
-    prodStartTime: String! # 생산시작일시 추가
-    prodEndTime: String! # 생산종료일시 추가
+    prodStartTime: String! # 생산시작일시 (필수)
+    prodEndTime: String # 생산종료일시 (비필수 - 모바일에서 생산시작 시에는 null 가능)
     flagActive: Boolean
 }

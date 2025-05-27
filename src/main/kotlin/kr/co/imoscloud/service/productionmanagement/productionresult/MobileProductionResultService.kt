@@ -69,7 +69,7 @@ class MobileProductionResultService(
                 resultInfo = input.resultInfo
                 defectCause = null
                 prodStartTime = parseDateTimeFromString(input.prodStartTime)
-                prodEndTime = null // 생산종료 시간은 null로 설정
+                prodEndTime = input.prodEndTime?.let { parseDateTimeFromString(it) } // 생산종료 시간이 제공되면 파싱, 아니면 null
                 flagActive = true
                 createCommonCol(currentUser)
             }
@@ -130,7 +130,7 @@ class MobileProductionResultService(
                 // equipmentId와 warehouseId는 이미 저장되어 있으므로 변경하지 않음
                 resultInfo = input.resultInfo
                 defectCause = input.defectCause
-                prodEndTime = parseDateTimeFromString(input.prodEndTime)
+                prodEndTime = input.prodEndTime?.let { parseDateTimeFromString(it) }
                 updateCommonCol(currentUser)
             }
             

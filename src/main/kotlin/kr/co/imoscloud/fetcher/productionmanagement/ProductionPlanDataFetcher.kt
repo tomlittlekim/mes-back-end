@@ -104,17 +104,31 @@ class ProductionPlanDataFetcher(
 
     // 생산계획 삭제 (소프트 삭제로 변경)
     @DgsMutation
-    fun deleteProductionPlan(
-        @InputArgument("prodPlanId") prodPlanId: String
-    ): Boolean {
+    fun deleteProductionPlans(
+        @InputArgument("prodPlanIds") prodPlanIds: List<String>
+    ): ProductionPlanDeleteResult {
         try {
-            return productionPlanService.softDeleteProductionPlan(prodPlanId)
+            return productionPlanService.softDeleteProductionPlans(prodPlanIds)
         } catch (e: SecurityException) {
             log.error("인증 오류: {}", e.message)
-            return false
+            return ProductionPlanDeleteResult(
+                success = false,
+                totalRequested = prodPlanIds.size,
+                deletedCount = 0,
+                skippedCount = 0,
+                skippedPlans = emptyList(),
+                message = "인증 오류가 발생했습니다: ${e.message}"
+            )
         } catch (e: Exception) {
             log.error("생산계획 삭제 중 오류 발생", e)
-            return false
+            return ProductionPlanDeleteResult(
+                success = false,
+                totalRequested = prodPlanIds.size,
+                deletedCount = 0,
+                skippedCount = 0,
+                skippedPlans = emptyList(),
+                message = "삭제 중 오류가 발생했습니다: ${e.message}"
+            )
         }
     }
 

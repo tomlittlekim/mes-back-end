@@ -95,3 +95,13 @@ data class ProductionPlanUpdate(
         return Pair(startDate, endDate)
     }
 }
+
+// 생산계획 삭제 결과를 담는 데이터 클래스
+data class ProductionPlanDeleteResult(
+    val success: Boolean,
+    val totalRequested: Int,
+    val deletedCount: Int,
+    val skippedCount: Int,
+    val skippedPlans: List<String>,
+    val message: String
+)

@@ -6,6 +6,7 @@ import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
 import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
+import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipalOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service
 class ProductionPlanService(
     val productionPlanRepository: ProductionPlanRepository,
     val materialMasterRepository: MaterialRepository,
+    val workOrderRepository: WorkOrderRepository,
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanService::class.java)
 
@@ -137,32 +139,70 @@ class ProductionPlanService(
 
     /**
      * 생산계획을 소프트 삭제하는 메서드 (flagActive = false로 설정)
+     * 활성화된 작업지시가 있는 생산계획은 삭제할 수 없음
      */
-    fun softDeleteProductionPlan(prodPlanId: String): Boolean {
+    fun softDeleteProductionPlans(prodPlanIds: List<String>): ProductionPlanDeleteResult {
         try {
             // 사용자 정보 획득
             val currentUser = getCurrentUserPrincipalOrNull()
                 ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-            // UK 필드를 활용하여 정확한 레코드 조회
-            val existingPlan = productionPlanRepository.findBySiteAndCompCdAndProdPlanId(
-                currentUser.getSite(),
-                currentUser.compCd,
-                prodPlanId
-            )
+            var deletedCount = 0
+            var skippedCount = 0
+            val skippedPlans = mutableListOf<String>()
 
-            existingPlan?.let {
-                // flagActive를 false로 설정
-                // it.flagActive = false
-                // it.updateCommonCol(currentUser)
-                it.softDelete(currentUser) // 엔티티 메소드 호출
+            prodPlanIds.forEach { prodPlanId ->
+                // UK 필드를 활용하여 정확한 레코드 조회
+                val existingPlan = productionPlanRepository.findBySiteAndCompCdAndProdPlanId(
+                    currentUser.getSite(),
+                    currentUser.compCd,
+                    prodPlanId
+                )
 
-                productionPlanRepository.save(it)
-                return true
+                existingPlan?.let {
+                    // 활성화된 작업지시가 있는지 확인
+                    val hasActiveWorkOrders = workOrderRepository.existsBySiteAndCompCdAndProdPlanIdAndFlagActive(
+                        currentUser.getSite(),
+                        currentUser.compCd,
+                        prodPlanId,
+                        true // flagActive = true인 작업지시 확인
+                    )
+
+                    if (hasActiveWorkOrders) {
+                        // 활성화된 작업지시가 있으면 삭제하지 않음
+                        skippedCount++
+                        skippedPlans.add(prodPlanId)
+                        log.warn("활성화된 작업지시가 있어 삭제할 수 없는 생산계획: {}", prodPlanId)
+                    } else {
+                        // 활성화된 작업지시가 없으면 삭제 진행
+                        it.softDelete(currentUser)
+                        productionPlanRepository.save(it)
+                        deletedCount++
+                    }
+                } ?: log.warn("삭제(비활성화)할 생산계획 없음: {}", prodPlanId)
             }
 
-            log.warn("삭제(비활성화)할 생산계획 없음: {}", prodPlanId)
-            return false
+            if (skippedCount > 0) {
+                log.warn("활성화된 작업지시로 인해 삭제되지 않은 생산계획: {} ({}개)", skippedPlans, skippedCount)
+            }
+
+            log.info("생산계획 다중 삭제 완료: 요청 {}, 처리 {}, 건너뜀 {}", prodPlanIds.size, deletedCount, skippedCount)
+            
+            val message = when {
+                deletedCount == prodPlanIds.size -> "모든 생산계획이 성공적으로 삭제되었습니다."
+                deletedCount > 0 && skippedCount > 0 -> "${deletedCount}개 삭제 완료, ${skippedCount}개는 활성화된 작업지시로 인해 삭제되지 않았습니다."
+                deletedCount == 0 && skippedCount > 0 -> "활성화된 작업지시로 인해 삭제할 수 없는 생산계획입니다."
+                else -> "삭제할 수 있는 생산계획이 없습니다."
+            }
+
+            return ProductionPlanDeleteResult(
+                success = deletedCount > 0 || (deletedCount + skippedCount) == prodPlanIds.size,
+                totalRequested = prodPlanIds.size,
+                deletedCount = deletedCount,
+                skippedCount = skippedCount,
+                skippedPlans = skippedPlans,
+                message = message
+            )
         } catch (e: Exception) {
             log.error("생산계획 소프트 삭제 중 오류 발생", e)
             throw e  // 오류를 상위로 전파하도록 변경

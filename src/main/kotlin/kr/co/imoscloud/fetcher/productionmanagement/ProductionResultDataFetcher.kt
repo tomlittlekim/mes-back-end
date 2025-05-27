@@ -93,15 +93,15 @@ class ProductionResultDataFetcher(
         }
     }
 
-    // 생산실적 삭제 (소프트 삭제로 변경)
-    @DgsData(parentType = "Mutation", field = "deleteProductionResult")
-    fun deleteProductionResult(
-        @InputArgument("prodResultId") prodResultId: String
+    // 생산실적 다중삭제 (소프트 삭제로 변경)
+    @DgsData(parentType = "Mutation", field = "deleteProductionResults")
+    fun deleteProductionResults(
+        @InputArgument("prodResultIds") prodResultIds: List<String>
     ): Boolean {
         try {
-            return productionResultService.softDeleteProductionResult(prodResultId)
+            return productionResultService.softDeleteProductionResults(prodResultIds)
         } catch (e: Exception) {
-            log.error("생산실적 삭제 중 오류 발생", e)
+            log.error("생산실적 다중삭제 중 오류 발생", e)
             return false
         }
     }

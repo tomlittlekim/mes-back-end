@@ -11,7 +11,7 @@ extend type Mutation {
         createdRows: [ProductionResultInput],
         defectInfos: [DefectInfoInput]
     ): Boolean
-    deleteProductionResult(prodResultId: String!): Boolean
+    deleteProductionResults(prodResultIds: [String!]!): Boolean
     
     # 모바일 전용 생산실적 뮤테이션
     startProductionAtMobile(input: ProductionResultInput!): String

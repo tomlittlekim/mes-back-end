@@ -19,6 +19,16 @@ interface ProductionResultRepository : JpaRepository<ProductionResult, Long>, Pr
         flagActive: Boolean
     ): Boolean
 
+    /**
+     * 다중 생산실적 ID로 활성 생산실적 목록 조회 (JPA Query Method - 간단하고 효율적)
+     */
+    fun findBySiteAndCompCdAndProdResultIdInAndFlagActive(
+        site: String,
+        compCd: String,
+        prodResultId: List<String>,
+        flagActive: Boolean
+    ): List<ProductionResult>
+
     @Query(
         value = """
             SELECT

@@ -191,44 +191,56 @@ class ProductionResultCommandService(
     }
 
     /**
-     * 생산실적을 소프트 삭제하는 메서드 (flagActive = false로 설정)
+     * 생산실적을 다중 소프트 삭제하는 메서드 (flagActive = false로 설정)
      * - 연관된 불량정보도 함께 비활성화 처리
+     * - QueryDSL을 이용한 배치 처리로 DB 통신 최소화
      */
     @Transactional
-    fun softDeleteProductionResult(prodResultId: String): Boolean {
+    fun softDeleteProductionResults(prodResultIds: List<String>): Boolean {
         try {
+            if (prodResultIds.isEmpty()) return false
+            
             val currentUser = getCurrentUserPrincipal()
-
-            // 특정 조건에 맞는 생산실적을 직접 찾는 쿼리 사용
-            val existingResult = productionResultRepository.findBySiteAndCompCdAndProdResultId(
-                currentUser.getSite(),
-                currentUser.compCd,
-                prodResultId
+            
+            // 1. 삭제할 생산실적들을 한 번에 조회 (재고 복원을 위해) - JPA Query Method 사용
+            val existingResults = productionResultRepository.findBySiteAndCompCdAndProdResultIdInAndFlagActive(
+                site = currentUser.getSite(),
+                compCd = currentUser.compCd,
+                prodResultId = prodResultIds,
+                flagActive = true
             )
-
-            existingResult?.let {
-                // 기존 재고 복원 처리
-                if (it.goodQty != null && it.goodQty!! > 0.0 && it.productId != null) {
-                    productionInventoryService.restoreInventoryForDeletedProductionResult(it)
+            
+            if (existingResults.isEmpty()) return false
+            
+            // 2. 재고 복원 처리 (각 생산실적별로 개별 처리 필요)
+            existingResults.forEach { result ->
+                try {
+                    if (result.goodQty != null && result.goodQty!! > 0.0 && result.productId != null) {
+                        productionInventoryService.restoreInventoryForDeletedProductionResult(result)
+                    }
+                } catch (e: Exception) {
+                    // 재고 복원 실패 시 로그만 남기고 계속 진행
+                    println("재고 복원 실패: ${result.prodResultId} - ${e.message}")
                 }
-                
-                // flagActive를 false로 설정
-                // it.flagActive = false
-                // it.updateCommonCol(currentUser)
-                it.softDelete(currentUser) // 엔티티 메소드 호출
-                productionResultRepository.save(it)
-
-                // 관련 불량정보도 비활성화 처리
-                val defectInfos = defectInfoService.getDefectInfoByProdResultId(prodResultId)
-                defectInfos.forEach { defectInfo ->
-                    defectInfoService.softDeleteDefectInfo(defectInfo.defectId!!)
-                }
-
-                return true
             }
-
-            return false
+            
+            // 3. 생산실적 배치 소프트 삭제 (saveAll 방식 - 안전하고 디버깅 용이)
+            existingResults.forEach { result ->
+                result.softDelete(currentUser)
+            }
+            val savedResults = productionResultRepository.saveAll(existingResults)
+            val deletedProductionCount = savedResults.size
+            
+            // 4. 연관된 불량정보 배치 소프트 삭제 (saveAll 방식 - 안전하고 디버깅 용이)
+            val deletedDefectCount = defectInfoService.batchSoftDeleteDefectInfosByProdResultIds(
+                prodResultIds = prodResultIds
+            )
+            
+            println("배치 삭제 완료 - 생산실적: ${deletedProductionCount}건, 불량정보: ${deletedDefectCount}건")
+            
+            return deletedProductionCount > 0
         } catch (e: Exception) {
+            println("배치 삭제 중 오류 발생: ${e.message}")
             return false
         }
     }

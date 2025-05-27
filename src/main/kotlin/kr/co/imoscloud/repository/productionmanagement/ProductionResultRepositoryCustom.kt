@@ -34,4 +34,19 @@ interface ProductionResultRepositoryCustom {
 
     fun getProductionResultsAtMobile(site: String, compCd: String, filter: ProductionResultFilter?): List<ProductionResult>
 
+
+
+    /**
+     * 다중 생산실적 배치 소프트 삭제 (QueryDSL + @Transactional)
+     */
+    fun batchSoftDeleteProductionResults(
+        site: String,
+        compCd: String,
+        prodResultIds: List<String>,
+        updateUser: String,
+        updateDate: java.time.LocalDateTime
+    ): Long
+
+
+
 }

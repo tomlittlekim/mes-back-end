@@ -187,4 +187,40 @@ class ProductionResultRepositoryImpl(
         return query.fetch()
     }
 
+
+
+    /**
+     * 다중 생산실적 배치 소프트 삭제 (QueryDSL + @Transactional)
+     */
+    @org.springframework.transaction.annotation.Transactional
+    override fun batchSoftDeleteProductionResults(
+        site: String,
+        compCd: String,
+        prodResultIds: List<String>,
+        updateUser: String,
+        updateDate: LocalDateTime
+    ): Long {
+        if (prodResultIds.isEmpty()) return 0L
+        
+        log.debug("QueryDSL 배치 삭제 시작 - site: {}, compCd: {}, prodResultIds: {}", site, compCd, prodResultIds)
+        
+        val productionResult = QProductionResult.productionResult
+
+        val result = queryFactory
+            .update(productionResult)
+            .set(productionResult.flagActive, false)
+            .set(productionResult.updateUser, updateUser)
+            .set(productionResult.updateDate, updateDate)
+            .where(
+                productionResult.site.eq(site),
+                productionResult.compCd.eq(compCd),
+                productionResult.prodResultId.`in`(prodResultIds),
+                productionResult.flagActive.eq(true) // 이미 삭제된 것은 제외
+            )
+            .execute()
+            
+        log.debug("QueryDSL 배치 삭제 완료 - 업데이트된 레코드 수: {}", result)
+        return result
+    }
+
 }

@@ -119,27 +119,44 @@ class DefectInfoService(
     }
 
     /**
-     * 불량 정보 소프트 삭제 (flagActive = false로 설정)
-     * ProductionResultService에서 호출하는 메소드
+     * 불량정보 저장 (단순 save)
      */
     @Transactional
-    fun softDeleteDefectInfo(defectId: String): Boolean {
-        try {
-            val currentUser = getCurrentUserPrincipal()
-            val existingDefectInfo = defectInfoRepository.findByDefectId(defectId)
-
-            existingDefectInfo?.let {
-                // flagActive를 false로 설정
-                // it.flagActive = false
-                // it.updateCommonCol(currentUser)
-                it.softDelete(currentUser) // 엔티티 메소드 호출
-                defectInfoRepository.save(it)
-                return true
-            }
-
-            return false
-        } catch (e: Exception) {
-            throw e  // 트랜잭션 롤백을 위해 예외를 다시 던짐
-        }
+    fun saveDefectInfo(defectInfo: DefectInfo): DefectInfo {
+        return defectInfoRepository.save(defectInfo)
     }
+
+    /**
+     * 불량정보 배치 저장 (saveAll)
+     */
+    @Transactional
+    fun saveAllDefectInfos(defectInfos: List<DefectInfo>): List<DefectInfo> {
+        return defectInfoRepository.saveAll(defectInfos)
+    }
+
+    /**
+     * 다중 생산실적 ID로 불량정보 배치 소프트 삭제 (saveAll 방식 - 안전하고 디버깅 용이)
+     */
+    @Transactional
+    fun batchSoftDeleteDefectInfosByProdResultIds(prodResultIds: List<String>): Int {
+        val currentUser = getCurrentUserPrincipal()
+        
+        // 1. 연관된 모든 불량정보 조회
+        val allDefectInfos = defectInfoRepository.getDefectInfosByProdResultIds(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            prodResultIds = prodResultIds
+        )
+        
+        // 2. 각 불량정보 소프트 삭제 처리
+        allDefectInfos.forEach { defectInfo ->
+            defectInfo.softDelete(currentUser)
+        }
+        
+        // 3. 배치 저장
+        val savedDefectInfos = defectInfoRepository.saveAll(allDefectInfos)
+        return savedDefectInfos.size
+    }
+
+
 }

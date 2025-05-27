@@ -1,16 +1,16 @@
-input KpiFilterFor3dView{
+input KpiFilterFor3d{
     date:String,
     range:String
     deviceNumber:Int,
 }
 
-type IotFor3dView{
+type IotFor3d{
     timeLabel:String,
-    deviceId:String,
-    power:String,
+    label:String,
+    value:String,
     deviceNumber:String,
 }
 
 extend type Query {
-    getPopupPowerDataFor3dView(filter:KpiFilterFor3dView):[IotFor3dView]
+    getPopupPowerDataFor3dView(filter:KpiFilterFor3d):[IotFor3d]
 }

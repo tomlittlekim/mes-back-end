@@ -57,7 +57,7 @@ class TransForm3dService(
 
         // deviceid 조건 필터 추가
         if (deviceNumber != null) {
-            val deviceId = "POWER_${deviceNumber}"
+            val deviceId = "POWER_00${deviceNumber}"
             criteria.and("deviceid").`is`(deviceId)
         }
 

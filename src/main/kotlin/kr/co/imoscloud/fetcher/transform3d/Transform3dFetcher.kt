@@ -9,7 +9,7 @@ import kr.co.imoscloud.service.transform3d.*
 
 @DgsComponent
 class Transform3dFetcher (
-    val transform3dService: TransForm3dService, //TODO: 쓰리디 서비스부터수
+    val transform3dService: TransForm3dService,
 ){
     @DgsQuery
     fun getPopupPowerDataFor3dView(@InputArgument("filter") filter: KpiFilterFor3dView): List<ChartResponseModel> {

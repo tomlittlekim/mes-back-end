@@ -3,15 +3,48 @@ input KpiFilter{
     range:String
 }
 
+# 각 KPI 지표별 필터를 담는 입력 타입
+input KpiSubscriptionFilter {
+    kpiIndicatorCd: String!  # KPI 지표 코드
+    date: String!            # 기준 날짜
+    range: String!           # 조회 범위 (day, week, month)
+}
+
+# 전체 KPI 차트 조회를 위한 입력 타입
+input KpiChartRequest {
+    defaultFilter: KpiFilter          # 기본 필터 (모든 지표에 적용)
+    indicatorFilters: [KpiSubscriptionFilter]  # 개별 지표별 필터 (해당 지표에만 적용)
+}
+
 type Graph{
     timeLabel:String,
     label:String,
     value:String
 }
 
+# KPI 차트 데이터 응답 모델
+type KpiChartData {
+    kpiIndicatorCd: String!
+    kpiTitle: String!
+    categoryCd: String!
+    categoryNm: String
+    chartType: String!
+    unit: String
+    targetValue: Float
+    chartData: [JSON!]!
+}
+
+scalar JSON
+
 extend type Query {
     getPowerData:[Graph]
     getProductDefect(filter: KpiFilter):[Graph]
     getPopupPowerData(filter: KpiFilter):[Graph]
     getEquipmentOperationData(filter: KpiFilter):[Graph]
+    
+    # 구독 중인 KPI 지표 데이터 (기존 메소드)
+    getSubscribedKpiData(filter: KpiFilter!): [KpiChartData!]!
+    
+    # 구독 중인 KPI 지표 데이터 (지표별 필터 지원)
+    getKpiChartData(request: KpiChartRequest!): [KpiChartData!]!
 }

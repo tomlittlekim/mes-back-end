@@ -24,6 +24,18 @@ data class KpiIndicatorModel(
     val chartType: String?
 )
 
+// KPI 지표와 카테고리 정보를 함께 포함하는 모델
+data class KpiIndicatorWithCategoryModel(
+    val kpiIndicatorCd: String,
+    val kpiIndicatorNm: String?,
+    val description: String?,
+    val categoryCd: String,
+    val categoryNm: String?,
+    val targetValue: Double?,
+    val unit: String?,
+    val chartType: String?
+)
+
 // KPI 구독 정보 응답 모델
 data class KpiSubscriptionModel(
     val site: String,

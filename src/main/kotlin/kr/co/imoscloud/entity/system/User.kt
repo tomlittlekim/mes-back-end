@@ -5,6 +5,7 @@ import kr.co.imoscloud.dto.UserInput
 import kr.co.imoscloud.dto.UserSummery
 import kr.co.imoscloud.entity.CommonCol
 import kr.co.imoscloud.iface.DtoAllInOneBase
+import kr.co.imoscloud.security.UserPrincipal
 
 @Entity
 @Table(name = "USER")
@@ -15,10 +16,10 @@ class User(
     val id: Long = 0,
 
     @Column(name = "SITE", length = 20)
-    val site: String,
+    var site: String,
 
     @Column(name = "COMP_CD", length = 20)
-    override val compCd: String,
+    override var compCd: String,
 
     @Column(name = "USER_NAME", length = 20)
     var userName: String? = null,
@@ -81,5 +82,21 @@ class User(
             u.positionId,
             u.flagActive
         )
+    }
+
+    fun modify(req: UserInput, encodedPwd: String?, loginUser: UserPrincipal): User = this.apply {
+        site = req.site ?: this.site
+        compCd = req.compCd ?: this.compCd
+        loginId = req.loginId ?: this.loginId
+        userPwd = encodedPwd ?: this.userPwd
+        userName = req.userName ?: this.userName
+        userEmail = req.userEmail ?: this.userEmail
+        imagePath = req.imagePath ?: this.imagePath
+        roleId = req.roleId ?: this.roleId
+        phoneNum = req.phoneNum ?: this.phoneNum
+        departmentId = req.departmentId ?: this.departmentId
+        positionId = req.positionId ?: this.positionId
+        flagActive = true
+        updateCommonCol(loginUser)
     }
 }

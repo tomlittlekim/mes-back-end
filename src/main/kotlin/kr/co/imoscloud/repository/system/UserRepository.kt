@@ -9,17 +9,6 @@ import java.util.*
 
 interface UserRepository : JpaRepository<User, Long> {
     fun findByLoginIdAndFlagActiveIsTrue(userId: String): User?
-
-    @Query(
-        """
-        select u
-        from User u 
-        where (:loginId is not null and u.loginId = :loginId)
-            and u.site = :site
-    """
-    )
-    fun findBySiteAndLoginIdForSignUp(site: String, loginId: String?): User?
-    fun findBySiteAndIdAndFlagActiveIsTrue(site: String, id: Long): User?
     fun findAllByLoginIdIn(idList: List<String?>): List<User>
     fun findByLoginId(loginId: String?): Optional<User>
     fun findAllByCompCdAndFlagActiveIsTrue(compCd: String): List<User>

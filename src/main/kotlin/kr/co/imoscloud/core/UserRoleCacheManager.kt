@@ -43,7 +43,7 @@ class UserRoleCacheManager(
 
     @Suppress("UNCHECKED_CAST")
     override fun <K, V> getCashMap(): MutableMap<K, V?> {
-        return roleRepo as MutableMap<K, V?>
+        return roleMap as MutableMap<K, V?>
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -122,6 +122,8 @@ class UserRoleCacheManager(
         val roleMap = getUserRoles(listOf(roleId, loginUser.roleId))
 
         try {
+            if (isDeveloper(loginUser)) return
+
             val targetRole = roleMap[roleId]!!
             val loginUserRole = roleMap[loginUser.roleId]!!
             if (targetRole.priorityLevel > loginUserRole.priorityLevel) {
@@ -134,7 +136,7 @@ class UserRoleCacheManager(
     }
 
     @Scheduled(cron = "0 15 */2 * * *")
-    private fun inspection() {
+    protected fun inspection() {
         setIsInspect(true)
         initialSetting()
         merge<String, RoleSummery?>()

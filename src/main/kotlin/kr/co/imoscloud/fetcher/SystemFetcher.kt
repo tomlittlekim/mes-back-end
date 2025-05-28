@@ -27,7 +27,7 @@ class SystemFetcher(
     fun updateMyInfo(@InputArgument("req") req: UserInput) { userService.updateMyInfo(req) }
 
     @DgsQuery
-    fun existLoginId(@InputArgument("req") req: ExistLoginIdRequest): Boolean = userService.existLoginId(req)
+    fun existLoginId(@InputArgument("loginId") loginId: String): Boolean = userService.existLoginId(loginId)
 
     @DgsQuery
     fun getUserGroup(@InputArgument("req") req: UserGroupRequest?): List<UserSummery?> = userService.getUserGroupByCompany(req)
@@ -36,20 +36,20 @@ class SystemFetcher(
     fun getUserSummery(@InputArgument("loginId") loginId: String): UserSummery = userService.getUserSummery(loginId)
 
     @DgsQuery
-    fun getUserDetail(@InputArgument("id") id: Long): UserDetail = userService.getUserDetail(id)
+    fun getUserDetail(@InputArgument("loginId") loginId: String): UserDetail = userService.getUserDetail(loginId)
 
     @DgsMutation
-    fun deleteUser(@InputArgument("id") id: Long) = userService.deleteUser(id)
+    fun deleteUser(@InputArgument("loginId") loginId: String) = userService.deleteUser(loginId)
 
     @DgsMutation
-    fun resetPwd(@InputArgument("id")  id: Long) = userService.resetPassword(id)
+    fun resetPwd(@InputArgument("loginId") loginId: String) = userService.resetPassword(loginId)
 
     @DgsMutation
     fun changePwd(
-        @InputArgument("id") id: Long,
+        @InputArgument("loginId") loginId: String,
         @InputArgument("currentPassword") currentPassword: String,
         @InputArgument("newPassword") newPassword: String
-    ): String = userService.changePassword(id, currentPassword, newPassword)
+    ): String = userService.changePassword(loginId, currentPassword, newPassword)
 
 
 

@@ -76,15 +76,15 @@ type UserDetail {
 extend type Mutation {
     upsertUser(req: UserInput!): String
     updateMyInfo(req: UserInput!): String
-    deleteUser(id: Int!): String
-    resetPwd(id: Int!): String
-    changePwd(id: Int!, currentPassword: String!, newPassword: String!): String
+    deleteUser(loginId: String!): String
+    resetPwd(loginId: String!): String
+    changePwd(loginId: String!, currentPassword: String!, newPassword: String!): String
 }
 
 extend type Query {
     signIn(req: UserInput!): UserOutput!
-    existLoginId(req: ExistLoginRequest!): Boolean!
+    existLoginId(loginId: String!): Boolean!
     getUserGroup(req: UserGroupRequest): [User]
     getUserSummery(loginId: String!): User
-    getUserDetail(id: Int!): UserDetail
+    getUserDetail(loginId: String!): UserDetail
 }

@@ -111,7 +111,7 @@ class UserCacheManager(
     }
 
     @Scheduled(cron = "0 0 */2 * * *")
-    private fun inspection() {
+    fun inspection() {
         setIsInspect(true)
         initialSetting()
         merge<String, UserSummery?>()

@@ -1,7 +1,7 @@
 package kr.co.imoscloud.service.sysrtem
 
 import jakarta.transaction.Transactional
-import kr.co.imoscloud.core.Core
+import kr.co.imoscloud.core.UserRoleCacheManager
 import kr.co.imoscloud.dto.RoleSearchRequest
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.dto.UserRoleRequest
@@ -13,86 +13,72 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserRoleService(
-    private val core: Core,
+    private val rcm: UserRoleCacheManager,
     private val menuRoleRepo: MenuRoleRepository,
 ) {
 
     fun getUserRoleSelect(): List<RoleSummery?> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        return if (core.isDeveloper(loginUser)) {
-            core.getAllRoleMap(loginUser).values.toList()
+        return if (rcm.isDeveloper(loginUser)) {
+            rcm.getUserRoles(listOf(loginUser.roleId)).values.toList()
         } else {
-            core.getRoleGroupByCompCd(loginUser)
+            rcm.getRoleGroupByCompCd(loginUser)
         }
     }
 
     fun getUserRoleGroup(req: RoleSearchRequest): List<UserRole> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        return if (core.isDeveloper(loginUser)) {
-            core.roleRepo.findAllBySearchConditionForDev(req.site, req.compCd, req.priorityLevel)
+        return if (rcm.isDeveloper(loginUser)) {
+            rcm.roleRepo.findAllBySearchConditionForDev(req.site, req.compCd, req.priorityLevel)
         } else {
-            core.roleRepo.findAllBySearchConditionForExceptDev(loginUser.compCd, req.site, req.priorityLevel)
+            rcm.roleRepo.findAllBySearchConditionForExceptDev(loginUser.compCd, req.site, req.priorityLevel)
         }
     }
 
     @Transactional
     fun upsertUserRole(req: UserRoleRequest): String {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        val roleSummery = core.getAllRoleMap(loginUser)[req.fixRoleId]
+
+        val changedRole: RoleSummery = rcm.getUserRole(req.fixRoleId)
             ?: throw IllegalArgumentException("적용할 권한 정보가 존재하지 않습니다. ")
 
         var modifyRole: UserRole = req.roleId
             ?.let { roleId ->
-                core.roleRepo.findByRoleIdAndFlagActiveIsTrue(roleId)
-                    ?.let { role ->
-                        role.apply {
-                            roleName = roleSummery.roleName
-                            priorityLevel = roleSummery.priorityLevel
-                            sequence = req.sequence ?: this.sequence
-                            updateCommonCol(loginUser)
-                        }
-                    }
+                rcm.roleRepo.findByRoleIdAndFlagActiveIsTrue(roleId)
+                    ?.modify(changedRole, req.sequence, loginUser)
                     ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
             }
-            ?:run {
-                UserRole(
-                    site = req.site ?: loginUser.getSite(),
-                    compCd = req.compCd ?: loginUser.compCd,
-                    roleName = req.roleName!!,
-                    priorityLevel = roleSummery.priorityLevel,
-                    sequence = req.sequence
-                ).apply { createCommonCol(loginUser) }
-            }
+            ?:run { UserRole.create(req, changedRole.priorityLevel, loginUser) }
 
-        val isDev =  core.isDeveloper(loginUser)
+        val isDev =  rcm.isDeveloper(loginUser)
         modifyRole = req.flagDefault
             ?.let { flag ->
-                if (isDev && modifyRole.compCd == "default" || !isDev) {
-                    core.roleRepo.resetDefaultByCompCd(loginUser.compCd)
+                if ((isDev && modifyRole.compCd == "default") || !isDev) {
+                    rcm.roleRepo.resetDefaultByCompCd(loginUser.compCd)
                     modifyRole.apply { flagDefault = flag }
                 } else modifyRole
             }
             ?: modifyRole
 
-        core.roleRepo.save(modifyRole)
-        core.upsertFromInMemory(modifyRole)
+        rcm.saveAllAndSyncCache(listOf(modifyRole))
         return "${modifyRole.roleName} 권한 생성 완료"
     }
 
     @AuthLevel(minLevel = 3)
     @Transactional
     fun deleteUserRole(roleId: Long): String {
-        val role = core.roleRepo.findByRoleIdAndFlagActiveIsTrue(roleId)
-            ?.let { role ->
-                core.validatePriorityIsHigherThan(role.roleId, SecurityUtils.getCurrentUserPrincipal())
-                menuRoleRepo.deleteAllByRoleId(role.roleId)
-                role
+        val loginUser = SecurityUtils.getCurrentUserPrincipal()
+
+        return rcm.getUserRole(roleId)
+            ?.let { rs: RoleSummery ->
+                rcm.validatePriorityIsHigherThan(rs.roleId, loginUser)
+                rcm.softDeleteAndSyncCache(rs, loginUser.loginId)
+                menuRoleRepo.deleteAllByRoleId(rs.roleId)
+
+                "${rs.roleName} 권한 삭제 및 메뉴 권한들 삭제 성공"
             }
             ?: throw IllegalArgumentException("삭제하려는 권한이 존재하지 않습니다. ")
-
-        core.roleRepo.delete(role)
-        return "${role.roleName} 권한 삭제 및 메뉴 권한들 삭제 성공"
     }
 }

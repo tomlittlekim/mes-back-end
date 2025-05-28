@@ -2,9 +2,11 @@ package kr.co.imoscloud.entity.system
 
 import jakarta.persistence.*
 import kr.co.imoscloud.dto.RoleSummery
+import kr.co.imoscloud.dto.UserRoleRequest
 import kr.co.imoscloud.entity.CommonCol
 import kr.co.imoscloud.iface.DtoCompCdBase
 import kr.co.imoscloud.iface.DtoRoleIdBase
+import kr.co.imoscloud.security.UserPrincipal
 
 @Entity
 @Table(name = "USER_ROLE")
@@ -42,5 +44,20 @@ class UserRole(
             userRole.roleName,
             userRole.priorityLevel
         )
+
+        fun create(req: UserRoleRequest, changedLevel: Int,  loginUser: UserPrincipal): UserRole = UserRole(
+            site = req.site ?: loginUser.getSite(),
+            compCd = req.compCd ?: loginUser.compCd,
+            roleName = req.roleName!!,
+            priorityLevel = changedLevel,
+            sequence = req.sequence
+        ).apply { createCommonCol(loginUser) }
+    }
+
+    fun modify(changedRole: RoleSummery, sequence: Int?, loginUser: UserPrincipal): UserRole = this.apply {
+        roleName = changedRole.roleName
+        priorityLevel = changedRole.priorityLevel
+        this.sequence = sequence ?: this.sequence
+        updateCommonCol(loginUser)
     }
 }

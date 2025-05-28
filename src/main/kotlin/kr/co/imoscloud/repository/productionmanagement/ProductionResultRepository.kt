@@ -2,6 +2,7 @@ package kr.co.imoscloud.repository.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.service.sensor.ChartResponseModel
+import kr.co.imoscloud.service.sensor.ProductionRateModel
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -97,4 +98,39 @@ interface ProductionResultRepository : JpaRepository<ProductionResult, Long>, Pr
         @Param("end") end: java.time.LocalDateTime
     ): List<ChartResponseModel>
 
+    @Query("""
+        SELECT
+            c.SITE,
+            c.COMP_CD,
+            IFNULL(pp.plan_sum, 0) AS planSum,
+            IFNULL(pr1.result_sum, 0) AS workOrderSum,
+            IFNULL(pr2.result_sum2, 0) AS notWorkOrderSum,
+            IFNULL(ROUND(
+                    (IFNULL(pr1.result_sum, 0) + IFNULL(pr2.result_sum2, 0))
+                        / NULLIF(IFNULL(pp.plan_sum, 0) + IFNULL(pr2.result_sum2, 0), 0) * 100, 2
+            ),0) AS productionRate,
+            DATE_FORMAT(now(), '%Y-%m-%d %H:00:00') AS aggregation_time
+        FROM COMPANY c
+            LEFT JOIN (
+            SELECT SITE, COMP_CD, SUM(PLAN_QTY) AS plan_sum
+            FROM PRODUCTION_PLAN
+            WHERE FLAG_ACTIVE = 1
+            GROUP BY SITE, COMP_CD
+        ) pp ON pp.SITE = c.SITE AND pp.COMP_CD = c.COMP_CD
+                 LEFT JOIN (
+            SELECT SITE, COMP_CD, SUM(GOOD_QTY) AS result_sum
+            FROM PRODUCTION_RESULT
+            WHERE FLAG_ACTIVE = 1 AND WORK_ORDER_ID IS NOT NULL
+            GROUP BY SITE, COMP_CD
+        ) pr1 ON pr1.SITE = c.SITE AND pr1.COMP_CD = c.COMP_CD
+                 LEFT JOIN (
+            SELECT SITE, COMP_CD, SUM(GOOD_QTY) AS result_sum2
+            FROM PRODUCTION_RESULT
+            WHERE FLAG_ACTIVE = 1 AND WORK_ORDER_ID IS NULL
+            GROUP BY SITE, COMP_CD
+        ) pr2 ON pr2.SITE = c.SITE AND pr2.COMP_CD = c.COMP_CD
+        WHERE c.FLAG_ACTIVE = 1
+        GROUP BY c.COMP_CD, c.SITE
+    """, nativeQuery = true)
+    fun findDayProductionRate(): List<ProductionRateModel>
 }

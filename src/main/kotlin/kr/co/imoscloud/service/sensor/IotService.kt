@@ -1,15 +1,19 @@
 package kr.co.imoscloud.service.sensor
 
+import kr.co.imoscloud.entity.productionmanagement.ProductionRateHour
 import kr.co.imoscloud.fetcher.sensor.KpiFilter
 import kr.co.imoscloud.repository.SensorStatusRep
+import kr.co.imoscloud.repository.productionmanagement.ProductionRateHourRep
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.service.system.CompanyService
 import kr.co.imoscloud.util.SecurityUtils
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.bson.Document
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.aggregation.*
 import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -21,6 +25,7 @@ class IotService(
     val mongoTemplate: MongoTemplate,
     val companyService: CompanyService,
     val sensorStatusRep: SensorStatusRep,
+    val productionRateHourRep: ProductionRateHourRep,
     val productionResultRep: ProductionResultRepository,
 )
 {
@@ -38,8 +43,8 @@ class IotService(
         return result.map{
             ChartResponseModel(
                 timeLabel = it?.createDate.toString(),
-                label = it?.deviceId ?: throw Exception(" deviceID가 존재하지 않습니다. "),
-                value = it.power?:0.0
+                label = it?.deviceId ?: "UNKNOWN",
+                value = it?.power?:0.0
             )
         }
     }
@@ -209,7 +214,7 @@ class IotService(
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
         val site = userPrincipal.getSite()
         val compCd = userPrincipal.compCd
-        val companyName = userPrincipal.companyName ?: throw IllegalArgumentException("회사명이 존재하지 않습니다. ")
+        val companyName = userPrincipal.companyName ?: "UNKNOWN"
         val (startDate, endDate) = getDateRange(filter)
 
         return when (filter.range) {
@@ -230,6 +235,33 @@ class IotService(
                 ) { it.toString().padStart(2, '0') }
             }
         }
+    }
+
+    @Scheduled(cron = "0 0 * * * *") // 매시 정각
+    @SchedulerLock(name = "ProductionRateHourTask", lockAtMostFor = "5m", lockAtLeastFor = "4m")
+    fun batchSaveProductionRate() {
+        val results = productionResultRep.findDayProductionRate()
+
+        val now = LocalDateTime.now()
+        val user = "SYSTEM" // 또는 실제 실행자 id
+
+        val rows = results.map { row ->
+            ProductionRateHour(
+                site = row.site,
+                compCd = row.compCd,
+                planSum = row.planSum,
+                workOrderSum = row.workOrderSum,
+                notWorkOrderSum = row.notWorkOrderSum,
+                productionRate = row.productionRate,
+                aggregationTime = now,
+                createUser = user,
+                createDate = now,
+                updateUser = user,
+                updateDate = now
+            )
+        }
+
+        productionRateHourRep.saveAll(rows)
     }
 
     private fun <T> fillGroupData(
@@ -275,4 +307,14 @@ data class Params(
     val groupKey: String,
     val substrStart: Int,
     val substrLength: Int
+)
+
+data class ProductionRateModel(
+    val site: String,
+    val compCd: String,
+    val planSum: Double,
+    val workOrderSum: Double,
+    val notWorkOrderSum: Double,
+    val productionRate: Double,
+    val aggregationTime: String,
 )

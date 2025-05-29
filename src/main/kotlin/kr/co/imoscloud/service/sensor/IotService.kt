@@ -284,7 +284,7 @@ class IotService(
     }
 
     private fun getParams(range: String): Params = when(range) {
-        CoreEnum.DateRangeType.HOUR.value   -> Params(0L, "hour", 11, 2)
+        CoreEnum.DateRangeType.DAY.value   -> Params(0L, "hour", 11, 2)
         CoreEnum.DateRangeType.WEEK.value  -> Params(6L, "day", 0, 10)
         CoreEnum.DateRangeType.MONTH.value -> Params(29L, "day", 0, 10)
         else    -> Params(0L, "hour", 11, 2)
@@ -294,9 +294,9 @@ class IotService(
         val endDate = LocalDate.parse(filter.date, dateFormatter).plusDays(1).atStartOfDay()
 
         return when (filter.range) {
-            "day" -> Pair(endDate.minusDays(1), endDate)
-            "week" -> Pair(endDate.minusDays(7), endDate)
-            "month" -> Pair(endDate.minusDays(30), endDate)
+            CoreEnum.DateRangeType.DAY.value -> Pair(endDate.minusDays(1), endDate)
+            CoreEnum.DateRangeType.WEEK.value  -> Pair(endDate.minusDays(7), endDate)
+            CoreEnum.DateRangeType.MONTH.value -> Pair(endDate.minusDays(30), endDate)
             else -> Pair(endDate.minusDays(1), endDate)
         }
     }

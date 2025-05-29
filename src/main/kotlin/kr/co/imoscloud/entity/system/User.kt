@@ -67,22 +67,6 @@ class User(
             positionId = req.positionId!!,
         )
 
-        fun toSummery(u: User): UserSummery = UserSummery(
-            u.id,
-            u.site,
-            u.compCd,
-            u.userName,
-            u.loginId,
-            u.userPwd,
-            u.imagePath,
-            u.roleId,
-            u.userEmail,
-            u.phoneNum,
-            u.departmentId,
-            u.positionId,
-            u.flagActive
-        )
-
         fun createOwner(company: Company, loginId: String, encodedPwd: String): User = User(
             site = company.site,
             compCd = company.compCd,
@@ -91,6 +75,22 @@ class User(
             roleId = 2,
         )
     }
+
+    fun toSummery(): UserSummery = UserSummery(
+        this.id,
+        this.site,
+        this.compCd,
+        this.userName,
+        this.loginId,
+        this.userPwd,
+        this.imagePath,
+        this.roleId,
+        this.userEmail,
+        this.phoneNum,
+        this.departmentId,
+        this.positionId,
+        this.flagActive
+    )
 
     fun modify(req: UserInput, encodedPwd: String?, loginUser: UserPrincipal): User = this.apply {
         site = req.site ?: this.site

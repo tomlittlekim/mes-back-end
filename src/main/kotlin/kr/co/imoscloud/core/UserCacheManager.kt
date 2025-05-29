@@ -32,7 +32,7 @@ class UserCacheManager(
         synchronized(userMap) {
             userMap.clear()
             userMap.putAll(userRepo.findAllByFlagActiveIsTrue()
-                .associate { it.loginId to User.toSummery(it) }
+                .associate { it.loginId to it.toSummery() }
                 .toMutableMap())
         }
     }
@@ -65,7 +65,7 @@ class UserCacheManager(
                 userRepo.findAllByLoginIdIn(index)
             }
 
-        return userList.associate { it.loginId as K to User.toSummery(it) as V? }.toMutableMap()
+        return userList.associate { it.loginId as K to it.toSummery() as V? }.toMutableMap()
     }
 
     fun getUsers(loginIds: List<String>): Map<String, UserSummery?> {
@@ -78,8 +78,7 @@ class UserCacheManager(
 
     fun getAllByCompCd(loginUser: UserPrincipal): List<UserSummery?> {
         return if (isInspect) {
-            userRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.compCd)
-                .map { User.toSummery(it) }
+            userRepo.findAllByCompCdAndFlagActiveIsTrue(loginUser.compCd).map { it.toSummery() }
         } else {
             getUsers(listOf(loginUser.loginId))
                 .filterValues { it?.compCd == loginUser.compCd }
@@ -94,7 +93,7 @@ class UserCacheManager(
             users,
             saveFunction = { userRepo.saveAll(it) },
             keySelector = { it.loginId },
-            valueMapper = { User.toSummery(it) }
+            valueMapper = { it.toSummery() }
         )
     }
 

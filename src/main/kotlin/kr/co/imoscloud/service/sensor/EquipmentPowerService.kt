@@ -20,6 +20,10 @@ class EquipmentPowerService(
     val mongoTemplate: MongoTemplate,
     val sensorStatusRep: SensorStatusRep,
 ) {
+
+    /**
+     * 실시간 전력
+     * */
     fun getRealPowerData(): List<ChartResponseModel?> {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
 
@@ -37,6 +41,9 @@ class EquipmentPowerService(
         }
     }
 
+    /**
+     * 전력 상세보기
+     * */
     fun getPopupPowerData(filter: KpiFilter): List<ChartResponseModel> {
         val localDate = LocalDate.parse(filter.date, dateFormatter)
         val params = KpiUtils.getParams(filter.range)

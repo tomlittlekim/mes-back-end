@@ -2,7 +2,9 @@ package kr.co.imoscloud.repository.system
 
 import kr.co.imoscloud.entity.system.Company
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import java.time.LocalDateTime
 import java.util.*
 
 interface CompanyRepository: JpaRepository<Company, Long> {
@@ -12,7 +14,6 @@ interface CompanyRepository: JpaRepository<Company, Long> {
     fun findByIdAndFlagActiveIsTrue(id: Long): Company?
     fun findByCompCdAndFlagActiveIsTrue(compCd: String): Company?
     fun findBySiteAndCompCdAndFlagActiveIsTrue(site: String, compCd: String): Company?
-
 
     @Query("""
         select c
@@ -50,4 +51,20 @@ interface CompanyRepository: JpaRepository<Company, Long> {
             and c.flagActive is true
     """)
     fun getInitialHeader(site: String, compCd: String, menuId: String): Map<String, String>
+
+    @Modifying
+    @Query("""
+        update Company c
+        set
+            c.flagActive = false,
+            c.updateUser = :updateUser,
+            c.updateDate = :updateDate
+        where c.compCd = :compCd
+            and c.flagActive is true
+    """)
+    fun softDeleteByCompCdAndFlagActiveIsTrue(
+        compCd: String,
+        updateUser: String,
+        updateDate: LocalDateTime ?= LocalDateTime.now()
+    ): Int
 }

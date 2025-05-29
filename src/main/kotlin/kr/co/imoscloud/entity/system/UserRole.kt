@@ -38,13 +38,6 @@ class UserRole(
 ): CommonCol(), DtoRoleIdBase, DtoCompCdBase {
 
     companion object {
-        fun toSummery(userRole: UserRole): RoleSummery = RoleSummery(
-            userRole.roleId,
-            userRole.compCd,
-            userRole.roleName,
-            userRole.priorityLevel
-        )
-
         fun create(req: UserRoleRequest, changedLevel: Int,  loginUser: UserPrincipal): UserRole = UserRole(
             site = req.site ?: loginUser.getSite(),
             compCd = req.compCd ?: loginUser.compCd,
@@ -60,4 +53,11 @@ class UserRole(
         this.sequence = sequence ?: this.sequence
         updateCommonCol(loginUser)
     }
+
+    fun toSummery(): RoleSummery = RoleSummery(
+        this.roleId,
+        this.compCd,
+        this.roleName,
+        this.priorityLevel
+    )
 }

@@ -33,7 +33,7 @@ class UserRoleCacheManager(
         synchronized(roleMap) {
             roleMap.clear()
             roleMap.putAll(roleRepo.findAllByFlagActiveIsTrue()
-                .associate { it.roleId to UserRole.toSummery(it) }
+                .associate { it.roleId to it.toSummery() }
                 .toMutableMap())
         }
     }
@@ -66,7 +66,7 @@ class UserRoleCacheManager(
                 roleRepo.findAllByRoleIdInAndFlagActiveIsTrue(index)
             }
 
-        return roleList.associate { it.roleId as K to UserRole.toSummery(it) as V? }.toMutableMap()
+        return roleList.associate { it.roleId as K to it.toSummery() as V? }.toMutableMap()
     }
 
     fun getUserRoles(roleIds: List<Long>): Map<Long, RoleSummery?> {
@@ -79,7 +79,7 @@ class UserRoleCacheManager(
 
     fun getRoleGroupByCompCd(loginUser: UserPrincipal): List<RoleSummery?> {
         return if (getIsInspect()) {
-            roleRepo.findAllBySearchConditionForExceptDev(loginUser.compCd).map { UserRole.toSummery(it) }
+            roleRepo.findAllBySearchConditionForExceptDev(loginUser.compCd).map { it.toSummery() }
         } else {
             getUserRoles(listOf(loginUser.roleId))
                 .filterValues { v -> (v?.compCd == loginUser.compCd || v?.compCd == "default" ) }
@@ -94,7 +94,7 @@ class UserRoleCacheManager(
             userRoles,
             saveFunction = { roleRepo.saveAll(it) },
             keySelector = { it.roleId },
-            valueMapper = { UserRole.toSummery(it) }
+            valueMapper = { it.toSummery() }
         )
     }
 

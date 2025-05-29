@@ -243,6 +243,9 @@ class IotService(
         }
     }
 
+    /**
+     * 제품 생산률 구하기
+     * */
     fun getProductionYieldRate(filter: KpiFilter): List<ChartResponseModel> {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
         val site = userPrincipal.getSite()

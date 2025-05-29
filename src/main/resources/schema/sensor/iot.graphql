@@ -40,6 +40,7 @@ extend type Query {
     getPowerData:[Graph]
     getProductDefect(filter: KpiFilter):[Graph]
     getPopupPowerData(filter: KpiFilter):[Graph]
+    getProductionYieldRate(filter: KpiFilter):[Graph]
     getEquipmentOperationData(filter: KpiFilter):[Graph]
     
     # 구독 중인 KPI 지표 데이터 (기존 메소드)

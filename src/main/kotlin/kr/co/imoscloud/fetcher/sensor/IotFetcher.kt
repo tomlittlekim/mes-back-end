@@ -41,7 +41,16 @@ class IotFetcher(
     fun getProductDefect(@InputArgument("filter") filter: KpiFilter): List<ChartResponseModel> {
         return iotService.getProductionDefectRate(filter)
     }
-    
+
+    /**
+     * 제품 생산률
+     * */
+    @DgsQuery
+    fun getProductionYieldRate(@InputArgument("filter") filter:KpiFilter): List<ChartResponseModel> {
+        return iotService.getProductionYieldRate(filter)
+    }
+
+
     /**
      * 구독 중인 KPI 지표 데이터
      * 현재 회사가 구독 중인 KPI 지표에 대한 차트 데이터를 반환
@@ -67,7 +76,7 @@ class IotFetcher(
         val date: String,
         val range: String
     )
-    
+
     /**
      * KPI 차트 요청 입력 객체
      */

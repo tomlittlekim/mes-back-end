@@ -132,5 +132,5 @@ interface ProductionResultRepository : JpaRepository<ProductionResult, Long>, Pr
         WHERE c.FLAG_ACTIVE = 1
         GROUP BY c.COMP_CD, c.SITE
     """, nativeQuery = true)
-    fun findDayProductionRate(): List<ProductionRateModel>
+    fun findProductionYieldRate(): List<ProductionRateModel>
 }

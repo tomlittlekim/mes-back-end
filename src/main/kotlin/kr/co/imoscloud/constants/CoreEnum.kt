@@ -46,4 +46,11 @@ class CoreEnum {
         HOME_PATH("/data"),
         ATTACHMENT_PATH("/attachments")
     }
+
+    enum class DateRangeType(val value: String) {
+        HOUR("hour"),
+        DAY("day"),
+        WEEK("week"),
+        MONTH("month")
+    }
 }

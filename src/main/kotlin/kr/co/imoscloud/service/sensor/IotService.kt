@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.sensor
 
+import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.fetcher.sensor.IotFetcher.KpiChartRequest
 import kr.co.imoscloud.fetcher.sensor.KpiFilter
 import kr.co.imoscloud.model.kpisetting.KpiIndicatorWithCategoryModel
@@ -223,7 +224,7 @@ class IotService(
         val (startDate, endDate) = getDateRange(filter)
 
         return when (filter.range) {
-            "week", "month" -> {
+            CoreEnum.DateRangeType.WEEK.value, CoreEnum.DateRangeType.MONTH.value -> {
                 val entity = productionResultRep.findDayDefectRates(site, compCd, startDate, endDate)
                 fillGroupData(
                     entity, companyName,
@@ -250,7 +251,7 @@ class IotService(
         val (startDate, endDate) = getDateRange(filter)
 
         return when (filter.range) {
-            "week", "month" -> {
+            CoreEnum.DateRangeType.WEEK.value, CoreEnum.DateRangeType.MONTH.value -> {
                 val entity = productionRateDayRep.findDayProductionYieldRates(site, compCd, startDate, endDate)
                 fillGroupData(
                     entity, companyName,
@@ -283,9 +284,9 @@ class IotService(
     }
 
     private fun getParams(range: String): Params = when(range) {
-        "day"   -> Params(0L, "hour", 11, 2)
-        "week"  -> Params(6L, "day", 0, 10)
-        "month" -> Params(29L, "day", 0, 10)
+        CoreEnum.DateRangeType.HOUR.value   -> Params(0L, "hour", 11, 2)
+        CoreEnum.DateRangeType.WEEK.value  -> Params(6L, "day", 0, 10)
+        CoreEnum.DateRangeType.MONTH.value -> Params(29L, "day", 0, 10)
         else    -> Params(0L, "hour", 11, 2)
     }
 

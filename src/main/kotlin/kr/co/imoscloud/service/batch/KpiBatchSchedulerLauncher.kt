@@ -1,11 +1,11 @@
-package kr.co.imoscloud.service.sensor
+package kr.co.imoscloud.service.batch
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionRateDay
 import kr.co.imoscloud.entity.productionmanagement.ProductionRateHour
 import kr.co.imoscloud.repository.productionmanagement.ProductionRateDayRep
 import kr.co.imoscloud.repository.productionmanagement.ProductionRateHourRep
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
-import kr.co.imoscloud.service.productionmanagement.WorkOrderService
+import kr.co.imoscloud.service.sensor.ProductionRateModel
 import lombok.extern.slf4j.Slf4j
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.slf4j.LoggerFactory

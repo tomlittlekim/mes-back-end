@@ -7,7 +7,10 @@ import kr.co.imoscloud.service.sensor.*
 
 @DgsComponent
 class IotFetcher(
-    private val iotService: IotService
+    private val equipmentPowerService: EquipmentPowerService,
+    private val equipmentOperationService: EquipmentOperationService,
+    private val kpiProductionService: KpiProductionService,
+    private val iotService: IotService,
 ) {
 
     /**
@@ -15,7 +18,7 @@ class IotFetcher(
      * */
     @DgsQuery
     fun getPowerData(): List<ChartResponseModel?> {
-        return iotService.getPowerData()
+        return equipmentPowerService.getRealPowerData()
     }
 
     /**
@@ -23,7 +26,7 @@ class IotFetcher(
      * */
     @DgsQuery
     fun getPopupPowerData(@InputArgument("filter") filter: KpiFilter): List<ChartResponseModel> {
-        return iotService.getPopupPowerData(filter)
+        return equipmentPowerService.getPopupPowerData(filter)
     }
 
     /**
@@ -31,7 +34,7 @@ class IotFetcher(
      * */
     @DgsQuery
     fun getEquipmentOperationData(@InputArgument("filter") filter: KpiFilter): List<ChartResponseModel> {
-        return iotService.getEquipmentOperationData(filter)
+        return equipmentOperationService.getEquipmentOperationData(filter)
     }
 
     /**
@@ -39,7 +42,7 @@ class IotFetcher(
      * */
     @DgsQuery
     fun getProductDefect(@InputArgument("filter") filter: KpiFilter): List<ChartResponseModel> {
-        return iotService.getProductionDefectRate(filter)
+        return kpiProductionService.getProductionDefectRate(filter)
     }
 
     /**
@@ -47,7 +50,7 @@ class IotFetcher(
      * */
     @DgsQuery
     fun getProductionYieldRate(@InputArgument("filter") filter:KpiFilter): List<ChartResponseModel> {
-        return iotService.getProductionYieldRate(filter)
+        return kpiProductionService.getProductionYieldRate(filter)
     }
 
 

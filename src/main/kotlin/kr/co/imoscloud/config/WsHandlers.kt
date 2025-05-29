@@ -2,6 +2,7 @@ package kr.co.imoscloud.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.DgsQueryExecutor
+import kr.co.imoscloud.service.sensor.EquipmentPowerService
 import kr.co.imoscloud.service.sensor.IotService
 import org.json.JSONObject
 import org.springframework.stereotype.Component
@@ -37,14 +38,14 @@ data class PowerRequestDto(
 
 @Component
 class PowerSocketHandler(
-    private val iotService: IotService,
+    private val equipmentPowerService: EquipmentPowerService,
     private var objectMapper: ObjectMapper
 ) : TextWebSocketHandler() {
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
         println("WebSocket 메시지 수신: ${message.payload}")
         val dto = objectMapper.readValue(message.payload, PowerRequestDto::class.java)
 
-        val powerData = iotService.getPowerDataForWS(dto.site, dto.compCd)
+        val powerData = equipmentPowerService.getPowerDataForWS(dto.site, dto.compCd)
         val json = objectMapper.writeValueAsString(powerData)
         session.sendMessage(TextMessage(json))
     }

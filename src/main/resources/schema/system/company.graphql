@@ -44,7 +44,7 @@ input CompanySearchCondition {
 
 extend type Mutation {
     upsertCompany(req: CompanyInput): String
-    deleteCompany(id: Int): Boolean
+    deleteCompany(compCd: String!): Boolean
 }
 
 extend type Query {

@@ -89,7 +89,7 @@ class CompanyService(
 
     @AuthLevel(minLevel = 5)
     @Transactional
-    fun deleteCompany(id: Long, compCd: String): Boolean {
+    fun deleteCompany(compCd: String): Boolean {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
         ccm.getCompany(compCd)

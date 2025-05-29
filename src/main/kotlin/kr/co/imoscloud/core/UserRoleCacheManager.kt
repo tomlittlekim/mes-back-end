@@ -2,10 +2,7 @@ package kr.co.imoscloud.core
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.core.AbstractInitialSetting.Companion.getIsInspect
-import kr.co.imoscloud.dto.OnlyRoleIdReq
 import kr.co.imoscloud.dto.RoleSummery
-import kr.co.imoscloud.dto.UserSummery
-import kr.co.imoscloud.entity.system.User
 import kr.co.imoscloud.entity.system.UserRole
 import kr.co.imoscloud.repository.system.UserRoleRepository
 import kr.co.imoscloud.security.UserPrincipal
@@ -93,15 +90,12 @@ class UserRoleCacheManager(
 
     @Transactional
     fun saveAllAndSyncCache(userRoles: List<UserRole>): List<UserRole> {
-        return try {
-            if (userRoles.size == 1) roleRepo.save(userRoles.first())
-            else roleRepo.saveAll(userRoles)
-
-            userRoles.forEach { ur -> upsertByEntry(ur.roleId, ur) }
-            userRoles
-        } catch (e: Exception) {
-            throw IllegalArgumentException("DB 저장 및 InMemory 동기화에 실패했습니다. ")
-        }
+        return saveAllAndSyncCache(
+            userRoles,
+            saveFunction = { roleRepo.saveAll(it) },
+            keySelector = { it.roleId },
+            valueMapper = { UserRole.toSummery(it) }
+        )
     }
 
     @Transactional
@@ -111,6 +105,17 @@ class UserRoleCacheManager(
 
         deleteByKey<Long, RoleSummery?>(rs.roleId)
         return rs
+    }
+
+    @Transactional
+    fun softDeleteAllByCompCdAndSyncCache(compCd: String, loginUserId: String): Unit {
+        val result: Int = roleRepo.deleteAllByCompCd(compCd, loginUserId)
+        if (result == 0) return
+
+        val map: Map<String?, List<RoleSummery?>> = buildWithNewKey<Long, RoleSummery?, String> { it?.compCd }
+        val list: List<RoleSummery?>? = map[compCd]
+        val roleIds: List<Long> = list?.mapNotNull { it?.roleId } ?: return
+        roleIds.forEach { roleId -> deleteByKey<Long, RoleSummery?>(roleId) }
     }
 
     fun isDeveloper(loginUser: UserPrincipal): Boolean =

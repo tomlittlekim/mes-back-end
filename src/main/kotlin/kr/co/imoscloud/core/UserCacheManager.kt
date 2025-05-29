@@ -90,15 +90,12 @@ class UserCacheManager(
 
     @Transactional
     fun saveAllAndSyncCache(users: List<User>): List<User> {
-        return try {
-            if (users.size == 1) userRepo.save(users.first())
-            else userRepo.saveAll(users)
-
-            users.forEach { u -> upsertByEntry(u.loginId, u) }
-            users
-        } catch (e: Exception) {
-            throw IllegalArgumentException("DB 저장 및 InMemory 동기화에 실패했습니다. ")
-        }
+        return saveAllAndSyncCache(
+            users,
+            saveFunction = { userRepo.saveAll(it) },
+            keySelector = { it.loginId },
+            valueMapper = { User.toSummery(it) }
+        )
     }
 
     @Transactional
@@ -108,6 +105,17 @@ class UserCacheManager(
 
         deleteByKey<String, UserSummery?>(us.loginId)
         return us
+    }
+
+    @Transactional
+    fun softDeleteAllByCompCdAndSyncCache(compCd: String, loginUserId: String): Unit {
+        val result = userRepo.deleteAllByCompCd(compCd, loginUserId)
+        if (result == 0) return
+
+        val map: Map<String?, List<UserSummery?>> = buildWithNewKey<String, UserSummery?, String> { it?.compCd }
+        val list: List<UserSummery?>? = map[compCd]
+        val loginIds: List<String> = list?.mapNotNull { it?.loginId } ?: return
+        loginIds.forEach { loginId -> deleteByKey<String, UserSummery?>(loginId) }
     }
 
     @Scheduled(cron = "0 0 */2 * * *")

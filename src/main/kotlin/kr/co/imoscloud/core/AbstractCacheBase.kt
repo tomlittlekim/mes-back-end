@@ -39,18 +39,45 @@ abstract class AbstractCacheBase {
         }
     }
 
-    fun <K, V> upsertByEntry(key: K, value: V): Unit {
-        val mutableMap = if (isInspectEnabled()) getUpsertMap<K, V?>()
-        else getCashMap<K, V?>()
-
-        mutableMap[key] = value
+    protected fun <K, V, E> saveAllAndSyncCache(
+        entities: List<E>,
+        saveFunction: (List<E>) -> List<E>,
+        keySelector: (E) -> K,
+        valueMapper: (E) -> V
+    ): List<E> {
+        return try {
+            val saved = saveFunction(entities)
+            saved.forEach { e ->
+                val key = keySelector(e)
+                val value = valueMapper(e)
+                upsertByEntry(key, value)
+            }
+            saved
+        } catch (e: Exception) {
+            throw IllegalArgumentException("DB 저장 및 InMemory 동기화에 실패했습니다.")
+        }
     }
 
-    fun <K, V> deleteByKey(key: K): Unit {
+    protected fun <K, V> deleteByKey(key: K): Unit {
         getCashMap<K, V?>().remove(key)
     }
 
     fun <K, V> existsByKey(key: K): Boolean {
         return getAllFromMemory<K, V?>(listOf(key))[key] != null
+    }
+
+    fun <K, V, F> buildWithNewKey(keySelector: (V) -> F?): Map<F?, List<V?>> {
+        if (isInspectEnabled()) return emptyMap()
+
+        val list: List<V> = getCashMap<K, V?>().values.mapNotNull { v -> copyToValue(v) }
+        val map: Map<F?, List<V?>> = list.filterNotNull().groupBy { keySelector(it) }
+        return map
+    }
+
+    private fun <K, V> upsertByEntry(key: K, value: V): Unit {
+        val mutableMap = if (isInspectEnabled()) getUpsertMap<K, V?>()
+        else getCashMap<K, V?>()
+
+        mutableMap[key] = value
     }
 }

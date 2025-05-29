@@ -88,13 +88,6 @@ class Company(
                 loginId = "temp",
                 defaultUserPwd = req.defaultUserPwd ?: randomPwd
             )
-
-            fun toSummery(company: Company): CompanySummery = CompanySummery(
-                company.id,
-                company.compCd,
-                company.companyName,
-                company.defaultUserPwd ?: "1234"
-            )
         }
 
         fun modify(req: CompanyDto, loginUser: UserPrincipal): Company = this.apply {
@@ -110,4 +103,11 @@ class Company(
             defaultUserPwd = req.defaultUserPwd ?: this.defaultUserPwd
             updateCommonCol(loginUser)
         }
+
+        fun toSummery(): CompanySummery = CompanySummery(
+            this.id,
+            this.compCd,
+            this.companyName,
+            this.defaultUserPwd ?: "1234"
+        )
     }

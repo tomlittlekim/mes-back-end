@@ -31,7 +31,7 @@ class CompanyCacheManager(
         synchronized(companyMap) {
             companyMap.clear()
             companyMap.putAll(companyRepo.findAllByFlagActiveIsTrue()
-                .associate { it.compCd to Company.toSummery(it) }
+                .associate { it.compCd to it.toSummery() }
                 .toMutableMap())
         }
     }
@@ -64,7 +64,7 @@ class CompanyCacheManager(
                 companyRepo.findAllByCompCdIn(index)
             }
 
-        return userList.associate { it.compCd as K to Company.toSummery(it) as V? }.toMutableMap()
+        return userList.associate { it.compCd as K to it.toSummery() as V? }.toMutableMap()
     }
 
     fun getCompanies(compCds: List<String>): Map<String, CompanySummery?> {
@@ -81,7 +81,7 @@ class CompanyCacheManager(
             companies,
             saveFunction = { companyRepo.saveAll(it) },
             keySelector = { it.compCd },
-            valueMapper = { Company.toSummery(it) }
+            valueMapper = { it.toSummery() }
         )
     }
 

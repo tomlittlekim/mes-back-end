@@ -82,6 +82,14 @@ class User(
             u.positionId,
             u.flagActive
         )
+
+        fun createOwner(company: Company, loginId: String, encodedPwd: String): User = User(
+            site = company.site,
+            compCd = company.compCd,
+            loginId = loginId,
+            userPwd = encodedPwd,
+            roleId = 2,
+        )
     }
 
     fun modify(req: UserInput, encodedPwd: String?, loginUser: UserPrincipal): User = this.apply {

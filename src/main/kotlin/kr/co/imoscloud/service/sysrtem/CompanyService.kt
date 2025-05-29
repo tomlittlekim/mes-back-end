@@ -1,32 +1,35 @@
 package kr.co.imoscloud.service.sysrtem
 
 import jakarta.transaction.Transactional
-import kr.co.imoscloud.core.Core
+import kr.co.imoscloud.core.CompanyCacheManager
+import kr.co.imoscloud.core.UserCacheManager
+import kr.co.imoscloud.core.UserRoleCacheManager
 import kr.co.imoscloud.dto.CompanyDto
 import kr.co.imoscloud.dto.CompanySearchCondition
 import kr.co.imoscloud.dto.CompanySummery
 import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.util.AuthLevel
-import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class CompanyService(
-    private val core: Core,
+    private val ccm: CompanyCacheManager,
+    private val ucm: UserCacheManager,
+    private val rcm: UserRoleCacheManager,
     private val userService: UserService,
 ) {
 
     fun getCompaniesForSelect(): List<CompanySummery?> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        return if (core.isDeveloper(loginUser)) {
-            val companyMap: MutableMap<String, CompanySummery?> = core.getAllCompanyMap(loginUser)
-            if (companyMap.size == 1) core.companyRepo.findAll().map { core.companyToSummery(it) }
+        return if (rcm.isDeveloper(loginUser)) {
+            val companyMap: Map<String, CompanySummery?> = ccm.getCompanies(listOf(loginUser.compCd))
+            if (companyMap.size == 1) ccm.companyRepo.findAll().map { Company.toSummery(it) }
             else companyMap.values.toList()
         } else {
-            core.getAllCompanyMap(loginUser)
+            ccm.getCompanies(listOf(loginUser.compCd))
                 .filterValues { listOf(loginUser.compCd, "default").contains(it?.compCd) }
                 .values.toList()
         }
@@ -34,18 +37,18 @@ class CompanyService(
 
     fun getCompanies(req: CompanySearchCondition): List<Company> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        return if (core.isDeveloper(loginUser)) {
-            core.companyRepo.findAllBySearchConditionForDev(req.site, "%${req.companyName?:""}%")
+        return if (rcm.isDeveloper(loginUser)) {
+            ccm.companyRepo.findAllBySearchConditionForDev(req.site, "%${req.companyName?:""}%")
         } else {
-            core.companyRepo.findAllBySearchConditionForExceptDev(loginUser.compCd)
+            ccm.companyRepo.findAllBySearchConditionForExceptDev(loginUser.compCd)
         }
     }
 
     fun getCompanyDetails(): Company {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
-        if (core.isDeveloper(loginUser)) throw IllegalArgumentException("개발자는 이용할 수 없는 서비스")
+        if (rcm.isDeveloper(loginUser)) throw IllegalArgumentException("개발자는 이용할 수 없는 서비스")
 
-        return core.companyRepo.findByCompCdAndFlagActiveIsTrue(loginUser.compCd)
+        return ccm.companyRepo.findByCompCdAndFlagActiveIsTrue(loginUser.compCd)
             ?: throw IllegalArgumentException("회사의 정보를 찾을 수 없습니다. ")
     }
 
@@ -58,82 +61,55 @@ class CompanyService(
         val company: Company = try {
             req.id
                 ?.let { id ->
-                    core.companyRepo.findByIdAndFlagActiveIsTrue(id)
-                        ?.apply {
+                    ccm.companyRepo.findByIdAndFlagActiveIsTrue(id)
+                        ?.let { company ->
                             upsertStr = "생성"
-                            if (compCd != loginUser.compCd && !core.isDeveloper(loginUser)) {
+                            if (req.compCd != loginUser.compCd && !rcm.isDeveloper(loginUser))
                                 throw IllegalArgumentException("회사정보를 수정할 수 있는 사용자가 아닙니다.")
-                            }
 
-                            site = req.site ?: site
-                            imagePath = req.imagePath ?: imagePath
-                            businessAddress = req.businessAddress ?: businessAddress
-                            businessType = req.businessType ?: businessType
-                            businessItem = req.businessItem ?: businessItem
-                            paymentDate = DateUtils.parseDateTime(req.paymentDate) ?: paymentDate
-                            expiredDate = DateUtils.parseDateTime(req.expiredDate) ?: expiredDate
-                            flagSubscription = req.flagSubscription
-                            phoneNumber = req.phoneNumber ?: phoneNumber
-                            defaultUserPwd = req.defaultUserPwd ?: defaultUserPwd
-                            updateCommonCol(loginUser)
+                            company.modify(req, loginUser)
                         }
                         ?: throw IllegalArgumentException("변경할 회사의 정보를 찾을 수 없습니다. ")
                 }
                 ?: run {
-                    val randomPwd = UUID.randomUUID().toString().replace("-", "").substring(0, 16)
                     upsertStr = "수정"
-                    val company = Company(
-                        site = req.site!!,
-                        compCd = req.compCd!!,
-                        businessRegistrationNumber = req.businessRegistrationNumber!!,
-                        corporateRegistrationNumber = req.corporateRegistrationNumber!!,
-                        companyName = req.companyName!!,
-                        imagePath = req.imagePath,
-                        businessAddress = req.businessAddress,
-                        businessType = req.businessType,
-                        businessItem = req.businessItem,
-                        flagSubscription = req.flagSubscription,
-                        phoneNumber = req.phoneNumber,
-                        loginId = "temp",
-                        defaultUserPwd = req.defaultUserPwd ?: randomPwd
-                    ).apply { createCommonCol(loginUser) }
+                    val randomPwd = UUID.randomUUID().toString().replace("-", "").substring(0, 16)
+                    val company = Company.create(req, randomPwd).apply { createCommonCol(loginUser) }
 
                     val owner = userService.generateOwner(company)
-                    core.userRepo.save(owner)
-                    core.upsertFromInMemory(owner)
                     company.apply { loginId = owner.loginId }
                 }
         } catch (e: NullPointerException) {
             throw IllegalArgumentException("회사를 생성하는데 필요한 정보 누락이 존재합니다. ")
         }
 
-        core.companyRepo.save(company)
-        core.upsertFromInMemory(company)
+        ccm.saveAllAndSyncCache(listOf(company))
         return "${company.companyName} 회사 $upsertStr 성공"
     }
 
     @AuthLevel(minLevel = 5)
     @Transactional
-    fun deleteCompany(id: Long): Boolean {
+    fun deleteCompany(id: Long, compCd: String): Boolean {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        val target = core.companyRepo.findByIdAndFlagActiveIsTrue(id)
-            ?.apply {
-                flagActive = false
-                updateCommonCol(SecurityUtils.getCurrentUserPrincipal())
-            }
-            ?: throw IllegalArgumentException("삭제할 객체가 존재하지 않습니다. ")
+        ccm.getCompany(compCd)
+            ?.let { cs: CompanySummery ->
+                if (cs.compCd != loginUser.compCd && !rcm.isDeveloper(loginUser))
+                    throw IllegalArgumentException("회사정보를 수정할 수 있는 사용자가 아닙니다.")
 
-        core.companyRepo.save(target)
-        core.userRepo.deleteAllByCompCd(target.compCd, loginUser.loginId)
-        core.roleRepo.deleteAllByCompCd(target.compCd, loginUser.loginId)
+                ccm.softDeleteAndSyncCache(cs, loginUser.loginId)
+                ucm.softDeleteAllByCompCdAndSyncCache(cs.compCd, loginUser.loginId)
+                rcm.softDeleteAllByCompCdAndSyncCache(cs.compCd, loginUser.loginId)
+            }
+            ?: throw IllegalArgumentException("회사 정보가 존재하지 않습니다. ")
+
         return true
     }
 
 
     //TODO: site 변경
     fun getWorkTime(userPrincipal: UserPrincipal): Pair<String,String> {
-        val company = core.companyRepo.findBySiteAndCompCdAndFlagActiveIsTrue(
+        val company = ccm.companyRepo.findBySiteAndCompCdAndFlagActiveIsTrue(
             site = "gyeonggi",
             compCd = userPrincipal.compCd
         )

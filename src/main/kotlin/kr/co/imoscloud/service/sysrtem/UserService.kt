@@ -221,13 +221,10 @@ class UserService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val encodedPwd = pwdEncoder("1234")
 
-        return User(
-            site = company.site,
-            compCd = company.compCd,
-            loginId = createLoginId("owner"),
-            userPwd = encodedPwd,
-            roleId = 2,
-        ).apply { createCommonCol(loginUser) }
+        val owner = User.createOwner(company, createLoginId("owner"), encodedPwd)
+            .apply { createCommonCol(loginUser) }
+        ucm.saveAllAndSyncCache(listOf(owner))
+        return owner
     }
 
     private fun pwdEncoder(pwd: String?): String {

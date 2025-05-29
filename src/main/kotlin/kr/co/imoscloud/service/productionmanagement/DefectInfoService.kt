@@ -19,31 +19,116 @@ class DefectInfoService(
     private val productionResultRepository: ProductionResultRepository
 ) {
     /**
-     * 모든 불량 정보 조회
+     * 모든 불량 정보 조회 (CODE 테이블과 JOIN하여 defectCauseName 포함)
      * 기본적으로 사용자의 사이트와 회사 코드에 해당하는 데이터만 조회
      * 필터 조건에 따라 결과를 필터링함
      */
     fun getAllDefectInfos(filter: DefectInfoFilter? = null): List<DefectInfo?>? {
         val currentUser = getCurrentUserPrincipal()
         
-        // 항상 필터링된 결과 조회
-        return defectInfoRepository.getDefectInfoByFilter(
+        // 필터 조건 처리
+        val fromDate = filter?.fromDate?.let { fromDateStr ->
+            try {
+                val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                val fromDate = java.time.LocalDate.parse(fromDateStr, formatter)
+                java.time.LocalDateTime.of(fromDate, java.time.LocalTime.MIN)
+            } catch (e: Exception) {
+                try {
+                    val formatterWithTime = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+                    java.time.LocalDateTime.parse(fromDateStr, formatterWithTime)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
+        
+        val toDate = filter?.toDate?.let { toDateStr ->
+            try {
+                val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                val toDate = java.time.LocalDate.parse(toDateStr, formatter)
+                val nextDay = toDate.plusDays(1)
+                java.time.LocalDateTime.of(nextDay, java.time.LocalTime.MIN)
+            } catch (e: Exception) {
+                try {
+                    val formatterWithTime = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+                    java.time.LocalDateTime.parse(toDateStr, formatterWithTime)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
+        
+        val results = defectInfoRepository.findDefectInfoWithCauseNameByFilter(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
-            filter = filter
+            defectId = filter?.defectId,
+            prodResultId = filter?.prodResultId,
+            productId = filter?.productId,
+            equipmentId = filter?.equipmentId,
+            fromDate = fromDate,
+            toDate = toDate
         )
+        
+        return results.map { result ->
+            val defectInfo = result[0] as DefectInfo
+            val defectCauseName = result[1] as String?
+            val equipmentId = result[2] as String?
+            
+            defectInfo.apply {
+                this.defectCauseName = defectCauseName
+                this.equipmentId = equipmentId
+            }
+        }
     }
 
     /**
-     * 생산 실적 ID로 불량 정보 조회
+     * 생산 실적 ID로 불량 정보 조회 (CODE 테이블과 JOIN하여 defectCauseName 포함, ProductionResult와 JOIN하여 equipmentId 포함)
      */
     fun getDefectInfoByProdResultId(prodResultId: String): List<DefectInfo> {
         val currentUser = getCurrentUserPrincipal()
-        return defectInfoRepository.getDefectInfoByProdResultId(
+        val results = defectInfoRepository.findDefectInfoWithCauseNameByProdResultId(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
             prodResultId = prodResultId
         )
+        
+        return results.map { result ->
+            val defectInfo = result[0] as DefectInfo
+            val defectCauseName = result[1] as String?
+            val equipmentId = result[2] as String?
+            
+            defectInfo.apply {
+                this.defectCauseName = defectCauseName
+                this.equipmentId = equipmentId
+            }
+        }
+    }
+
+    /**
+     * 일자별 불량 통계용 조회 (CODE 테이블과 JOIN하여 defectCauseName 포함, ProductionResult와 JOIN하여 equipmentId 포함)
+     */
+    fun getDefectInfoForStats(
+        fromDate: java.time.LocalDateTime,
+        toDate: java.time.LocalDateTime
+    ): List<DefectInfo> {
+        val currentUser = getCurrentUserPrincipal()
+        val results = defectInfoRepository.findDefectInfoWithCauseNameForStats(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            fromDate = fromDate,
+            toDate = toDate
+        )
+        
+        return results.map { result ->
+            val defectInfo = result[0] as DefectInfo
+            val defectCauseName = result[1] as String?
+            val equipmentId = result[2] as String?
+            
+            defectInfo.apply {
+                this.defectCauseName = defectCauseName
+                this.equipmentId = equipmentId
+            }
+        }
     }
 
     /**
@@ -86,13 +171,8 @@ class DefectInfoService(
                     productId = input.productId
                     defectQty = input.defectQty
 
-                    // 불량 유형 정보 저장 (우선순위: resultInfo > defectType > defectName)
-                    resultInfo = when {
-                        !input.resultInfo.isNullOrBlank() -> input.resultInfo
-                        !input.defectType.isNullOrBlank() -> input.defectType
-                        !input.defectName.isNullOrBlank() -> input.defectName
-                        else -> "불량"
-                    }
+                    // 불량 유형 정보 저장 - 사용자가 입력한 resultInfo 값만 저장
+                    resultInfo = input.resultInfo
 
                     // 상태 정보
                     state = input.state ?: "NEW"

@@ -38,6 +38,14 @@ class DefectInfo(
 
     @Column(name = "DEFECT_CAUSE", columnDefinition = "TEXT")
     var defectCause: String? = null,
+
+    // CODE 테이블과 JOIN하여 가져오는 불량원인명 (데이터베이스 컬럼이 아님)
+    @Transient
+    var defectCauseName: String? = null,
+
+    // ProductionResult 테이블과 JOIN하여 가져오는 설비ID (데이터베이스 컬럼이 아님)
+    @Transient
+    var equipmentId: String? = null,
 ) : CommonCol() {
     fun softDelete(updater: UserPrincipal) {
         this.flagActive = false

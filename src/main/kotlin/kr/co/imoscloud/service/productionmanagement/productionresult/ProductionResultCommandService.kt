@@ -35,6 +35,9 @@ class ProductionResultCommandService(
         try {
             val currentUser = getCurrentUserPrincipal()
 
+            // 작업지시별 누적 수량을 추적하기 위한 맵
+            val workOrderAccumulatedQty = mutableMapOf<String, Double>()
+
             // 새로운 생산실적 저장
             createdRows?.forEach { input ->
                 try {
@@ -60,15 +63,27 @@ class ProductionResultCommandService(
                     // 작업지시가 있는 경우에만 작업지시 수량 검증
                     if (workOrder != null) {
                         val orderQty = workOrder.orderQty ?: 0.0
-                        if (existingTotalGoodQty + goodQty > orderQty) {
-                            throw IllegalArgumentException("총 생산 양품수량이 작업지시수량(${orderQty})을 초과할 수 없습니다. 현재 등록된 양품수량: ${existingTotalGoodQty}")
+                        val workOrderId = workOrder.workOrderId!!
+                        
+                        // 현재 작업지시에 대해 이미 처리된 누적 수량 가져오기
+                        val currentAccumulatedQty = workOrderAccumulatedQty.getOrDefault(workOrderId, 0.0)
+                        
+                        // 총 수량 = 기존 등록된 수량 + 현재 배치에서 이미 처리된 수량 + 현재 행의 수량
+                        val totalGoodQty = existingTotalGoodQty + currentAccumulatedQty + goodQty
+                        
+                        if (totalGoodQty > orderQty) {
+                            throw IllegalArgumentException("총 생산 양품수량이 작업지시수량(${orderQty})을 초과할 수 없습니다. 현재 등록된 양품수량: ${existingTotalGoodQty}, 현재 배치 처리 중인 수량: ${currentAccumulatedQty}, 추가하려는 수량: ${goodQty}")
                         }
+                        
+                        // 현재 작업지시의 누적 수량 업데이트
+                        workOrderAccumulatedQty[workOrderId] = currentAccumulatedQty + goodQty
                     }
 
                     // 수정된 진척률 계산 - 작업지시가 있는 경우에만 계산
                     val progressRate = if (workOrder != null && workOrder.orderQty != null && workOrder.orderQty!! > 0) {
                         // 기존 생산실적의 양품수량 + 현재 생산실적의 양품수량으로 누적 진척률 계산
-                        String.format("%.1f", ((existingTotalGoodQty + goodQty) / workOrder.orderQty!!) * 100.0)
+                        val currentAccumulatedQty = workOrderAccumulatedQty.getOrDefault(workOrder.workOrderId!!, 0.0)
+                        String.format("%.1f", ((existingTotalGoodQty + currentAccumulatedQty) / workOrder.orderQty!!) * 100.0)
                     } else "0.0"
 
                     // 불량률 계산 - 불량수량이 있는 경우만 계산
@@ -148,7 +163,8 @@ class ProductionResultCommandService(
 
                     // 작업지시가 있는 경우에만 작업지시 상태 업데이트
                     if (workOrder != null) {
-                        updateWorkOrderStatus(workOrder, goodQty, existingTotalGoodQty, workOrder.orderQty ?: 0.0, totalQty)
+                        val currentAccumulatedQty = workOrderAccumulatedQty.getOrDefault(workOrder.workOrderId!!, 0.0)
+                        updateWorkOrderStatus(workOrder, currentAccumulatedQty, existingTotalGoodQty, workOrder.orderQty ?: 0.0, totalQty)
                     }
                 } catch (e: Exception) {
                     throw e  // 트랜잭션 롤백을 위해 예외를 다시 던짐
@@ -166,7 +182,7 @@ class ProductionResultCommandService(
      */
     private fun updateWorkOrderStatus(
         workOrder: kr.co.imoscloud.entity.productionmanagement.WorkOrder,
-        goodQty: Double,
+        currentBatchAccumulatedQty: Double,
         existingTotalGoodQty: Double,
         orderQty: Double,
         totalQty: Double
@@ -178,8 +194,8 @@ class ProductionResultCommandService(
             workOrder.updateCommonCol(currentUser)
             workOrderRepository.save(workOrder)
         } else if (workOrder.state == "IN_PROGRESS") {
-            // 해당 작업지시의 총 생산량 계산
-            val totalWorkOrderGoodQty = existingTotalGoodQty + goodQty
+            // 해당 작업지시의 총 생산량 계산 (기존 수량 + 현재 배치에서 누적된 수량)
+            val totalWorkOrderGoodQty = existingTotalGoodQty + currentBatchAccumulatedQty
 
             // 총 생산량이 작업지시수량에 도달하면 완료 상태로 변경
             if (orderQty > 0 && totalWorkOrderGoodQty >= orderQty) {

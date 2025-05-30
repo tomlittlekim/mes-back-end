@@ -184,7 +184,7 @@ class UserService(
             ucm.userRepo.findByLoginIdAndFlagActiveIsTrue(loginId)!!
                 .let { u ->
                     val encodedPwd = pwdEncoder("1234")
-                    u.apply { userPwd = encodedPwd; updateCommonCol(loginUser) }
+                    u.apply { userPwd = encodedPwd!!; updateCommonCol(loginUser) }
                     ucm.saveAllAndSyncCache(listOf(u))
                     "${u.userName} 사용자의 비밀번호 초기화 완료"
                 }
@@ -221,17 +221,15 @@ class UserService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         val encodedPwd = pwdEncoder("1234")
 
-        val owner = User.createOwner(company, createLoginId("owner"), encodedPwd)
+        val owner = User.createOwner(company, createLoginId("owner"), encodedPwd!!)
             .apply { createCommonCol(loginUser) }
         ucm.saveAllAndSyncCache(listOf(owner))
         return owner
     }
 
-    private fun pwdEncoder(pwd: String?): String {
+    private fun pwdEncoder(pwd: String?): String? {
         val passwordEncoder = BCryptPasswordEncoder()
-        return pwd
-            ?.let { passwordEncoder.encode(pwd) }
-            ?: throw IllegalArgumentException("패스워드가 비어있습니다 입력해주세요. ")
+        return pwd?.let { passwordEncoder.encode(pwd) }
     }
 
     private fun validatePwd(matchedPWD: String?, target: User) {
@@ -256,7 +254,7 @@ class UserService(
     }
 
     private fun generateUser(req: UserInput, loginUser: UserPrincipal): User {
-        val encodedPwd = pwdEncoder(req.userPwd)
+        val encodedPwd = pwdEncoder(req.userPwd) ?: throw IllegalArgumentException("비밀번호를 입력해주세요. ")
         val loginId = req.loginId ?: createLoginId()
         return User.create(req, loginId, encodedPwd).apply { createCommonCol(loginUser) }
     }

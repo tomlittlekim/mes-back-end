@@ -106,9 +106,9 @@ class KpiChartService(
     private fun collectKpiData(kpiIndicatorCd: String, filter: KpiFilter): List<ChartResponseModel>? {
         // KPI 지표 코드별 데이터 수집 함수 매핑
         val dataCollector = when (kpiIndicatorCd) {
-            "kpi_001" -> { f: KpiFilter -> kpiProductionService.getProductionYieldRate(f) }  // 설비 가동률
+            "kpi_001" -> { f: KpiFilter -> equipmentOperationService.getEquipmentOperationData(f) }  // 설비 가동률
             "kpi_002" -> { f: KpiFilter -> kpiProductionService.getProductionDefectRate(f) }         // 불량률
-            "kpi_003" -> { f: KpiFilter -> equipmentOperationService.getEquipmentOperationData(f) }  // 생산률
+            "kpi_003" -> { f: KpiFilter -> kpiProductionService.getProductionYieldRate(f) }  // 생산률
             "kpi_008" -> { f: KpiFilter -> equipmentPowerService.getPopupPowerData(f) }              // 에너지 사용 효율
             else -> null
         }

@@ -1,6 +1,7 @@
 package kr.co.imoscloud.entity.system
 
 import jakarta.persistence.*
+import kr.co.imoscloud.dto.MenuRoleDto
 
 @Entity
 @Table(name = "MENU")
@@ -28,4 +29,12 @@ class Menu(
 
     @Column(name = "FLAG_ACTIVE")
     var flagActive: Boolean = true
-)
+) {
+
+    fun toDto(roleId: Long, upMenuId: String?): MenuRoleDto = MenuRoleDto(
+        roleId = roleId,
+        menuId = this.menuId,
+        upMenuId = upMenuId,
+        flagCategory = this.upMenuId == null
+    )
+}

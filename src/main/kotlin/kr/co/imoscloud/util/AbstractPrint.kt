@@ -2,7 +2,8 @@ package kr.co.imoscloud.util
 
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.imoscloud.constants.CoreEnum
-import kr.co.imoscloud.core.Core
+import kr.co.imoscloud.core.CompanyCacheManager
+import kr.co.imoscloud.core.UserCacheManager
 import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.iface.IDrive
 import kr.co.imoscloud.service.drive.FileConvertService
@@ -16,7 +17,8 @@ import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
 abstract class AbstractPrint(
-    private val core: Core,
+    private val ucm: UserCacheManager,
+    private val ccm: CompanyCacheManager,
     private val converter: FileConvertService
 ): IDrive {
 
@@ -104,11 +106,11 @@ abstract class AbstractPrint(
     private fun getHeaderBaseMap(menuId: String): MutableMap<String, String> {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
 
-        val map: MutableMap<String, String> = core.companyRepo
+        val map: MutableMap<String, String> = ccm.companyRepo
             .getInitialHeader(loginUser.getSite(), loginUser.compCd, menuId)
             .toMutableMap()
 
-        map["owner"] = core.getUserFromInMemory(map["owner"]!!)?.userName ?: "-"
+        map["owner"] = ucm.getUser(map["owner"]!!)?.userName ?: "-"
         return map
     }
 

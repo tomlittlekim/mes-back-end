@@ -1,7 +1,6 @@
 package kr.co.imoscloud.core
 
 import jakarta.transaction.Transactional
-import kr.co.imoscloud.core.AbstractInitialSetting.Companion.getIsInspect
 import kr.co.imoscloud.dto.RoleSummery
 import kr.co.imoscloud.entity.system.UserRole
 import kr.co.imoscloud.repository.system.UserRoleRepository
@@ -78,7 +77,7 @@ class UserRoleCacheManager(
     }
 
     fun getRoleGroupByCompCd(loginUser: UserPrincipal): List<RoleSummery?> {
-        return if (getIsInspect()) {
+        return if (isInspect) {
             roleRepo.findAllBySearchConditionForExceptDev(loginUser.compCd).map { it.toSummery() }
         } else {
             getUserRoles(listOf(loginUser.roleId))

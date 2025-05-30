@@ -1,12 +1,12 @@
 package kr.co.imoscloud.service.sysrtem
 
 import jakarta.transaction.Transactional
-import kr.co.imoscloud.core.Core
+import kr.co.imoscloud.core.MenuRoleCacheManager
+import kr.co.imoscloud.core.UserRoleCacheManager
 import kr.co.imoscloud.dto.MenuRequest
 import kr.co.imoscloud.entity.system.Menu
 import kr.co.imoscloud.entity.system.MenuRole
 import kr.co.imoscloud.repository.system.MenuRepository
-import kr.co.imoscloud.repository.system.MenuRoleRepository
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
 import org.springframework.stereotype.Service
@@ -14,10 +14,12 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class MenuService(
-    private val core: Core,
+    private val rcm: UserRoleCacheManager,
+    val mrcm: MenuRoleCacheManager,
     val menuRepo: MenuRepository,
-    val menuRoleRepo: MenuRoleRepository,
 ) {
+    private val menuRoleRepo get() = mrcm.menuRoleRepo
+    private val roleRepo get() = rcm.roleRepo
 
     companion object {
         var allMenuMap: MutableMap<String, Menu> = ConcurrentHashMap()
@@ -93,9 +95,9 @@ class MenuService(
                     )
 
                     val loginUser = SecurityUtils.getCurrentUserPrincipal()
-                    val roleMap = core.getAllRoleMap(loginUser)
+                    val roleMap = rcm.getUserRoles(listOf(loginUser.roleId))
 
-                    val roleIds = if (roleMap.size == 1) core.roleRepo.getAllRoleIds()
+                    val roleIds = if (roleMap.size == 1) roleRepo.getAllRoleIds()
                     else roleMap.values.mapNotNull { it?.roleId }
 
                     val menuRoleList = roleIds.map { id ->

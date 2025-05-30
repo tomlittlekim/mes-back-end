@@ -3,7 +3,8 @@ package kr.co.imoscloud.service.business
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.constants.CoreEnum
-import kr.co.imoscloud.core.Core
+import kr.co.imoscloud.core.CompanyCacheManager
+import kr.co.imoscloud.core.UserCacheManager
 import kr.co.imoscloud.entity.business.TransactionStatementHeader
 import kr.co.imoscloud.entity.drive.FileManagement
 import kr.co.imoscloud.repository.business.TransactionStatementDetailRepository
@@ -20,12 +21,13 @@ import java.time.LocalDateTime
 
 @Service
 class TransactionStatementService(
-    val core: Core,
+    val ucm: UserCacheManager,
+    val ccm: CompanyCacheManager,
     val headerRepo: TransactionStatementHeaderRepository,
     val detailRepo: TransactionStatementDetailRepository,
     private val driveRepo: DriveRepository,
     private val convertService: FileConvertService,
-): AbstractPrint(core, convertService) {
+): AbstractPrint(ucm, ccm, convertService) {
 
     override fun getFodsFile(): FileManagement {
         val menuId = "TS"

@@ -1,6 +1,7 @@
 package kr.co.imoscloud.service.sensor
 
-import kr.co.imoscloud.fetcher.sensor.KpiFilter
+import kr.co.imoscloud.model.kpi.ChartResponseModel
+import kr.co.imoscloud.model.kpi.KpiFilter
 import kr.co.imoscloud.repository.SensorStatusRep
 import kr.co.imoscloud.util.KpiUtils
 import kr.co.imoscloud.util.KpiUtils.dateFormatter
@@ -22,8 +23,8 @@ class EquipmentPowerService(
 ) {
 
     /**
-     * 실시간 전력
-     * */
+     * 실시간 전력 데이터 조회
+     */
     fun getRealPowerData(): List<ChartResponseModel?> {
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
 

@@ -1,8 +1,8 @@
 package kr.co.imoscloud.service.transform3d
 
 import kr.co.imoscloud.fetcher.transform3d.KpiFilterFor3dView
-import kr.co.imoscloud.service.sensor.ChartResponseModel
-import kr.co.imoscloud.service.sensor.Params
+import kr.co.imoscloud.model.kpi.ChartResponseModel
+import kr.co.imoscloud.model.kpi.Params
 import kr.co.imoscloud.util.SecurityUtils
 import org.bson.Document
 import org.springframework.data.domain.Sort

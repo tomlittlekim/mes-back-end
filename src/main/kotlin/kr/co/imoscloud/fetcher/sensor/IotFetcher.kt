@@ -3,93 +3,56 @@ package kr.co.imoscloud.fetcher.sensor
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kr.co.imoscloud.model.kpi.ChartResponseModel
+import kr.co.imoscloud.model.kpi.KpiFilter
 import kr.co.imoscloud.service.sensor.*
 
+/**
+ * IoT 및 KPI 데이터 조회를 위한 GraphQL Fetcher
+ */
 @DgsComponent
 class IotFetcher(
     private val equipmentPowerService: EquipmentPowerService,
     private val equipmentOperationService: EquipmentOperationService,
-    private val kpiProductionService: KpiProductionService,
-    private val iotService: IotService,
+    private val kpiProductionService: KpiProductionService
 ) {
-
     /**
-     * 실시간 전력 데이터
-     * */
+     * 실시간 전력 데이터 조회
+     */
     @DgsQuery
     fun getPowerData(): List<ChartResponseModel?> {
         return equipmentPowerService.getRealPowerData()
     }
 
     /**
-     * 상세 전력 데이터
-     * */
+     * 전력 상세 데이터 조회
+     */
     @DgsQuery
     fun getPopupPowerData(@InputArgument("filter") filter: KpiFilter): List<ChartResponseModel> {
         return equipmentPowerService.getPopupPowerData(filter)
     }
 
     /**
-     * 설비 가동률
-     * */
+     * 설비 가동률 데이터 조회
+     */
     @DgsQuery
     fun getEquipmentOperationData(@InputArgument("filter") filter: KpiFilter): List<ChartResponseModel> {
         return equipmentOperationService.getEquipmentOperationData(filter)
     }
 
     /**
-     * 제품 불량률
-     * */
+     * 제품 불량률 데이터 조회
+     */
     @DgsQuery
     fun getProductDefect(@InputArgument("filter") filter: KpiFilter): List<ChartResponseModel> {
         return kpiProductionService.getProductionDefectRate(filter)
     }
 
     /**
-     * 제품 생산률
-     * */
+     * 제품 생산률 데이터 조회
+     */
     @DgsQuery
-    fun getProductionYieldRate(@InputArgument("filter") filter:KpiFilter): List<ChartResponseModel> {
+    fun getProductionYieldRate(@InputArgument("filter") filter: KpiFilter): List<ChartResponseModel> {
         return kpiProductionService.getProductionYieldRate(filter)
     }
-
-
-    /**
-     * 구독 중인 KPI 지표 데이터
-     * 현재 회사가 구독 중인 KPI 지표에 대한 차트 데이터를 반환
-     * */
-    @DgsQuery
-    fun getSubscribedKpiData(@InputArgument("filter") filter: KpiFilter): List<KpiChartData> {
-        return iotService.getSubscribedKpiData(filter.date, filter.range)
-    }
-
-    /**
-     * KPI 구독 정보에 따른 차트 데이터 조회 (지표별 필터 지원)
-     */
-    @DgsQuery
-    fun getKpiChartData(@InputArgument("request") request: KpiChartRequest): List<KpiChartData> {
-        return iotService.getKpiChartDataWithFilters(request)
-    }
-
-    /**
-     * 지표별 필터 입력 객체
-     */
-    data class KpiSubscriptionFilter(
-        val kpiIndicatorCd: String,
-        val date: String,
-        val range: String
-    )
-
-    /**
-     * KPI 차트 요청 입력 객체
-     */
-    data class KpiChartRequest(
-        val defaultFilter: KpiFilter? = null,
-        val indicatorFilters: List<KpiSubscriptionFilter>? = null
-    )
 }
-
-data class KpiFilter(
-    val date: String,
-    val range: String
-)

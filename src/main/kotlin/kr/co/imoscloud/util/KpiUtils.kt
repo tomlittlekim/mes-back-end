@@ -1,9 +1,9 @@
 package kr.co.imoscloud.util
 
 import kr.co.imoscloud.constants.CoreEnum
-import kr.co.imoscloud.fetcher.sensor.KpiFilter
-import kr.co.imoscloud.service.sensor.ChartResponseModel
-import kr.co.imoscloud.service.sensor.Params
+import kr.co.imoscloud.model.kpi.ChartResponseModel
+import kr.co.imoscloud.model.kpi.KpiFilter
+import kr.co.imoscloud.model.kpi.Params
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

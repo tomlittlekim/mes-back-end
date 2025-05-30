@@ -1,8 +1,8 @@
 package kr.co.imoscloud.repository.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
-import kr.co.imoscloud.service.sensor.ChartResponseModel
-import kr.co.imoscloud.service.sensor.ProductionRateModel
+import kr.co.imoscloud.model.kpi.ChartResponseModel
+import kr.co.imoscloud.model.kpi.ProductionRateModel
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

@@ -3,8 +3,7 @@ package kr.co.imoscloud.fetcher.transform3d
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kr.co.imoscloud.fetcher.sensor.KpiFilter
-import kr.co.imoscloud.service.sensor.ChartResponseModel
+import kr.co.imoscloud.model.kpi.ChartResponseModel
 import kr.co.imoscloud.service.transform3d.*
 
 @DgsComponent

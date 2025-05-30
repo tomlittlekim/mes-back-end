@@ -1,6 +1,7 @@
 package kr.co.imoscloud.service.sensor
 
-import kr.co.imoscloud.fetcher.sensor.KpiFilter
+import kr.co.imoscloud.model.kpi.ChartResponseModel
+import kr.co.imoscloud.model.kpi.KpiFilter
 import kr.co.imoscloud.service.system.CompanyService
 import kr.co.imoscloud.util.KpiUtils.dateFormatter
 import kr.co.imoscloud.util.KpiUtils.getParams
@@ -19,6 +20,9 @@ class EquipmentOperationService(
     private val mongoTemplate: MongoTemplate,
     private val companyService: CompanyService,
 ) {
+    /**
+     * 설비 가동률 데이터 조회
+     */
     fun getEquipmentOperationData(filter: KpiFilter): List<ChartResponseModel> {
         val localDate = LocalDate.parse(filter.date, dateFormatter)
         val params = getParams(filter.range)

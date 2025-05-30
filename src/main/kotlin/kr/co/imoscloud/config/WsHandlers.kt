@@ -3,7 +3,6 @@ package kr.co.imoscloud.config
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import kr.co.imoscloud.service.sensor.EquipmentPowerService
-import kr.co.imoscloud.service.sensor.IotService
 import org.json.JSONObject
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.*

@@ -91,7 +91,7 @@ class SystemFetcher(
     fun upsertMenus(@InputArgument("req") req: MenuRequest): String = menuService.upsertMenus(req)
 
     @DgsMutation
-    fun deleteMenu(@InputArgument("id") id: Long): String = menuService.deleteMenu(id)
+    fun deleteMenu(@InputArgument("menuId") menuId: String): String = menuService.deleteMenu(menuId)
 
 
 

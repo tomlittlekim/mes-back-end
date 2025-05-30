@@ -29,7 +29,7 @@ type Menu {
 
 extend type Mutation {
     upsertMenus(req: MenuRequest!): String
-    deleteMenu(id: Int): String
+    deleteMenu(menuId: String!): String
 }
 
 extend type Query {

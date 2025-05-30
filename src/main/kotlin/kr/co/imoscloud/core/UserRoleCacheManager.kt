@@ -111,7 +111,7 @@ class UserRoleCacheManager(
         val result: Int = roleRepo.deleteAllByCompCd(compCd, loginUserId)
         if (result == 0) return
 
-        val map: Map<String?, List<RoleSummery?>> = buildWithNewKey<Long, RoleSummery?, String> { it?.compCd }
+        val map: Map<String?, List<RoleSummery?>> = groupByKeySelector<Long, RoleSummery?, String> { it?.compCd }
         val list: List<RoleSummery?>? = map[compCd]
         val roleIds: List<Long> = list?.mapNotNull { it?.roleId } ?: return
         roleIds.forEach { roleId -> deleteByKey<Long, RoleSummery?>(roleId) }

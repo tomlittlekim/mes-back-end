@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query
 
 interface MenuRepository : JpaRepository<Menu, Long> {
     fun findByIdAndFlagActiveIsTrue(id: Long): Menu?
+    fun findAllByFlagActiveIsTrue(): List<Menu>
 
     @Query("""
         select m

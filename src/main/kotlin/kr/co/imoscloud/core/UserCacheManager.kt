@@ -111,7 +111,7 @@ class UserCacheManager(
         val result = userRepo.deleteAllByCompCd(compCd, loginUserId)
         if (result == 0) return
 
-        val map: Map<String?, List<UserSummery?>> = buildWithNewKey<String, UserSummery?, String> { it?.compCd }
+        val map: Map<String?, List<UserSummery?>> = groupByKeySelector<String, UserSummery?, String> { it?.compCd }
         val list: List<UserSummery?>? = map[compCd]
         val loginIds: List<String> = list?.mapNotNull { it?.loginId } ?: return
         loginIds.forEach { loginId -> deleteByKey<String, UserSummery?>(loginId) }

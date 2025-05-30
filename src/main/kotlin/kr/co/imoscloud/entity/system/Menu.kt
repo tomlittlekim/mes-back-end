@@ -1,6 +1,7 @@
 package kr.co.imoscloud.entity.system
 
 import jakarta.persistence.*
+import kr.co.imoscloud.dto.MenuRequest
 import kr.co.imoscloud.dto.MenuRoleDto
 
 @Entity
@@ -30,6 +31,26 @@ class Menu(
     @Column(name = "FLAG_ACTIVE")
     var flagActive: Boolean = true
 ) {
+    companion object {
+        fun create(req: MenuRequest): Menu = Menu(
+            menuId = req.menuId!!,
+            upMenuId = req.upMenuId!!,
+            menuName = req.menuName!!,
+            flagSubscribe = req.flagSubscribe!!,
+            flagActive = req.flagActive,
+            sequence = req.sequence!!
+        )
+    }
+
+    fun copy(): Menu = Menu(
+        id = this.id,
+        menuId = menuId,
+        upMenuId = this.upMenuId,
+        menuName = this.menuName,
+        flagSubscribe = this.flagSubscribe,
+        sequence = this.sequence,
+        flagActive = this.flagActive
+    )
 
     fun toDto(roleId: Long, upMenuId: String?): MenuRoleDto = MenuRoleDto(
         roleId = roleId,
@@ -37,4 +58,13 @@ class Menu(
         upMenuId = upMenuId,
         flagCategory = this.upMenuId == null
     )
+
+    fun modify(req: MenuRequest): Menu = this.apply {
+        menuId = req.menuId ?: this.menuId
+        upMenuId = req.upMenuId ?: this.upMenuId
+        menuName = req.menuName ?: this.menuName
+        flagSubscribe = req.flagSubscribe ?: this.flagSubscribe
+        sequence = req.sequence ?: this.sequence
+        flagActive = req.flagActive
+    }
 }

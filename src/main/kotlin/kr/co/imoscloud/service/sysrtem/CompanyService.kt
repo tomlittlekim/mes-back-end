@@ -26,7 +26,7 @@ class CompanyService(
         val loginUser = SecurityUtils.getCurrentUserPrincipal()
         return if (rcm.isDeveloper(loginUser)) {
             val companyMap: Map<String, CompanySummery?> = ccm.getCompanies(listOf(loginUser.compCd))
-            if (companyMap.size == 1) ccm.companyRepo.findAll().map { Company.toSummery(it) }
+            if (companyMap.size == 1) ccm.companyRepo.findAll().map { it.toSummery() }
             else companyMap.values.toList()
         } else {
             ccm.getCompanies(listOf(loginUser.compCd))

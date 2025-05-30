@@ -1,6 +1,8 @@
 package kr.co.imoscloud.service.sysrtem
 
 import jakarta.transaction.Transactional
+import kr.co.imoscloud.core.MenuCacheManager
+import kr.co.imoscloud.core.MenuRoleCacheManager
 import kr.co.imoscloud.core.UserRoleCacheManager
 import kr.co.imoscloud.dto.MenuRoleDto
 import kr.co.imoscloud.entity.system.Menu
@@ -12,14 +14,14 @@ import org.springframework.stereotype.Service
 @Service
 class MenuRoleService(
     private val rcm: UserRoleCacheManager,
-    private val menuService: MenuService,
+    private val mcm: MenuCacheManager,
+    val mrcm: MenuRoleCacheManager
 ) {
-    private val mrcm get() = menuService.mrcm
-    private val menuRoleRepo get() = menuService.mrcm.menuRoleRepo
+    private val menuRoleRepo get() = mrcm.menuRoleRepo
 
     fun getMenuRoleGroup(roleId: Long): List<Any> {
-        val allMenuMap = menuService.getAllMenuFromMemory()
-        val allMenu: List<Menu> = allMenuMap.values.toList()
+        val allMenuMap = mcm.getMenus(listOf("string"))
+        val allMenu: List<Menu> = allMenuMap.mapNotNull { (_, v) -> v }.toList()
 
         val menuRoleList = mrcm.getMenuRoles(roleId).map { it.toDto(roleId, allMenuMap[it.menuId]?.upMenuId) }
 
@@ -31,9 +33,7 @@ class MenuRoleService(
                     .map { it.toDto(roleId, allMenuMap[it.menuId]?.upMenuId) }
             } else null
 
-        return defaultMenuRoles
-            ?.let { menuRoleList + defaultMenuRoles }
-            ?: menuRoleList
+        return defaultMenuRoles?.let { menuRoleList + defaultMenuRoles } ?: menuRoleList
     }
 
     fun getMenuRole(menuId: String): MenuRole {
@@ -69,5 +69,25 @@ class MenuRoleService(
 
         mrcm.saveAllAndSyncCache(menuRoleList)
         return "메뉴 권한 ${upsertStr} 성공"
+    }
+
+    fun refreshCategoryIfParentChanged(menu: Menu, changedUpMenuId: String?): Unit {
+        if (menu.upMenuId != changedUpMenuId) {
+            val flagCategory = changedUpMenuId.isNullOrBlank()
+
+            val buildMap: Map<String, List<MenuRole>> = mrcm.groupByKeySelector { it.menuId }
+            val values: List<MenuRole>? = buildMap[menu.menuId]
+
+            values?.let {
+                val updateList = values.map { mr -> mr.modify(flagCategory) }
+                mrcm.saveAllAndSyncCache(updateList)
+            }
+        }
+    }
+
+    fun deleteAllByMenuId(menuId: String): Unit {
+        val buildMap: Map<String, List<MenuRole>> = mrcm.groupByKeySelector { it.menuId }
+        val values: List<MenuRole>? = buildMap[menuId]
+        values?.let { mrcm.softDeleteAndSyncCache(values) }
     }
 }

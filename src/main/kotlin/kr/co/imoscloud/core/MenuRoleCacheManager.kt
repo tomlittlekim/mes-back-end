@@ -27,7 +27,7 @@ class MenuRoleCacheManager(
     }
 
     fun getMenuRoles(roleId: Long): List<MenuRole> {
-        return if (isInspect) return getAllDuringInspection(roleId)
+        return if (isInspect) getAllDuringInspection(roleId)
         else {
             val index = "${roleId}-"
             menuRoleMap
@@ -46,6 +46,17 @@ class MenuRoleCacheManager(
         }
     }
 
+    fun <F> groupByKeySelector(keySelector: (MenuRole) -> F): Map<F, List<MenuRole>> {
+        return if (isInspect) menuRoleRepo.findAll().groupBy { keySelector(it) }
+        else {
+            val decodedList: List<MenuRole> = menuRoleMap.mapNotNull { (key, value) ->
+                val splitKey = key.split("-")
+                value?.let { decodePermissionBitsToMenuRole(value, splitKey[0].toLong(), splitKey[1]) }
+            }
+            decodedList.groupBy { keySelector(it) }
+        }
+    }
+
     @Transactional
     fun saveAllAndSyncCache(menuRoles: List<MenuRole>): List<MenuRole> {
         if (menuRoles.size == 1) menuRoleRepo.save(menuRoles.first())
@@ -54,14 +65,15 @@ class MenuRoleCacheManager(
         return upsertFromMemory(menuRoles)
     }
 
-//    @Transactional
-//    fun softDeleteAndSyncCache(cs: CompanySummery, loginUserId: String): CompanySummery {
-//        val result: Int = menuRoleRepo.softDeleteByCompCdAndFlagActiveIsTrue(cs.compCd, loginUserId)
-//        if (result == 0) throw IllegalArgumentException("유저를 삭제하는데 실패했습니다. ")
-//
-//        deleteFromMemory(cs.compCd)
-//        return cs
-//    }
+    @Transactional
+    fun softDeleteAndSyncCache(entities: List<MenuRole>?): Unit {
+        entities ?: return
+        menuRoleRepo.deleteAll(entities)
+        entities.forEach {
+            val index = "${it.roleId}-${it.menuId}"
+            deleteFromMemory(index)
+        }
+    }
 
     @Scheduled(cron = "0 45 */2 * * *")
     fun inspection() {

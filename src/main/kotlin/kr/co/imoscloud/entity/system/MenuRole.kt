@@ -59,6 +59,13 @@ class MenuRole(
             isSelect = req.isSelect ?: false,
             isUpdate = req.isUpdate ?: false,
         )
+
+        fun initial(roleId: Long, menu: Menu): MenuRole = MenuRole(
+            roleId = roleId,
+            menuId = menu.menuId,
+            isOpen = true,
+            flagCategory = menu.upMenuId == null
+        )
     }
 
     fun toBooleanList(): List<Boolean> = listOf(
@@ -99,5 +106,9 @@ class MenuRole(
         isPrint = req.isPrint ?: this.isPrint
         isSelect = req.isSelect ?: this.isSelect
         isUpdate = req.isUpdate ?: this.isUpdate
+    }
+
+    fun modify(flagCategory: Boolean): MenuRole = this.apply {
+        this.flagCategory = flagCategory
     }
 }

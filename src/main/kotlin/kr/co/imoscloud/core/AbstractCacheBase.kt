@@ -17,7 +17,7 @@ abstract class AbstractCacheBase {
         }
     }
 
-    protected fun  <K, V> getFromMemory(index: K): V? {
+    protected fun <K, V> getFromMemory(index: K): V? {
         return getAllFromMemory<K, V?>(listOf(index))[index]
     }
 
@@ -66,11 +66,19 @@ abstract class AbstractCacheBase {
         return getAllFromMemory<K, V?>(listOf(key))[key] != null
     }
 
-    fun <K, V, F> buildWithNewKey(keySelector: (V) -> F?): Map<F?, List<V?>> {
+    fun <K, V, F> groupByKeySelector(keySelector: (V) -> F?): Map<F?, List<V?>> {
         if (isInspectEnabled()) return emptyMap()
 
         val list: List<V> = getCashMap<K, V?>().values.mapNotNull { v -> copyToValue(v) }
         val map: Map<F?, List<V?>> = list.filterNotNull().groupBy { keySelector(it) }
+        return map
+    }
+
+    fun <K, V, F> associateByKeySelector(keySelector: (V) -> F?): Map<F?, V?> {
+        if (isInspectEnabled()) return emptyMap()
+
+        val list: List<V> = getCashMap<K, V?>().values.mapNotNull { v -> copyToValue(v) }
+        val map: Map<F?, V?> = list.filterNotNull().associateBy { keySelector(it) }
         return map
     }
 

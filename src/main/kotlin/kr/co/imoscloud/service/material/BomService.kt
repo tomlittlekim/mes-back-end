@@ -19,21 +19,15 @@ class BomService(
     private val bomRepository: BomRepository,
     private val bomDetailRepository: BomDetailRepository
 ) {
-    private val DEFAULT_SITE = "imos"
-    private val DEFAULT_COMP_CD = "8Pin"
 
-    private fun getCurrentUser() = try {
-        SecurityUtils.getCurrentUserPrincipal()
-    } catch (e: SecurityException) {
-        null
-    }
+    private fun getCurrentUser() = SecurityUtils.getCurrentUserPrincipal()
 
     // 좌측 그리드 호출
     fun getBomList(filter: BomFilter): List<BomResponseModel> {
         val userPrincipal = getCurrentUser()
         val bomList = bomRepository.getBomList(
-            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
-            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             materialType = filter.materialType,
             materialName = filter.materialName,
             bomName = filter.bomName
@@ -47,8 +41,8 @@ class BomService(
     fun getBomDetail(bomId: String): List<BomDetailResponseModel> {
         val userPrincipal = getCurrentUser()
         val bomDetailList = bomDetailRepository.getBomDetailListByBomId(
-            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
-            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             bomId = bomId
         )
 
@@ -75,8 +69,8 @@ class BomService(
 
         val bomList = createdRows.map {
             Bom(
-                site = userPrincipal?.getSite() ?: DEFAULT_SITE,
-                compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.compCd,
                 bomId = it?.bomId ?: ("BOM" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3)),
                 bomLevel = it?.bomLevel ?: 1,
@@ -85,7 +79,7 @@ class BomService(
                 remark = it.remark
             ).apply {
                 flagActive = true
-                createCommonCol(userPrincipal!!)
+                createCommonCol(userPrincipal)
             }
         }
 
@@ -97,8 +91,8 @@ class BomService(
         val bomIds = updatedRows.mapNotNull { it?.bomId }
 
         val bomList = bomRepository.getBomByBomId(
-            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
-            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             bomIds = bomIds
         )
 
@@ -111,7 +105,7 @@ class BomService(
             bom?.let {
                 it.bom.bomName = x?.bomName
                 it.bom.remark = x?.remark
-                it.bom.updateCommonCol(userPrincipal!!)
+                it.bom.updateCommonCol(userPrincipal)
             }
         }
 
@@ -121,7 +115,7 @@ class BomService(
     // 좌측 그리드 삭제 - 삭제 시 우측 그리드에 bomId로 연관되어 조회되는 부분까지 모두 삭제되어야 함(Soft Delete)
     @Transactional
     fun deleteBom(bomId: String): Boolean {
-        val userPrincipal = getCurrentUser() ?: return false
+        val userPrincipal = getCurrentUser()
         
         // Bom의 flagActive를 false로 업데이트하고 updateCommonCol 처리
         val bom = bomRepository.findBomByBomId(
@@ -158,8 +152,8 @@ class BomService(
 
         val bomDetailList = createdRows.map {
             BomDetail(
-                site = userPrincipal?.getSite() ?: DEFAULT_SITE,
-                compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+                site = userPrincipal.getSite(),
+                compCd = userPrincipal.compCd,
                 bomId = it?.bomId!!,
                 bomDetailId = it.bomDetailId ?: ("DET" + LocalDateTime.now().format(formatter) +
                         System.nanoTime().toString().takeLast(3)),
@@ -170,7 +164,7 @@ class BomService(
                 remark = it.remark
             ).apply {
                 flagActive = true
-                createCommonCol(userPrincipal!!)
+                createCommonCol(userPrincipal)
             }
         }
 
@@ -182,8 +176,8 @@ class BomService(
         val bomDetailIds = updatedRows.mapNotNull { it?.bomDetailId }
 
         val bomDetailList = bomDetailRepository.getBomDetailListByBomDetailIds(
-            site = userPrincipal?.getSite() ?: DEFAULT_SITE,
-            compCd = userPrincipal?.compCd ?: DEFAULT_COMP_CD,
+            site = userPrincipal.getSite(),
+            compCd = userPrincipal.compCd,
             bomDetailIds = bomDetailIds
         )
 
@@ -199,7 +193,7 @@ class BomService(
                 it.bomDetail.parentItemCd = x?.parentItemCd
                 it.bomDetail.itemQty = x?.itemQty
                 it.bomDetail.remark = x?.remark
-                it.bomDetail.updateCommonCol(userPrincipal!!)
+                it.bomDetail.updateCommonCol(userPrincipal)
             }
         }
 
@@ -209,7 +203,7 @@ class BomService(
     // 우측 그리드 삭제 - 기존과 동일하게 행 삭제
     @Transactional
     fun deleteBomDetails(bomDetailIds: List<String>): Boolean {
-        val userPrincipal = getCurrentUser() ?: return false
+        val userPrincipal = getCurrentUser()
 
         val bomDetails = bomDetailRepository.getBomDetailListByBomDetailIds(
             site = userPrincipal.getSite(),

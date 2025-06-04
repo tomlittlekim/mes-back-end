@@ -1,7 +1,6 @@
 package kr.co.imoscloud.repository.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.DefectInfo
-import kr.co.imoscloud.model.productionmanagement.DefectInfoFilter
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

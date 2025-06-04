@@ -1,6 +1,5 @@
 package kr.co.imoscloud.repository.productionmanagement
 
-import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.entity.productionmanagement.QProductionResult

@@ -26,6 +26,8 @@ spring:
         show_sql: false
         format_sql: false
         use_sql_comments: false
+        # 타임존 설정 - LocalDateTime을 한국시간으로 유지
+        jdbc.time_zone: Asia/Seoul
     open-in-view: false
 
 jwt:

@@ -1,7 +1,6 @@
 package kr.co.imoscloud.repository.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
-import java.time.LocalDateTime
 
 interface WorkOrderRepositoryCustom {
     fun getWorkOrderList(

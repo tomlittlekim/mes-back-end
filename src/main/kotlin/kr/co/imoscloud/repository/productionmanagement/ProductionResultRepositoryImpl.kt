@@ -1,8 +1,10 @@
 package kr.co.imoscloud.repository.productionmanagement
 
+import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
 import kr.co.imoscloud.entity.productionmanagement.QProductionResult
+import kr.co.imoscloud.entity.system.QUser
 import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter
 import org.slf4j.LoggerFactory
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
@@ -15,7 +17,7 @@ class ProductionResultRepositoryImpl(
     private val log = LoggerFactory.getLogger(ProductionResultRepositoryImpl::class.java)
 
     /**
-     * 작업지시ID로 생산실적 목록 조회
+     * 작업지시ID로 생산실적 목록 조회 (User LeftJoin으로 createUserName 포함 - 단일 쿼리)
      */
     override fun getProductionResultsByWorkOrderId(
         site: String,
@@ -23,9 +25,16 @@ class ProductionResultRepositoryImpl(
         workOrderId: String
     ): List<ProductionResult> {
         val productionResult = QProductionResult.productionResult
+        val user = QUser.user
 
-        val query = queryFactory
-            .selectFrom(productionResult)
+        // 단일 쿼리로 ProductionResult와 userName을 함께 조회
+        val tuples = queryFactory
+            .select(productionResult, user.userName)
+            .from(productionResult)
+            .leftJoin(user).on(
+                productionResult.createUser.eq(user.loginId)
+                    .and(user.flagActive.eq(true))
+            )
             .where(
                 productionResult.site.eq(site),
                 productionResult.compCd.eq(compCd),
@@ -33,12 +42,19 @@ class ProductionResultRepositoryImpl(
                 productionResult.flagActive.eq(true) // 활성화된 데이터만 조회
             )
             .orderBy(productionResult.createDate.desc())
+            .fetch()
 
-        return query.fetch()
+        // 튜플에서 ProductionResult와 userName을 추출하여 설정
+        return tuples.map { tuple ->
+            val pr = tuple.get(productionResult)!!
+            val userName = tuple.get(user.userName)
+            pr.createUserName = userName
+            pr
+        }
     }
 
     /**
-     * 기본 생산실적 목록 조회
+     * 기본 생산실적 목록 조회 (User LeftJoin으로 createUserName 포함 - 진짜 단일 쿼리)
      */
     override fun getProductionResults(
         site: String,
@@ -55,9 +71,15 @@ class ProductionResultRepositoryImpl(
         flagActive: Boolean?
     ): List<ProductionResult> {
         val productionResult = QProductionResult.productionResult
+        val user = QUser.user
 
         val query = queryFactory
-            .selectFrom(productionResult)
+            .select(productionResult, user.userName)
+            .from(productionResult)
+            .leftJoin(user).on(
+                productionResult.createUser.eq(user.loginId)
+                    .and(user.flagActive.eq(true))
+            )
             .where(
                 productionResult.site.eq(site),
                 productionResult.compCd.eq(compCd)
@@ -130,14 +152,29 @@ class ProductionResultRepositoryImpl(
         // 생산실적ID 역순 정렬 추가
         query.orderBy(productionResult.id.desc())
 
-        return query.fetch()
+        // 단일 쿼리로 ProductionResult와 userName을 함께 조회
+        val tuples = query.fetch()
+
+        // 튜플에서 ProductionResult와 userName을 추출하여 설정
+        return tuples.map { tuple ->
+            val pr = tuple.get(productionResult)!!
+            val userName = tuple.get(user.userName)
+            pr.createUserName = userName
+            pr
+        }
     }
 
     override fun getProductionResultsAtMobile(site: String, compCd: String, filter: ProductionResultFilter?): List<ProductionResult> {
         val productionResult = QProductionResult.productionResult
+        val user = QUser.user
 
         val query = queryFactory
-            .selectFrom(productionResult)
+            .select(productionResult, user.userName)
+            .from(productionResult)
+            .leftJoin(user).on(
+                productionResult.createUser.eq(user.loginId)
+                    .and(user.flagActive.eq(true))
+            )
             .where(
                 productionResult.site.eq(site),
                 productionResult.compCd.eq(compCd),
@@ -184,10 +221,17 @@ class ProductionResultRepositoryImpl(
         // 생산실적ID 역순 정렬 추가
         query.orderBy(productionResult.id.desc())
 
-        return query.fetch()
+        // 단일 쿼리로 ProductionResult와 userName을 함께 조회
+        val tuples = query.fetch()
+
+        // 튜플에서 ProductionResult와 userName을 추출하여 설정
+        return tuples.map { tuple ->
+            val pr = tuple.get(productionResult)!!
+            val userName = tuple.get(user.userName)
+            pr.createUserName = userName
+            pr
+        }
     }
-
-
 
     /**
      * 다중 생산실적 배치 소프트 삭제 (QueryDSL + @Transactional)
@@ -222,5 +266,4 @@ class ProductionResultRepositoryImpl(
         log.debug("QueryDSL 배치 삭제 완료 - 업데이트된 레코드 수: {}", result)
         return result
     }
-
 }

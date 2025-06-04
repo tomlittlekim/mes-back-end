@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
  */
 @DgsComponent
 class MobileProductionResultDataFetcher(
-    private val mobileProductionResultService: MobileProductionResultService
+    private val mobileProductionResultService: MobileProductionResultService,
 ) {
     private val log = LoggerFactory.getLogger(MobileProductionResultDataFetcher::class.java)
 

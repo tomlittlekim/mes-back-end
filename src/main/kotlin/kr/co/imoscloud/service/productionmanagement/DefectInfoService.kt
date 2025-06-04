@@ -58,7 +58,7 @@ class DefectInfoService(
             }
         }
         
-        val results = defectInfoRepository.findDefectInfoWithCauseNameByFilter(
+        return defectInfoRepository.getDefectInfosWithUserName(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
             defectId = filter?.defectId,
@@ -68,17 +68,6 @@ class DefectInfoService(
             fromDate = fromDate,
             toDate = toDate
         )
-        
-        return results.map { result ->
-            val defectInfo = result[0] as DefectInfo
-            val defectCauseName = result[1] as String?
-            val equipmentId = result[2] as String?
-            
-            defectInfo.apply {
-                this.defectCauseName = defectCauseName
-                this.equipmentId = equipmentId
-            }
-        }
     }
 
     /**
@@ -86,22 +75,11 @@ class DefectInfoService(
      */
     fun getDefectInfoByProdResultId(prodResultId: String): List<DefectInfo> {
         val currentUser = getCurrentUserPrincipal()
-        val results = defectInfoRepository.findDefectInfoWithCauseNameByProdResultId(
+        return defectInfoRepository.getDefectInfosByProdResultIdWithUserName(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
             prodResultId = prodResultId
         )
-        
-        return results.map { result ->
-            val defectInfo = result[0] as DefectInfo
-            val defectCauseName = result[1] as String?
-            val equipmentId = result[2] as String?
-            
-            defectInfo.apply {
-                this.defectCauseName = defectCauseName
-                this.equipmentId = equipmentId
-            }
-        }
     }
 
     /**
@@ -112,23 +90,12 @@ class DefectInfoService(
         toDate: java.time.LocalDateTime
     ): List<DefectInfo> {
         val currentUser = getCurrentUserPrincipal()
-        val results = defectInfoRepository.findDefectInfoWithCauseNameForStats(
+        return defectInfoRepository.getDefectInfosForStatsWithUserName(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
             fromDate = fromDate,
             toDate = toDate
         )
-        
-        return results.map { result ->
-            val defectInfo = result[0] as DefectInfo
-            val defectCauseName = result[1] as String?
-            val equipmentId = result[2] as String?
-            
-            defectInfo.apply {
-                this.defectCauseName = defectCauseName
-                this.equipmentId = equipmentId
-            }
-        }
     }
 
     /**

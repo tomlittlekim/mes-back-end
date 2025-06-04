@@ -1,9 +1,7 @@
-package kr.co.imoscloud.entity.system
+package kr.co.imoscloud.entity.kpi
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
-import kr.co.imoscloud.security.UserPrincipal
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "KPI_INDICATOR_MASTER")
@@ -30,9 +28,6 @@ class KpiIndicatorMaster(
 
     @Column(name = "DESCRIPTION")
     var description: String? = null,
-
-    @Column(name = "TARGET_VALUE")
-    var targetValue: Double? = null,
 
     @Column(name = "UNIT")
     var unit: String? = null,

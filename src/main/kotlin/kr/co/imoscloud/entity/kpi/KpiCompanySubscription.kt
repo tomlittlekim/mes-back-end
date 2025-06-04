@@ -1,4 +1,4 @@
-package kr.co.imoscloud.entity.system
+package kr.co.imoscloud.entity.kpi
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
@@ -22,6 +22,9 @@ class KpiCompanySubscription(
 
     @Column(name = "CATEGORY_ID", nullable = false)
     var categoryId: String,
+
+    @Column(name = "TARGET_VALUE")
+    var targetValue: Double? = null,
 
     @Column(name = "DESCRIPTION")
     var description: String? = null,

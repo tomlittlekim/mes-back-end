@@ -157,6 +157,7 @@ class SystemFetcher(
                     compCd = input["compCd"] as String,
                     kpiIndicatorCd = input["kpiIndicatorCd"] as String,
                     categoryId = input["categoryId"] as String,
+                    targetValue = input["targetValue"] as? Double,
                     description = input["description"] as? String,
                     sort = (input["sort"] as? Int),
                     flagActive = (input["flagActive"] as? Boolean) ?: true

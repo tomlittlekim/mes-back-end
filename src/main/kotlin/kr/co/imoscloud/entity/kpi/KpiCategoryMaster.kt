@@ -1,4 +1,4 @@
-package kr.co.imoscloud.entity.system
+package kr.co.imoscloud.entity.kpi
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol

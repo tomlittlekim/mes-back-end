@@ -25,7 +25,6 @@ type KpiIndicator {
     description: String
     categoryCd: String
     categoryNm: String
-    targetValue: Float
     unit: String
     chartType: String
 }
@@ -35,6 +34,7 @@ type KpiSubscription {
     compCd: String
     kpiIndicatorCd: String
     categoryId: String
+    targetValue: Float
     description: String
     sort: Int
     flagActive: Boolean
@@ -45,6 +45,7 @@ input KPISettingInput {
     compCd: String!
     kpiIndicatorCd: String!
     categoryId: String!
+    targetValue: Float
     description: String
     sort: Int
     flagActive: Boolean

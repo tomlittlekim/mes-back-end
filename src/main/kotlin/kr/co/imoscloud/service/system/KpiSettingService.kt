@@ -1,7 +1,7 @@
 package kr.co.imoscloud.service.system
 
 import kr.co.imoscloud.dto.CompanySearchCondition
-import kr.co.imoscloud.entity.system.KpiCompanySubscription
+import kr.co.imoscloud.entity.kpi.KpiCompanySubscription
 import kr.co.imoscloud.model.kpisetting.*
 import kr.co.imoscloud.repository.CodeRep
 import kr.co.imoscloud.repository.system.KpiCategoryRepository
@@ -80,7 +80,6 @@ class KpiSettingService(
                 description = indicator.description,
                 categoryCd = indicator.categoryCd,
                 categoryNm = categories[indicator.categoryCd]?.categoryNm ?: indicator.categoryCd,
-                targetValue = indicator.targetValue,
                 unit = indicator.unit,
                 chartType = indicator.chartType
             )
@@ -102,6 +101,7 @@ class KpiSettingService(
                 compCd = subscription.compCd,
                 kpiIndicatorCd = subscription.kpiIndicatorCd,
                 categoryId = subscription.categoryId,
+                targetValue = subscription.targetValue,
                 description = subscription.description,
                 sort = subscription.sort,
                 flagActive = subscription.flagActive
@@ -141,14 +141,16 @@ class KpiSettingService(
                         val isChanged = existingSubscription.categoryId != setting.categoryId ||
                                        existingSubscription.description != setting.description ||
                                        existingSubscription.sort != setting.sort ||
-                                       existingSubscription.flagActive != (setting.flagActive ?: false)
-                        
+                                       existingSubscription.flagActive != (setting.flagActive ?: false) ||
+                                       existingSubscription.targetValue != setting.targetValue
+
                         if (isChanged) {
                             // 변경된 필드만 업데이트
                             existingSubscription.categoryId = setting.categoryId
                             existingSubscription.description = setting.description
                             existingSubscription.sort = setting.sort
                             existingSubscription.flagActive = setting.flagActive ?: false
+                            existingSubscription.targetValue = setting.targetValue
                             existingSubscription.updateCommonCol(userPrincipal)
                             
                             toSave.add(existingSubscription)
@@ -164,6 +166,7 @@ class KpiSettingService(
                             compCd = setting.compCd,
                             kpiIndicatorCd = setting.kpiIndicatorCd,
                             categoryId = setting.categoryId,
+                            targetValue = setting.targetValue,
                             description = setting.description,
                             sort = setting.sort
                         )

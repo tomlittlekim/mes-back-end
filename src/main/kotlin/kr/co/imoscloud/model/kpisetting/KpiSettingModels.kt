@@ -29,7 +29,6 @@ data class KpiIndicatorModel(
     val description: String?,     // 지표 설명
     val categoryCd: String,       // 카테고리 코드
     val categoryNm: String?,      // 카테고리 이름
-    val targetValue: Double?,     // 목표값
     val unit: String?,            // 단위
     val chartType: String?        // 차트 타입
 )
@@ -44,9 +43,24 @@ data class KpiIndicatorWithCategoryModel(
     val description: String?,     // 지표 설명
     val categoryCd: String,       // 카테고리 코드
     val categoryNm: String?,      // 카테고리 이름
-    val targetValue: Double?,     // 목표값
     val unit: String?,            // 단위
     val chartType: String?        // 차트 타입
+)
+
+/**
+ * KPI 지표와 카테고리, 구독 정보를 함께 포함하는 모델
+ * 카테고리 정보와 회사별 구독 정보(목표값, 활성화 여부 등)를 조인한 결과 표현
+ */
+data class KpiIndicatorWithCategoryAndSubscriptionModel(
+    val kpiIndicatorCd: String,   // 지표 코드
+    val kpiIndicatorNm: String?,  // 지표 이름
+    val description: String?,     // 지표 설명
+    val categoryCd: String,       // 카테고리 코드
+    val categoryNm: String?,      // 카테고리 이름
+    val unit: String?,            // 단위
+    val chartType: String?,       // 차트 타입
+    val targetValue: Double?,     // 회사별 목표값
+    val flagActive: Boolean?      // 활성화 여부
 )
 
 /**
@@ -58,6 +72,7 @@ data class KpiSubscriptionModel(
     val compCd: String,           // 회사 코드
     val kpiIndicatorCd: String,   // 지표 코드
     val categoryId: String,       // 카테고리 ID
+    val targetValue: Double? = null, //목표값
     val description: String?,     // 커스텀 설명
     val sort: Int?,               // 정렬 순서
     val flagActive: Boolean? = true  // 활성화 여부
@@ -72,6 +87,7 @@ data class KpiSettingInput(
     val compCd: String,           // 회사 코드
     val kpiIndicatorCd: String,   // 지표 코드
     val categoryId: String,       // 카테고리 ID
+    val targetValue: Double? = null,     // 목표값
     val description: String?,     // 커스텀 설명
     val sort: Int?,               // 정렬 순서
     val flagActive: Boolean? = true  // 활성화 여부

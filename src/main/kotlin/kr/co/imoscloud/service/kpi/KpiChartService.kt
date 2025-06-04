@@ -139,7 +139,7 @@ class KpiChartService(
             categoryNm = indicator.categoryNm,
             chartType = indicator.chartType ?: "line",
             unit = indicator.unit,
-            targetValue = indicator.targetValue,
+            targetValue = subscription.targetValue,
             chartData = groupedData
         )
     }

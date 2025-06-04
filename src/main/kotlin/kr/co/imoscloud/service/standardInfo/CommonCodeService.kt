@@ -209,6 +209,29 @@ class CommonCodeService(
         }
     }
 
+    fun getGridDefaultCodeList(codeClassIds: List<String>): List<CodeClassListResponse> {
+        val codeClassList = codeClassRep.getCodeClassListByIds(
+            site = "default",
+            compCd = "default",
+            codeClassIds = codeClassIds
+        )
+
+        return codeClassList.map { codeClass ->
+            val codes = codeRep.getGridCodes(
+                site = "default",
+                compCd = "default",
+                codeClassId = codeClass?.codeClassId ?: ""
+            )
+
+            CodeClassListResponse(
+                codeClassId = codeClass?.codeClassId,
+                codeClassName = codeClass?.codeClassName,
+                codeClassDesc = codeClass?.codeClassDesc,
+                codes = entityToResponse(codes)
+            )
+        }
+    }
+
 
     fun getInitialCodes(codeClassId: String):List<CodeResponse> {
         val results = codeRep.getInitialCodes(codeClassId)

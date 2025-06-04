@@ -81,18 +81,4 @@ interface BomRepository : JpaRepository<Bom, Int> {
         compCd: String,
         bomId: String
     ): Bom?
-
-    @Modifying(clearAutomatically = true)
-    @Query("""
-        UPDATE Bom b 
-        SET b.flagActive = false
-        WHERE b.site = :site 
-        AND b.compCd = :compCd 
-        AND b.bomId = :bomId
-    """)
-    fun updateBomFlagActive(
-        site: String,
-        compCd: String,
-        bomId: String
-    ): Int
 } 

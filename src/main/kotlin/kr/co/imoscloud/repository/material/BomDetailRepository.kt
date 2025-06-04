@@ -78,18 +78,4 @@ interface BomDetailRepository : JpaRepository<BomDetail, Int> {
         compCd: String,
         bomDetailIds: List<String>
     ): List<BomDetailMaterialDto>
-
-    @Modifying(clearAutomatically = true)
-    @Query("""
-        UPDATE BomDetail bd 
-        SET bd.flagActive = false
-        WHERE bd.site = :site 
-        AND bd.compCd = :compCd 
-        AND bd.bomDetailId IN :bomDetailIds
-    """)
-    fun updateBomDetailsFlagActiveByBomDetailIds(
-        site: String,
-        compCd: String,
-        bomDetailIds: List<String>
-    ): Int
 }

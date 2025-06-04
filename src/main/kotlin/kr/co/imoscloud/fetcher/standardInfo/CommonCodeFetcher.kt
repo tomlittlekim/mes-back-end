@@ -57,6 +57,12 @@ class CommonCodeFetcher(
         return commonCodeService.getGridCodeList(codeClassIds)
     }
 
+
+    @DgsQuery
+    fun getGridDefaultCodeList(@InputArgument("codeClassIds") codeClassIds: List<String>): List<CodeClassListResponse> {
+        return commonCodeService.getGridDefaultCodeList(codeClassIds)
+    }
+
     @DgsQuery
     fun getInitialCodes(@InputArgument("codeClassId") codeClassId: String): List<CodeResponse> {
         return commonCodeService.getInitialCodes(codeClassId)

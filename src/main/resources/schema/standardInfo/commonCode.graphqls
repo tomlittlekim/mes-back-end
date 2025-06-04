@@ -60,6 +60,7 @@ extend type Query {
     getCodes(codeClassId:String!):[Code]
     getGridCodes(codeClassId:String!):[Code]
     getGridCodeList(codeClassIds: [String!]): [CodeClassResponse]
+    getGridDefaultCodeList(codeClassIds: [String!]): [CodeClassResponse]
     getInitialCodes(codeClassId:String!):[Code]
 }
 

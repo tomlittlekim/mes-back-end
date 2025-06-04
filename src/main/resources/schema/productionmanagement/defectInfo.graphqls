@@ -40,6 +40,7 @@ type DefectInfo {
     equipmentId: String
     createDate: String
     createUser: String
+    createUserName: String
     updateDate: String
     updateUser: String
     flagActive: Boolean

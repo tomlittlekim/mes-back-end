@@ -58,6 +58,11 @@ class ProductionResult(
     @Column(name = "PROD_END_TIME")
     var prodEndTime: LocalDateTime? = null,
 ) : CommonCol() {
+    
+    // JOIN으로 가져올 createUserName 필드 (DB에 저장되지 않음)
+    @Transient
+    var createUserName: String? = null
+    
     fun softDelete(updater: UserPrincipal) {
         this.flagActive = false
         this.updateCommonCol(updater)

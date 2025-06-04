@@ -25,4 +25,36 @@ interface DefectInfoRepositoryCustom {
         updateDate: java.time.LocalDateTime
     ): Long
 
+    /**
+     * 필터 조건으로 불량 정보 조회 (QueryDSL + JOIN으로 createUserName 포함)
+     */
+    fun getDefectInfosWithUserName(
+        site: String,
+        compCd: String,
+        defectId: String?,
+        prodResultId: String?,
+        productId: String?,
+        equipmentId: String?,
+        fromDate: java.time.LocalDateTime?,
+        toDate: java.time.LocalDateTime?
+    ): List<DefectInfo>
+
+    /**
+     * 생산실적 ID로 불량 정보 조회 (QueryDSL + JOIN으로 createUserName 포함)
+     */
+    fun getDefectInfosByProdResultIdWithUserName(
+        site: String,
+        compCd: String,
+        prodResultId: String
+    ): List<DefectInfo>
+
+    /**
+     * 일자별 불량 통계용 조회 (QueryDSL + JOIN으로 createUserName 포함)
+     */
+    fun getDefectInfosForStatsWithUserName(
+        site: String,
+        compCd: String,
+        fromDate: java.time.LocalDateTime,
+        toDate: java.time.LocalDateTime
+    ): List<DefectInfo>
 }

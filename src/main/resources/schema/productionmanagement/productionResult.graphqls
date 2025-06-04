@@ -56,6 +56,7 @@ type ProductionResult {
     prodEndTime: String     # 생산종료일시 추가
     createDate: String
     createUser: String
+    createUserName: String  # 생성자 이름 추가
     updateDate: String
     updateUser: String
     flagActive: Boolean

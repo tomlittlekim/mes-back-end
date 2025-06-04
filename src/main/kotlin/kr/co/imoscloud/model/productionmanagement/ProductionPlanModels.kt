@@ -1,8 +1,11 @@
 package kr.co.imoscloud.model.productionmanagement
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import kr.co.imoscloud.util.DateUtils
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 // ProductionPlan 관련 모델
 data class ProductionPlanFilter(
@@ -31,8 +34,10 @@ data class ProductionPlanDTO(
     val productId: String?,
     val shiftType: String?,
     val planQty: Double?,
-    val planStartDate: LocalDateTime?,
-    val planEndDate: LocalDateTime?,
+    @JsonIgnore
+    val planStartDateTime: LocalDateTime?,
+    @JsonIgnore
+    val planEndDateTime: LocalDateTime?,
     val createDate: LocalDateTime?,
     val createUser: String?,
     val updateDate: LocalDateTime?,
@@ -41,7 +46,15 @@ data class ProductionPlanDTO(
     // 조인 대상 테이블 필드
     val productName: String?,
     val materialCategory: String?
-)
+) {
+    // 계획시작일시 - 시간 정보(시, 분) 포함 형식으로 반환
+    val planStartDate: String?
+        get() = DateUtils.formatLocalDateTimeShort(planStartDateTime)
+    
+    // 계획종료일시 - 시간 정보(시, 분) 포함 형식으로 반환
+    val planEndDate: String?
+        get() = DateUtils.formatLocalDateTimeShort(planEndDateTime)
+}
 
 data class ProductionPlanInput(
     val orderId: String? = null,
@@ -55,19 +68,39 @@ data class ProductionPlanInput(
     val flagActive: Boolean? = true
 ) {
     fun toLocalDateTimes(): Pair<LocalDateTime?, LocalDateTime?> {
-        val startDate = planStartDate?.let {
-            val date = LocalDate.parse(it)
-            LocalDateTime.of(date, LocalTime.MIN) // 00:00:00
-        }
-
-        val endDate = planEndDate?.let {
-            val date = LocalDate.parse(it)
-            // 타임존 변환 문제를 피하기 위해 00:00:00으로 설정
-            // 실제로는 해당 날짜 전체를 의미함
-            LocalDateTime.of(date, LocalTime.MIN)
-        }
-
+        val startDate = planStartDate?.let { parseDateTimeString(it) }
+        val endDate = planEndDate?.let { parseDateTimeString(it) }
         return Pair(startDate, endDate)
+    }
+
+    private fun parseDateTimeString(dateTimeStr: String): LocalDateTime? {
+        return try {
+            // 먼저 날짜와 시간이 모두 포함된 형태인지 확인 (예: "2024-01-01T14:30" 또는 "2024-01-01 14:30")
+            when {
+                dateTimeStr.contains("T") -> {
+                    // ISO 형태 (2024-01-01T14:30)
+                    if (dateTimeStr.length == 16) {
+                        // 초 없이 분까지만 (2024-01-01T14:30)
+                        LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                    } else {
+                        // 기본 ISO 파싱 시도
+                        LocalDateTime.parse(dateTimeStr)
+                    }
+                }
+                dateTimeStr.contains(" ") -> {
+                    // 공백으로 구분된 형태 (2024-01-01 14:30)
+                    LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                }
+                else -> {
+                    // 날짜만 있는 경우 (2024-01-01) - 00:00:00으로 설정
+                    val date = LocalDate.parse(dateTimeStr)
+                    LocalDateTime.of(date, LocalTime.MIN)
+                }
+            }
+        } catch (e: Exception) {
+            // 파싱 실패 시 null 반환
+            null
+        }
     }
 }
 
@@ -84,19 +117,39 @@ data class ProductionPlanUpdate(
     val flagActive: Boolean? = null
 ) {
     fun toLocalDateTimes(): Pair<LocalDateTime?, LocalDateTime?> {
-        val startDate = planStartDate?.let {
-            val date = LocalDate.parse(it)
-            LocalDateTime.of(date, LocalTime.MIN) // 00:00:00
-        }
-
-        val endDate = planEndDate?.let {
-            val date = LocalDate.parse(it)
-            // 타임존 변환 문제를 피하기 위해 00:00:00으로 설정  
-            // 실제로는 해당 날짜 전체를 의미함
-            LocalDateTime.of(date, LocalTime.MIN)
-        }
-
+        val startDate = planStartDate?.let { parseDateTimeString(it) }
+        val endDate = planEndDate?.let { parseDateTimeString(it) }
         return Pair(startDate, endDate)
+    }
+
+    private fun parseDateTimeString(dateTimeStr: String): LocalDateTime? {
+        return try {
+            // 먼저 날짜와 시간이 모두 포함된 형태인지 확인 (예: "2024-01-01T14:30" 또는 "2024-01-01 14:30")
+            when {
+                dateTimeStr.contains("T") -> {
+                    // ISO 형태 (2024-01-01T14:30)
+                    if (dateTimeStr.length == 16) {
+                        // 초 없이 분까지만 (2024-01-01T14:30)
+                        LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                    } else {
+                        // 기본 ISO 파싱 시도
+                        LocalDateTime.parse(dateTimeStr)
+                    }
+                }
+                dateTimeStr.contains(" ") -> {
+                    // 공백으로 구분된 형태 (2024-01-01 14:30)
+                    LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                }
+                else -> {
+                    // 날짜만 있는 경우 (2024-01-01) - 00:00:00으로 설정
+                    val date = LocalDate.parse(dateTimeStr)
+                    LocalDateTime.of(date, LocalTime.MIN)
+                }
+            }
+        } catch (e: Exception) {
+            // 파싱 실패 시 null 반환
+            null
+        }
     }
 }
 

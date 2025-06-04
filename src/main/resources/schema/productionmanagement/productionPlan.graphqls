@@ -26,7 +26,9 @@ type ProductionPlan {
     materialCategory: String  # MaterialMaster 테이블에서 조인한 필드
     shiftType: String
     planQty: Float
+    # 계획시작일시 - 날짜와 시간(시, 분) 포함 (형식: "yyyy-MM-dd HH:mm" 또는 "yyyy-MM-ddTHH:mm")
     planStartDate: String
+    # 계획종료일시 - 날짜와 시간(시, 분) 포함 (형식: "yyyy-MM-dd HH:mm" 또는 "yyyy-MM-ddTHH:mm")
     planEndDate: String
     createDate: String
     createUser: String
@@ -83,7 +85,9 @@ input ProductionPlanInput {
     productName: String  # 클라이언트에서 전송용
     shiftType: String
     planQty: Float
+    # 계획시작일시 - 날짜와 시간(시, 분) 포함 (형식: "yyyy-MM-dd HH:mm" 또는 "yyyy-MM-ddTHH:mm")
     planStartDate: String
+    # 계획종료일시 - 날짜와 시간(시, 분) 포함 (형식: "yyyy-MM-dd HH:mm" 또는 "yyyy-MM-ddTHH:mm")
     planEndDate: String
     flagActive: Boolean
 }
@@ -96,7 +100,9 @@ input ProductionPlanUpdate {
     productName: String  # 클라이언트에서 전송용
     shiftType: String
     planQty: Float
+    # 계획시작일시 - 날짜와 시간(시, 분) 포함 (형식: "yyyy-MM-dd HH:mm" 또는 "yyyy-MM-ddTHH:mm")
     planStartDate: String
+    # 계획종료일시 - 날짜와 시간(시, 분) 포함 (형식: "yyyy-MM-dd HH:mm" 또는 "yyyy-MM-ddTHH:mm")
     planEndDate: String
     flagActive: Boolean
 }

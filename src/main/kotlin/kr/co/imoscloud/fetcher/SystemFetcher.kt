@@ -8,11 +8,7 @@ import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.entity.system.Menu
 import kr.co.imoscloud.entity.system.UserRole
-import kr.co.imoscloud.model.kpisetting.BranchModel
-import kr.co.imoscloud.model.kpisetting.KpiIndicatorModel
-import kr.co.imoscloud.model.kpisetting.KpiSettingInput
-import kr.co.imoscloud.model.kpisetting.KpiSettingResult
-import kr.co.imoscloud.model.kpisetting.KpiSubscriptionModel
+import kr.co.imoscloud.model.kpisetting.*
 import kr.co.imoscloud.service.system.*
 
 @DgsComponent

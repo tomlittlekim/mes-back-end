@@ -5,7 +5,8 @@ import com.netflix.graphql.dgs.DgsQueryExecutor
 import kr.co.imoscloud.service.sensor.EquipmentPowerService
 import org.json.JSONObject
 import org.springframework.stereotype.Component
-import org.springframework.web.socket.*
+import org.springframework.web.socket.TextMessage
+import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
 
 @Component

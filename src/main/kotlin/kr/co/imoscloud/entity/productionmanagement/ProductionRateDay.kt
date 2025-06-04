@@ -1,7 +1,6 @@
 package kr.co.imoscloud.entity.productionmanagement
 
 import jakarta.persistence.*
-import java.time.Instant
 import java.time.LocalDateTime
 
 @Entity

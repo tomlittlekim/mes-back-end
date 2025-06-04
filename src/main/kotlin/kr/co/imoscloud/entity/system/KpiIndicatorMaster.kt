@@ -2,8 +2,6 @@ package kr.co.imoscloud.entity.system
 
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
-import kr.co.imoscloud.security.UserPrincipal
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "KPI_INDICATOR_MASTER")

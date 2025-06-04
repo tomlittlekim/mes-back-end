@@ -4,7 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.model.kpi.ChartResponseModel
-import kr.co.imoscloud.service.transform3d.*
+import kr.co.imoscloud.service.transform3d.TransForm3dService
 
 @DgsComponent
 class Transform3dFetcher (

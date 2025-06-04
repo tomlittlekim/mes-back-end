@@ -3,7 +3,6 @@ package kr.co.imoscloud.repository.material
 import kr.co.imoscloud.entity.material.Bom
 import kr.co.imoscloud.model.material.BomMaterialDto
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 interface BomRepository : JpaRepository<Bom, Int> {

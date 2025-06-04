@@ -3,9 +3,7 @@ package kr.co.imoscloud.entity.productionmanagement
 import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
 import kr.co.imoscloud.security.UserPrincipal
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 @Entity
 @Table(name = "PRODUCTION_PLAN")

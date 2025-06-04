@@ -5,7 +5,9 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kr.co.imoscloud.model.kpi.ChartResponseModel
 import kr.co.imoscloud.model.kpi.KpiFilter
-import kr.co.imoscloud.service.sensor.*
+import kr.co.imoscloud.service.sensor.EquipmentOperationService
+import kr.co.imoscloud.service.sensor.EquipmentPowerService
+import kr.co.imoscloud.service.sensor.KpiProductionService
 
 /**
  * IoT 및 KPI 데이터 조회를 위한 GraphQL Fetcher

@@ -4,7 +4,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.QWorkOrder
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
-import java.time.LocalDateTime
 
 class WorkOrderRepositoryImpl(
     private val queryFactory: JPAQueryFactory

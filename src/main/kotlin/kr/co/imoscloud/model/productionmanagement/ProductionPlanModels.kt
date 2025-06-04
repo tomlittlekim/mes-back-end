@@ -57,12 +57,14 @@ data class ProductionPlanInput(
     fun toLocalDateTimes(): Pair<LocalDateTime?, LocalDateTime?> {
         val startDate = planStartDate?.let {
             val date = LocalDate.parse(it)
-            LocalDateTime.of(date, LocalTime.MIN)
+            LocalDateTime.of(date, LocalTime.MIN) // 00:00:00
         }
 
         val endDate = planEndDate?.let {
             val date = LocalDate.parse(it)
-            LocalDateTime.of(date, LocalTime.MAX)
+            // 타임존 변환 문제를 피하기 위해 00:00:00으로 설정
+            // 실제로는 해당 날짜 전체를 의미함
+            LocalDateTime.of(date, LocalTime.MIN)
         }
 
         return Pair(startDate, endDate)
@@ -84,12 +86,14 @@ data class ProductionPlanUpdate(
     fun toLocalDateTimes(): Pair<LocalDateTime?, LocalDateTime?> {
         val startDate = planStartDate?.let {
             val date = LocalDate.parse(it)
-            LocalDateTime.of(date, LocalTime.MIN)
+            LocalDateTime.of(date, LocalTime.MIN) // 00:00:00
         }
 
         val endDate = planEndDate?.let {
             val date = LocalDate.parse(it)
-            LocalDateTime.of(date, LocalTime.MAX)
+            // 타임존 변환 문제를 피하기 위해 00:00:00으로 설정  
+            // 실제로는 해당 날짜 전체를 의미함
+            LocalDateTime.of(date, LocalTime.MIN)
         }
 
         return Pair(startDate, endDate)

@@ -7,20 +7,20 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-// ProductionPlan 관련 모델
+// GraphQL Input 타입 (다른 productionmanagement 클래스들과 일관성 유지)
 data class ProductionPlanFilter(
-    var prodPlanId: String? = null,
-    var orderId: String? = null,
-    var orderDetailId: String? = null,
-    var productId: String? = null,
-    var productName: String? = null, // 제품명 필드 추가
-    var materialCategory: String? = null, // 제품 유형 필드 추가 - 검색용으로만 사용
-    var shiftType: String? = null,
-    var planStartDateFrom: LocalDate? = null,
-    var planStartDateTo: LocalDate? = null,
-    var planEndDateFrom: LocalDate? = null,  // 추가: 계획종료일 범위 시작
-    var planEndDateTo: LocalDate? = null,    // 추가: 계획종료일 범위 끝
-    var flagActive: Boolean? = null
+    val prodPlanId: String? = null,
+    val orderId: String? = null,
+    val orderDetailId: String? = null,
+    val productId: String? = null,
+    val productName: String? = null,
+    val materialCategory: String? = null,
+    val shiftType: String? = null,
+    val planStartDateFrom: String? = null,
+    val planStartDateTo: String? = null,
+    val planEndDateFrom: String? = null,
+    val planEndDateTo: String? = null,
+    val flagActive: Boolean? = null
 )
 
 // 조회 결과를 담을 DTO 클래스 정의

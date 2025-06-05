@@ -8,9 +8,14 @@ import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipalOrNull
+import kr.co.imoscloud.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
+/**
+ * 생산계획 CRUD 서비스
+ * 생산계획의 생성, 조회, 수정, 삭제 등 기본적인 데이터 관리를 담당
+ */
 @Service
 class ProductionPlanService(
     val productionPlanRepository: ProductionPlanRepository,
@@ -43,25 +48,28 @@ class ProductionPlanService(
         val currentUser = getCurrentUserPrincipalOrNull()
             ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
 
-        // flagActive가 null인 경우 true로 설정하여 활성화된 데이터만 조회
-        val activeFilter = filter.copy(flagActive = filter.flagActive ?: true)
+        // DateUtils를 활용하여 String 날짜를 LocalDate로 변환 (기존 변환 로직 유지)
+        val planStartDateFrom = DateUtils.parseDate(filter.planStartDateFrom)
+        val planStartDateTo = DateUtils.parseDate(filter.planStartDateTo)
+        val planEndDateFrom = DateUtils.parseDate(filter.planEndDateFrom)
+        val planEndDateTo = DateUtils.parseDate(filter.planEndDateTo)
 
         // 생산계획 목록 조회 (DTO로 반환)
         return productionPlanRepository.getProductionPlanList(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
-            prodPlanId = activeFilter.prodPlanId,
-            orderId = activeFilter.orderId,
-            orderDetailId = activeFilter.orderDetailId,
-            productId = activeFilter.productId,
-            productName = activeFilter.productName,
-            materialCategory = activeFilter.materialCategory,
-            shiftType = activeFilter.shiftType,
-            planStartDateFrom = activeFilter.planStartDateFrom,
-            planStartDateTo = activeFilter.planStartDateTo,
-            planEndDateFrom = activeFilter.planEndDateFrom,
-            planEndDateTo = activeFilter.planEndDateTo,
-            flagActive = activeFilter.flagActive
+            prodPlanId = filter.prodPlanId,
+            orderId = filter.orderId,
+            orderDetailId = filter.orderDetailId,
+            productId = filter.productId,
+            productName = filter.productName,
+            materialCategory = filter.materialCategory,
+            shiftType = filter.shiftType,
+            planStartDateFrom = planStartDateFrom,
+            planStartDateTo = planStartDateTo,
+            planEndDateFrom = planEndDateFrom,
+            planEndDateTo = planEndDateTo,
+            flagActive = filter.flagActive ?: true // 기본값 true 설정
         )
     }
 
@@ -207,45 +215,5 @@ class ProductionPlanService(
             log.error("생산계획 소프트 삭제 중 오류 발생", e)
             throw e  // 오류를 상위로 전파하도록 변경
         }
-    }
-
-    /*
-    레포트 화면에서 계획대비 실적조회를 하기 위한 메서드
-     */
-
-    fun getPlanVsActualData(filter: PlanVsActualFilter): List<PlanVsActualGraphQLDto> {
-        val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
-
-        val materialIds = filter.systemMaterialIds?.filterNotNull()?.takeIf { it.isNotEmpty() }
-
-        // 인터페이스 프로젝션 사용
-        val results = productionPlanRepository.planVsActual(
-            site = currentUser.getSite(),
-            compCd = currentUser.compCd,
-            systemMaterialIds = materialIds,
-            flagActive = true,
-            startDate = filter.startDate,
-            endDate = filter.endDate
-        )
-        
-        // 인터페이스 프로젝션 결과를 GraphQL 응답용 DTO로 변환
-        return results.map { it.toGraphQLResponse() }
-    }
-
-    fun getPeriodicProduction(filter: PlanVsActualFilter): List<PeriodicProductionResponseDto> {
-        val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
-
-        val materialIds = filter.systemMaterialIds?.takeIf { it.isNotEmpty() }
-
-        return productionPlanRepository.periodicProduction(
-            site = currentUser.getSite(),
-            compCd = currentUser.compCd,
-            systemMaterialIds = materialIds,
-            flagActive = true,
-            startDate = filter.startDate,
-            endDate = filter.endDate
-        )
     }
 }

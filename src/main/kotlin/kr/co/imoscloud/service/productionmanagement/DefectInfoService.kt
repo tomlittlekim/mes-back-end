@@ -19,7 +19,6 @@ import java.time.LocalTime
 @Service
 class DefectInfoService(
     private val defectInfoRepository: DefectInfoRepository,
-    private val productionResultRepository: ProductionResultRepository
 ) {
     /**
      * 모든 불량 정보 조회 (CODE 테이블과 JOIN하여 defectCauseName 포함)

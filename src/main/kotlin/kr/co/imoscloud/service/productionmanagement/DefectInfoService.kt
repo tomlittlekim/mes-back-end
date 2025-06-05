@@ -102,12 +102,13 @@ class DefectInfoService(
                 }
             }
 
-            validatedDefectInfos.forEachIndexed { index, input ->
+            // 모든 DefectInfo 엔티티를 먼저 생성
+            val defectInfoEntities = validatedDefectInfos.mapIndexed { index, input ->
                 // 불량정보 ID 생성 - UUID 사용으로 더 안전하게 변경
                 val uuid = java.util.UUID.randomUUID().toString()
                 val defectId = "DF-${uuid.substring(0, 8)}-$index"
 
-                val newDefectInfo = DefectInfo().apply {
+                DefectInfo().apply {
                     site = currentUser.getSite()
                     compCd = currentUser.compCd
                     this.prodResultId = prodResultId
@@ -132,9 +133,10 @@ class DefectInfoService(
                     flagActive = true
                     createCommonCol(currentUser)
                 }
-
-                defectInfoRepository.save(newDefectInfo)
             }
+
+            // 배치 저장으로 DB 통신 횟수 최적화
+            defectInfoRepository.saveAll(defectInfoEntities)
 
             return true
         } catch (e: Exception) {

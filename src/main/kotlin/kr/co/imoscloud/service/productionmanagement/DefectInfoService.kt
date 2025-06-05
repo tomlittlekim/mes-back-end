@@ -6,8 +6,11 @@ import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
 import kr.co.imoscloud.repository.productionmanagement.DefectInfoRepository
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipal
+import kr.co.imoscloud.util.DateUtils
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 /**
  * 불량 정보 서비스
@@ -26,37 +29,8 @@ class DefectInfoService(
     fun getAllDefectInfos(filter: DefectInfoFilter? = null): List<DefectInfo?>? {
         val currentUser = getCurrentUserPrincipal()
         
-        // 필터 조건 처리
-        val fromDate = filter?.fromDate?.let { fromDateStr ->
-            try {
-                val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                val fromDate = java.time.LocalDate.parse(fromDateStr, formatter)
-                java.time.LocalDateTime.of(fromDate, java.time.LocalTime.MIN)
-            } catch (e: Exception) {
-                try {
-                    val formatterWithTime = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-                    java.time.LocalDateTime.parse(fromDateStr, formatterWithTime)
-                } catch (e: Exception) {
-                    null
-                }
-            }
-        }
-        
-        val toDate = filter?.toDate?.let { toDateStr ->
-            try {
-                val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                val toDate = java.time.LocalDate.parse(toDateStr, formatter)
-                val nextDay = toDate.plusDays(1)
-                java.time.LocalDateTime.of(nextDay, java.time.LocalTime.MIN)
-            } catch (e: Exception) {
-                try {
-                    val formatterWithTime = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-                    java.time.LocalDateTime.parse(toDateStr, formatterWithTime)
-                } catch (e: Exception) {
-                    null
-                }
-            }
-        }
+        // 필터 조건 처리 - 기존 DateUtils 함수들을 조합하여 사용
+        val (fromDate, toDate) = parseFilterDateRange(filter?.fromDate, filter?.toDate)
         
         return defectInfoRepository.getDefectInfosWithUserName(
             site = currentUser.getSite(),
@@ -71,6 +45,25 @@ class DefectInfoService(
     }
 
     /**
+     * 불량 정보 필터링을 위한 날짜 범위 처리 (private 함수)
+     * 시작 날짜는 해당 날짜의 00:00으로, 종료 날짜는 다음 날의 00:00으로 설정
+     */
+    private fun parseFilterDateRange(fromDateStr: String?, toDateStr: String?): Pair<LocalDateTime?, LocalDateTime?> {
+        val fromDate = fromDateStr?.let { 
+            DateUtils.parseDateTimeExact(it) // 기존 DateUtils 함수 사용
+        }
+        
+        val toDate = toDateStr?.let { 
+            DateUtils.parseDate(it)?.let { date ->
+                // 종료 날짜는 다음 날 00:00으로 설정 (특정 비즈니스 로직)
+                LocalDateTime.of(date.plusDays(1), LocalTime.MIN)
+            } ?: DateUtils.parseDateTimeExact(it) // 시간이 포함된 경우
+        }
+        
+        return Pair(fromDate, toDate)
+    }
+
+    /**
      * 생산 실적 ID로 불량 정보 조회 (CODE 테이블과 JOIN하여 defectCauseName 포함, ProductionResult와 JOIN하여 equipmentId 포함)
      */
     fun getDefectInfoByProdResultId(prodResultId: String): List<DefectInfo> {
@@ -79,22 +72,6 @@ class DefectInfoService(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
             prodResultId = prodResultId
-        )
-    }
-
-    /**
-     * 일자별 불량 통계용 조회 (CODE 테이블과 JOIN하여 defectCauseName 포함, ProductionResult와 JOIN하여 equipmentId 포함)
-     */
-    fun getDefectInfoForStats(
-        fromDate: java.time.LocalDateTime,
-        toDate: java.time.LocalDateTime
-    ): List<DefectInfo> {
-        val currentUser = getCurrentUserPrincipal()
-        return defectInfoRepository.getDefectInfosForStatsWithUserName(
-            site = currentUser.getSite(),
-            compCd = currentUser.compCd,
-            fromDate = fromDate,
-            toDate = toDate
         )
     }
 
@@ -166,22 +143,6 @@ class DefectInfoService(
     }
 
     /**
-     * 불량정보 저장 (단순 save)
-     */
-    @Transactional
-    fun saveDefectInfo(defectInfo: DefectInfo): DefectInfo {
-        return defectInfoRepository.save(defectInfo)
-    }
-
-    /**
-     * 불량정보 배치 저장 (saveAll)
-     */
-    @Transactional
-    fun saveAllDefectInfos(defectInfos: List<DefectInfo>): List<DefectInfo> {
-        return defectInfoRepository.saveAll(defectInfos)
-    }
-
-    /**
      * 다중 생산실적 ID로 불량정보 배치 소프트 삭제 (saveAll 방식 - 안전하고 디버깅 용이)
      */
     @Transactional
@@ -204,6 +165,5 @@ class DefectInfoService(
         val savedDefectInfos = defectInfoRepository.saveAll(allDefectInfos)
         return savedDefectInfos.size
     }
-
 
 }

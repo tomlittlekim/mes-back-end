@@ -4,7 +4,15 @@ import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
 
 @Entity
-@Table(name = "KPI_COMPANY_SUBSCRIPTION")
+@Table(
+    name = "KPI_COMPANY_SUBSCRIPTION",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_KPI_COMPANY_SUBSCRIPTION",
+            columnNames = ["SITE", "COMP_CD", "KPI_INDICATOR_CD"]
+        )
+    ]
+)
 class KpiCompanySubscription(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

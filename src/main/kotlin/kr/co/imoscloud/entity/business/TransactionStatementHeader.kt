@@ -6,7 +6,15 @@ import kr.co.imoscloud.iface.DtoCompCdBase
 import java.time.LocalDate
 
 @Entity
-@Table(name = "TRANSACTION_STATEMENT_HEADER")
+@Table(
+    name = "TRANSACTION_STATEMENT_HEADER",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_TRANSACTION_STATEMENT",
+            columnNames = ["SITE", "COMP_CD", "ORDER_NO"]
+        )
+    ]
+)
 class TransactionStatementHeader(
 
     @Id

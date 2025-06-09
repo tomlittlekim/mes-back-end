@@ -4,7 +4,15 @@ import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
 
 @Entity
-@Table(name = "FILE_MANAGEMENT")
+@Table(
+    name = "FILE_MANAGEMENT",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "uk_file_management_multi",
+            columnNames = ["FILE_EXTENSION", "FILE_NAME", "FILE_PATH"]
+        )
+    ]
+)
 class FileManagement(
 
     @Id

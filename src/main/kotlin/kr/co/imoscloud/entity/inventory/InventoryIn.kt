@@ -4,7 +4,15 @@ import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "INVENTORY_IN")
+@Table(
+    name = "INVENTORY_IN",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UNIQUE_INVENTORY_IN",
+            columnNames = ["SITE", "COMP_CD", "IN_MANAGEMENT_ID", "IN_INVENTORY_ID"]
+        )
+    ]
+)
 class InventoryIn {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

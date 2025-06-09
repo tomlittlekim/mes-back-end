@@ -5,7 +5,15 @@ import kr.co.imoscloud.entity.CommonCol
 import kr.co.imoscloud.iface.DtoCompCdBase
 
 @Entity
-@Table(name = "SHIPMENT_HEADER")
+@Table(
+    name = "SHIPMENT_HEADER",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_ORDER_DETAIL_SITE_COMP_ORDER",
+            columnNames = ["SITE", "COMP_CD", "ORDER_NO"]
+        )
+    ]
+)
 class ShipmentHeader(
 
     @Id

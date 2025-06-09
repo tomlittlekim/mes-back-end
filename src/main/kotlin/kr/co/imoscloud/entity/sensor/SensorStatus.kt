@@ -5,7 +5,15 @@ import org.hibernate.annotations.ColumnDefault
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "SENSOR_STATUS")
+@Table(
+    name = "SENSOR_STATUS",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "SENSOR_STATUS_pk",
+            columnNames = ["SITE", "COMP_CD", "DEVICE_ID"]
+        )
+    ]
+)
 class SensorStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

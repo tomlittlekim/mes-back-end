@@ -11,7 +11,15 @@ import kr.co.imoscloud.util.DateUtils
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "COMPANY")
+@Table(
+    name = "COMPANY",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "COMPANY_UK",
+            columnNames = ["SITE", "COMP_CD"]
+        )
+    ]
+)
 class Company(
 
     @Id
@@ -70,44 +78,44 @@ class Company(
     @Column(name = "WORK_END_TIME")
     var workEndTime: String? = null,
 
-    ) : CommonCol(), DtoLoginIdBase, DtoCompCdBase {
+) : CommonCol(), DtoLoginIdBase, DtoCompCdBase {
 
-        companion object {
-            fun create(req: CompanyDto, randomPwd: String): Company = Company(
-                site = req.site!!,
-                compCd = req.compCd!!,
-                businessRegistrationNumber = req.businessRegistrationNumber!!,
-                corporateRegistrationNumber = req.corporateRegistrationNumber!!,
-                companyName = req.companyName!!,
-                imagePath = req.imagePath,
-                businessAddress = req.businessAddress,
-                businessType = req.businessType,
-                businessItem = req.businessItem,
-                flagSubscription = req.flagSubscription,
-                phoneNumber = req.phoneNumber,
-                loginId = "temp",
-                defaultUserPwd = req.defaultUserPwd ?: randomPwd
-            )
-        }
-
-        fun modify(req: CompanyDto, loginUser: UserPrincipal): Company = this.apply {
-            site = req.site ?: this.site
-            imagePath = req.imagePath ?: this.imagePath
-            businessAddress = req.businessAddress ?: this.businessAddress
-            businessType = req.businessType ?: this.businessType
-            businessItem = req.businessItem ?: this.businessItem
-            paymentDate = DateUtils.parseDateTime(req.paymentDate) ?: this.paymentDate
-            expiredDate = DateUtils.parseDateTime(req.expiredDate) ?: this.expiredDate
-            flagSubscription = req.flagSubscription
-            phoneNumber = req.phoneNumber ?: this.phoneNumber
-            defaultUserPwd = req.defaultUserPwd ?: this.defaultUserPwd
-            updateCommonCol(loginUser)
-        }
-
-        fun toSummery(): CompanySummery = CompanySummery(
-            this.id,
-            this.compCd,
-            this.companyName,
-            this.defaultUserPwd ?: "1234"
+    companion object {
+        fun create(req: CompanyDto, randomPwd: String): Company = Company(
+            site = req.site!!,
+            compCd = req.compCd!!,
+            businessRegistrationNumber = req.businessRegistrationNumber!!,
+            corporateRegistrationNumber = req.corporateRegistrationNumber!!,
+            companyName = req.companyName!!,
+            imagePath = req.imagePath,
+            businessAddress = req.businessAddress,
+            businessType = req.businessType,
+            businessItem = req.businessItem,
+            flagSubscription = req.flagSubscription,
+            phoneNumber = req.phoneNumber,
+            loginId = "temp",
+            defaultUserPwd = req.defaultUserPwd ?: randomPwd
         )
     }
+
+    fun modify(req: CompanyDto, loginUser: UserPrincipal): Company = this.apply {
+        site = req.site ?: this.site
+        imagePath = req.imagePath ?: this.imagePath
+        businessAddress = req.businessAddress ?: this.businessAddress
+        businessType = req.businessType ?: this.businessType
+        businessItem = req.businessItem ?: this.businessItem
+        paymentDate = DateUtils.parseDateTime(req.paymentDate) ?: this.paymentDate
+        expiredDate = DateUtils.parseDateTime(req.expiredDate) ?: this.expiredDate
+        flagSubscription = req.flagSubscription
+        phoneNumber = req.phoneNumber ?: this.phoneNumber
+        defaultUserPwd = req.defaultUserPwd ?: this.defaultUserPwd
+        updateCommonCol(loginUser)
+    }
+
+    fun toSummery(): CompanySummery = CompanySummery(
+        this.id,
+        this.compCd,
+        this.companyName,
+        this.defaultUserPwd ?: "1234"
+    )
+}

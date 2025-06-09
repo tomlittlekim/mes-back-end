@@ -4,7 +4,15 @@ import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
 
 @Entity
-@Table(name = "KPI_CATEGORY_MASTER")
+@Table(
+    name = "KPI_CATEGORY_MASTER",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_KPI_CATEGORY_MASTER",
+            columnNames = ["SITE", "COMP_CD", "CATEGORY_CD"]
+        )
+    ]
+)
 class KpiCategoryMaster(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

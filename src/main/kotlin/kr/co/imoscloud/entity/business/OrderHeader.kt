@@ -6,7 +6,15 @@ import kr.co.imoscloud.iface.DtoCompCdBase
 import java.time.LocalDate
 
 @Entity
-@Table(name = "ORDER_HEADER")
+@Table(
+    name = "ORDER_HEADER",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_ORDER_DETAIL_SITE_COMP_ORDER",
+            columnNames = ["SITE", "COMP_CD", "ORDER_NO"]
+        )
+    ]
+)
 class OrderHeader(
 
     @Id

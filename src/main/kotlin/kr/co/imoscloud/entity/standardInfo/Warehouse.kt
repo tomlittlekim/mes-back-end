@@ -4,7 +4,15 @@ import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
 
 @Entity
-@Table(name = "WAREHOUSE")
+@Table(
+    name = "WAREHOUSE",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_LINE_SITE_COMP_FID_LID",
+            columnNames = ["SITE", "COMP_CD", "FACTORY_ID", "WAREHOUSE_ID"]
+        )
+    ]
+)
 class Warehouse (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

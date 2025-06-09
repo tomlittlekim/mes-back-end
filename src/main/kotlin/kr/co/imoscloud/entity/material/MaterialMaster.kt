@@ -4,7 +4,15 @@ import jakarta.persistence.*
 import kr.co.imoscloud.entity.CommonCol
 
 @Entity
-@Table(name = "MATERIAL_MASTER")
+@Table(
+    name = "MATERIAL_MASTER",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UNIQUE_SITE_COMP_SYSMTRLID",
+            columnNames = ["SITE", "COMP_CD", "SYSTEM_MATERIAL_ID"]
+        )
+    ]
+)
 class MaterialMaster (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

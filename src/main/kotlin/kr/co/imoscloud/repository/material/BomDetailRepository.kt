@@ -3,7 +3,6 @@ package kr.co.imoscloud.repository.material
 import kr.co.imoscloud.entity.material.BomDetail
 import kr.co.imoscloud.model.material.BomDetailMaterialDto
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 interface BomDetailRepository : JpaRepository<BomDetail, Int> {
@@ -78,18 +77,4 @@ interface BomDetailRepository : JpaRepository<BomDetail, Int> {
         compCd: String,
         bomDetailIds: List<String>
     ): List<BomDetailMaterialDto>
-
-    @Modifying(clearAutomatically = true)
-    @Query("""
-        UPDATE BomDetail bd 
-        SET bd.flagActive = false
-        WHERE bd.site = :site 
-        AND bd.compCd = :compCd 
-        AND bd.bomDetailId IN :bomDetailIds
-    """)
-    fun updateBomDetailsFlagActiveByBomDetailIds(
-        site: String,
-        compCd: String,
-        bomDetailIds: List<String>
-    ): Int
 }

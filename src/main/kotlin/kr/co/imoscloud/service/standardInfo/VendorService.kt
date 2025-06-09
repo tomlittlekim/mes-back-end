@@ -2,6 +2,9 @@ package kr.co.imoscloud.service.standardInfo
 
 import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.standardInfo.Vendor
+import kr.co.imoscloud.exception.vendor.NotExistBusinessRegNoException
+import kr.co.imoscloud.exception.vendor.NotExistVendorIdException
+import kr.co.imoscloud.exception.vendor.NotExistVendorNameException
 import kr.co.imoscloud.fetcher.standardInfo.VendorFilter
 import kr.co.imoscloud.fetcher.standardInfo.VendorInput
 import kr.co.imoscloud.fetcher.standardInfo.VendorUpdate
@@ -31,12 +34,12 @@ class VendorService(
 
         return vendorList.map {
             VendorResponse(
-                vendorId = it?.vendorId ?: throw Exception("vendorId가 존재하지 않습니다."),
-                vendorName = it.vendorName?: throw Exception("거래처명이 존재하지 않습니다."),
+                vendorId = it?.vendorId ?: throw NotExistVendorIdException(),
+                vendorName = it.vendorName?: throw NotExistVendorNameException(),
                 vendorType = it.vendorType,
                 businessType = it.businessType,
                 ceoName = it.ceoName,
-                businessRegNo = it.businessRegNo ?: throw Exception(" 사업자 번호가 존재하지 않습니다."),
+                businessRegNo = it.businessRegNo ?: throw NotExistBusinessRegNoException(),
                 address = it.address,
                 telNo = it.telNo,
 //                flagActive = if (it.flagActive == true) "Y" else "N",
@@ -140,8 +143,8 @@ class VendorService(
 
         return vendorList.map {
             VendorDropdownResponse(
-                vendorId = it?.vendorId ?: throw Exception("vendorId가 존재하지 않습니다."),
-                vendorName = it.vendorName ?: throw Exception("거래처명이 존재하지 않습니다.")
+                vendorId = it?.vendorId ?: throw NotExistVendorIdException(),
+                vendorName = it.vendorName ?: throw NotExistVendorNameException(),
             )
         }
     }

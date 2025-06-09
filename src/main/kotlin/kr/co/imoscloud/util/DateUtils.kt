@@ -13,6 +13,7 @@ object DateUtils {
     private val yyyyMMddssHHmm = DateTimeFormatter.ofPattern(CoreEnum.DateTimeFormat.DATE_TIME_VIEW.value)
     private val yyyyMMdd = DateTimeFormatter.ofPattern(CoreEnum.DateTimeFormat.DATE_VIEW.value)
     private val isoDateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
+    private val dateTimeViewShort = DateTimeFormatter.ofPattern(CoreEnum.DateTimeFormat.DATE_TIME_VIEW_SHORT.value)
 
     /**
      * ISO 8601 형식의 날짜 문자열을 LocalDate로 변환하는 함수
@@ -43,6 +44,15 @@ object DateUtils {
     }
 
     /**
+     * LocalDateTime을 시간 정보(시, 분)가 포함된 표시용 문자열로 변환하는 함수
+     * @param dateTime LocalDateTime 객체
+     * @return "yyyy-MM-dd HH:mm" 형식의 문자열, null이면 null 반환
+     */
+    fun formatLocalDateTimeShort(dateTime: LocalDateTime?): String? {
+        return dateTime?.format(dateTimeViewShort)
+    }
+
+    /**
      * LocalDateTime을 화면 표시용 문자열로 변환하는 함수
      * @param dateTime LocalDateTime 객체
      * @return "yyyy-MM-dd" 형식의 문자열, null이면 null 반환
@@ -65,6 +75,47 @@ object DateUtils {
             LocalDate.parse(dateStr, formatter)
         } catch (e: DateTimeParseException) {
             logger.error("날짜 변환 실패: {}", dateStr)
+            null
+        }
+    }
+
+    /**
+     * 시간 정보(시, 분)를 포함한 날짜/시간 문자열을 LocalDateTime으로 변환하는 함수
+     * @param dateTimeStr 날짜와 시간 문자열 (다양한 형식 지원)
+     *   - "yyyy-MM-dd HH:mm" 형식
+     *   - "yyyy-MM-ddTHH:mm" 형식
+     *   - "yyyy-MM-dd" 형식 (시간은 00:00으로 설정)
+     * @return 변환된 LocalDateTime 객체, 변환 실패 시 null
+     */
+    fun parseDateTimeWithHourMinute(dateTimeStr: String?): LocalDateTime? {
+        if (dateTimeStr.isNullOrEmpty()) {
+            return null
+        }
+
+        return try {
+            when {
+                dateTimeStr.contains("T") -> {
+                    // ISO 형태 (2024-01-01T14:30)
+                    if (dateTimeStr.length == 16) {
+                        // 초 없이 분까지만 (2024-01-01T14:30)
+                        LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                    } else {
+                        // 기본 ISO 파싱 시도
+                        LocalDateTime.parse(dateTimeStr)
+                    }
+                }
+                dateTimeStr.contains(" ") -> {
+                    // 공백으로 구분된 형태 (2024-01-01 14:30)
+                    LocalDateTime.parse(dateTimeStr, dateTimeViewShort)
+                }
+                else -> {
+                    // 날짜만 있는 경우 (2024-01-01) - 00:00:00으로 설정
+                    val date = LocalDate.parse(dateTimeStr)
+                    LocalDateTime.of(date, LocalTime.MIN)
+                }
+            }
+        } catch (e: DateTimeParseException) {
+            logger.error("날짜/시간 변환 실패: {}", dateTimeStr)
             null
         }
     }

@@ -1,6 +1,8 @@
 package kr.co.imoscloud.service.productionmanagement.productionresult
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
+import kr.co.imoscloud.exception.productionmanagement.ProductionResultAlreadyCompletedException
+import kr.co.imoscloud.exception.productionmanagement.ProductionResultNotFoundException
 import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
 import kr.co.imoscloud.model.productionmanagement.ProductionResultFilter
 import kr.co.imoscloud.model.productionmanagement.ProductionResultInput
@@ -69,7 +71,7 @@ class MobileProductionResultService(
                 resultInfo = input.resultInfo
                 defectCause = null
                 prodStartTime = parseDateTimeFromString(input.prodStartTime)
-                prodEndTime = null // 생산종료 시간은 null로 설정
+                prodEndTime = input.prodEndTime?.let { parseDateTimeFromString(it) } // 생산종료 시간이 제공되면 파싱, 아니면 null
                 flagActive = true
                 createCommonCol(currentUser)
             }
@@ -104,11 +106,11 @@ class MobileProductionResultService(
                 site = currentUser.getSite(),
                 compCd = currentUser.compCd,
                 prodResultId = prodResultId
-            ) ?: throw IllegalArgumentException("지정된 생산실적 ID($prodResultId)에 해당하는 데이터를 찾을 수 없습니다.")
+            ) ?: throw ProductionResultNotFoundException()
             
             // 이미 생산종료된 데이터인지 확인
             if (existingResult.prodEndTime != null) {
-                throw IllegalArgumentException("이미 생산이 종료된 생산실적입니다.")
+                throw ProductionResultAlreadyCompletedException()
             }
             
             // 양품과 불량품 수량 준비
@@ -130,7 +132,7 @@ class MobileProductionResultService(
                 // equipmentId와 warehouseId는 이미 저장되어 있으므로 변경하지 않음
                 resultInfo = input.resultInfo
                 defectCause = input.defectCause
-                prodEndTime = parseDateTimeFromString(input.prodEndTime)
+                prodEndTime = input.prodEndTime?.let { parseDateTimeFromString(it) }
                 updateCommonCol(currentUser)
             }
             

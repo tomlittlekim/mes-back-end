@@ -1,6 +1,7 @@
 package kr.co.imoscloud.service.productionmanagement.productionresult
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
+import kr.co.imoscloud.exception.productionmanagement.ProductionQtyExceededException
 import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
 import kr.co.imoscloud.model.productionmanagement.ProductionResultInput
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
@@ -35,6 +36,9 @@ class ProductionResultCommandService(
         try {
             val currentUser = getCurrentUserPrincipal()
 
+            // 작업지시별 누적 수량을 추적하기 위한 맵
+            val workOrderAccumulatedQty = mutableMapOf<String, Double>()
+
             // 새로운 생산실적 저장
             createdRows?.forEach { input ->
                 try {
@@ -60,15 +64,27 @@ class ProductionResultCommandService(
                     // 작업지시가 있는 경우에만 작업지시 수량 검증
                     if (workOrder != null) {
                         val orderQty = workOrder.orderQty ?: 0.0
-                        if (existingTotalGoodQty + goodQty > orderQty) {
-                            throw IllegalArgumentException("총 생산 양품수량이 작업지시수량(${orderQty})을 초과할 수 없습니다. 현재 등록된 양품수량: ${existingTotalGoodQty}")
+                        val workOrderId = workOrder.workOrderId!!
+                        
+                        // 현재 작업지시에 대해 이미 처리된 누적 수량 가져오기
+                        val currentAccumulatedQty = workOrderAccumulatedQty.getOrDefault(workOrderId, 0.0)
+                        
+                        // 총 수량 = 기존 등록된 수량 + 현재 배치에서 이미 처리된 수량 + 현재 행의 수량
+                        val totalGoodQty = existingTotalGoodQty + currentAccumulatedQty + goodQty
+                        
+                        if (totalGoodQty > orderQty) {
+                            throw ProductionQtyExceededException()
                         }
+                        
+                        // 현재 작업지시의 누적 수량 업데이트
+                        workOrderAccumulatedQty[workOrderId] = currentAccumulatedQty + goodQty
                     }
 
                     // 수정된 진척률 계산 - 작업지시가 있는 경우에만 계산
                     val progressRate = if (workOrder != null && workOrder.orderQty != null && workOrder.orderQty!! > 0) {
                         // 기존 생산실적의 양품수량 + 현재 생산실적의 양품수량으로 누적 진척률 계산
-                        String.format("%.1f", ((existingTotalGoodQty + goodQty) / workOrder.orderQty!!) * 100.0)
+                        val currentAccumulatedQty = workOrderAccumulatedQty.getOrDefault(workOrder.workOrderId!!, 0.0)
+                        String.format("%.1f", ((existingTotalGoodQty + currentAccumulatedQty) / workOrder.orderQty!!) * 100.0)
                     } else "0.0"
 
                     // 불량률 계산 - 불량수량이 있는 경우만 계산
@@ -95,8 +111,8 @@ class ProductionResultCommandService(
                         warehouseId = input.warehouseId
                         resultInfo = input.resultInfo
                         defectCause = input.defectCause
-                        prodStartTime = parseDateTimeFromString(input.prodStartTime!!)
-                        prodEndTime = parseDateTimeFromString(input.prodEndTime!!)
+                        prodStartTime = parseDateTimeFromString(input.prodStartTime)
+                        prodEndTime = input.prodEndTime?.let { parseDateTimeFromString(it) }
                         flagActive = true
                         createCommonCol(currentUser)
                     }
@@ -148,7 +164,8 @@ class ProductionResultCommandService(
 
                     // 작업지시가 있는 경우에만 작업지시 상태 업데이트
                     if (workOrder != null) {
-                        updateWorkOrderStatus(workOrder, goodQty, existingTotalGoodQty, workOrder.orderQty ?: 0.0, totalQty)
+                        val currentAccumulatedQty = workOrderAccumulatedQty.getOrDefault(workOrder.workOrderId!!, 0.0)
+                        updateWorkOrderStatus(workOrder, currentAccumulatedQty, existingTotalGoodQty, workOrder.orderQty ?: 0.0, totalQty)
                     }
                 } catch (e: Exception) {
                     throw e  // 트랜잭션 롤백을 위해 예외를 다시 던짐
@@ -166,7 +183,7 @@ class ProductionResultCommandService(
      */
     private fun updateWorkOrderStatus(
         workOrder: kr.co.imoscloud.entity.productionmanagement.WorkOrder,
-        goodQty: Double,
+        currentBatchAccumulatedQty: Double,
         existingTotalGoodQty: Double,
         orderQty: Double,
         totalQty: Double
@@ -178,8 +195,8 @@ class ProductionResultCommandService(
             workOrder.updateCommonCol(currentUser)
             workOrderRepository.save(workOrder)
         } else if (workOrder.state == "IN_PROGRESS") {
-            // 해당 작업지시의 총 생산량 계산
-            val totalWorkOrderGoodQty = existingTotalGoodQty + goodQty
+            // 해당 작업지시의 총 생산량 계산 (기존 수량 + 현재 배치에서 누적된 수량)
+            val totalWorkOrderGoodQty = existingTotalGoodQty + currentBatchAccumulatedQty
 
             // 총 생산량이 작업지시수량에 도달하면 완료 상태로 변경
             if (orderQty > 0 && totalWorkOrderGoodQty >= orderQty) {
@@ -191,44 +208,56 @@ class ProductionResultCommandService(
     }
 
     /**
-     * 생산실적을 소프트 삭제하는 메서드 (flagActive = false로 설정)
+     * 생산실적을 다중 소프트 삭제하는 메서드 (flagActive = false로 설정)
      * - 연관된 불량정보도 함께 비활성화 처리
+     * - QueryDSL을 이용한 배치 처리로 DB 통신 최소화
      */
     @Transactional
-    fun softDeleteProductionResult(prodResultId: String): Boolean {
+    fun softDeleteProductionResults(prodResultIds: List<String>): Boolean {
         try {
+            if (prodResultIds.isEmpty()) return false
+            
             val currentUser = getCurrentUserPrincipal()
-
-            // 특정 조건에 맞는 생산실적을 직접 찾는 쿼리 사용
-            val existingResult = productionResultRepository.findBySiteAndCompCdAndProdResultId(
-                currentUser.getSite(),
-                currentUser.compCd,
-                prodResultId
+            
+            // 1. 삭제할 생산실적들을 한 번에 조회 (재고 복원을 위해) - JPA Query Method 사용
+            val existingResults = productionResultRepository.findBySiteAndCompCdAndProdResultIdInAndFlagActive(
+                site = currentUser.getSite(),
+                compCd = currentUser.compCd,
+                prodResultId = prodResultIds,
+                flagActive = true
             )
-
-            existingResult?.let {
-                // 기존 재고 복원 처리
-                if (it.goodQty != null && it.goodQty!! > 0.0 && it.productId != null) {
-                    productionInventoryService.restoreInventoryForDeletedProductionResult(it)
+            
+            if (existingResults.isEmpty()) return false
+            
+            // 2. 재고 복원 처리 (각 생산실적별로 개별 처리 필요)
+            existingResults.forEach { result ->
+                try {
+                    if (result.goodQty != null && result.goodQty!! > 0.0 && result.productId != null) {
+                        productionInventoryService.restoreInventoryForDeletedProductionResult(result)
+                    }
+                } catch (e: Exception) {
+                    // 재고 복원 실패 시 로그만 남기고 계속 진행
+                    println("재고 복원 실패: ${result.prodResultId} - ${e.message}")
                 }
-                
-                // flagActive를 false로 설정
-                // it.flagActive = false
-                // it.updateCommonCol(currentUser)
-                it.softDelete(currentUser) // 엔티티 메소드 호출
-                productionResultRepository.save(it)
-
-                // 관련 불량정보도 비활성화 처리
-                val defectInfos = defectInfoService.getDefectInfoByProdResultId(prodResultId)
-                defectInfos.forEach { defectInfo ->
-                    defectInfoService.softDeleteDefectInfo(defectInfo.defectId!!)
-                }
-
-                return true
             }
-
-            return false
+            
+            // 3. 생산실적 배치 소프트 삭제 (saveAll 방식 - 안전하고 디버깅 용이)
+            existingResults.forEach { result ->
+                result.softDelete(currentUser)
+            }
+            val savedResults = productionResultRepository.saveAll(existingResults)
+            val deletedProductionCount = savedResults.size
+            
+            // 4. 연관된 불량정보 배치 소프트 삭제 (saveAll 방식 - 안전하고 디버깅 용이)
+            val deletedDefectCount = defectInfoService.batchSoftDeleteDefectInfosByProdResultIds(
+                prodResultIds = prodResultIds
+            )
+            
+            println("배치 삭제 완료 - 생산실적: ${deletedProductionCount}건, 불량정보: ${deletedDefectCount}건")
+            
+            return deletedProductionCount > 0
         } catch (e: Exception) {
+            println("배치 삭제 중 오류 발생: ${e.message}")
             return false
         }
     }

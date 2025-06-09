@@ -8,7 +8,8 @@ import kr.co.imoscloud.dto.*
 import kr.co.imoscloud.entity.system.Company
 import kr.co.imoscloud.entity.system.Menu
 import kr.co.imoscloud.entity.system.UserRole
-import kr.co.imoscloud.service.sysrtem.*
+import kr.co.imoscloud.model.kpisetting.*
+import kr.co.imoscloud.service.system.*
 
 @DgsComponent
 class SystemFetcher(
@@ -18,6 +19,7 @@ class SystemFetcher(
     private val menuRoleService: MenuRoleService,
     private val companyService: CompanyService,
     private val noticeService: NoticeService,
+    private val kpiSettingService: KpiSettingService
 ) {
 
     @DgsMutation
@@ -127,4 +129,41 @@ class SystemFetcher(
 
     @DgsMutation
     fun upReadCountForNotice(@InputArgument("noticeId") noticeId: Long) = noticeService.upReadCountForNotice(noticeId)
+
+
+
+
+    /* KPI 설정 관련 기능 */
+    @DgsQuery
+    fun getBranchCompanies(): List<BranchModel> = kpiSettingService.getBranchCompanies()
+
+    @DgsQuery
+    fun getKpiIndicators(): List<KpiIndicatorModel> = kpiSettingService.getKpiIndicators()
+
+    @DgsQuery
+    fun getKpiSubscriptions(): List<KpiSubscriptionModel> = kpiSettingService.getKpiSubscriptions()
+
+    @DgsMutation
+    fun saveKpiSettings(@InputArgument("settings") settings: List<Map<String, Any>>): KpiSettingResult {
+        try {
+            // 프론트엔드에서 보내는 KPISettingInput을 KpiSettingInput으로 변환
+            val kpiSettings = settings.map { input ->
+                KpiSettingInput(
+                    site = input["site"] as String,
+                    compCd = input["compCd"] as String,
+                    kpiIndicatorCd = input["kpiIndicatorCd"] as String,
+                    categoryId = input["categoryId"] as String,
+                    targetValue = input["targetValue"] as? Double,
+                    description = input["description"] as? String,
+                    sort = (input["sort"] as? Int),
+                    flagActive = (input["flagActive"] as? Boolean) ?: true
+                )
+            }
+            
+            return kpiSettingService.saveKpiSettings(kpiSettings)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return KpiSettingResult(success = false, message = "KPI 설정 저장 중 오류가 발생했습니다: ${e.message}")
+        }
+    }
 }

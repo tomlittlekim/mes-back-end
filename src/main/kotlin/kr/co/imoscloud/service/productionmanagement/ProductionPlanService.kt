@@ -3,17 +3,26 @@ package kr.co.imoscloud.service.productionmanagement
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
+import kr.co.imoscloud.exception.auth.UserNotFoundException
+import kr.co.imoscloud.exception.productionmanagement.ProductionPlanSaveFailedException
 import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
+import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipalOrNull
+import kr.co.imoscloud.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
+/**
+ * 생산계획 CRUD 서비스
+ * 생산계획의 생성, 조회, 수정, 삭제 등 기본적인 데이터 관리를 담당
+ */
 @Service
 class ProductionPlanService(
     val productionPlanRepository: ProductionPlanRepository,
     val materialMasterRepository: MaterialRepository,
+    val workOrderRepository: WorkOrderRepository,
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanService::class.java)
 
@@ -21,7 +30,7 @@ class ProductionPlanService(
     fun getProductMaterials(): List<MaterialMaster?> {
         // 사용자 정보 획득
         val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+            ?: throw UserNotFoundException()
 
         // 제품 조회
         return materialMasterRepository.findBySiteAndCompCdAndMaterialTypeInAndFlagActiveOrderByMaterialNameAsc(
@@ -39,27 +48,30 @@ class ProductionPlanService(
     fun getProductionPlans(filter: ProductionPlanFilter): List<ProductionPlanDTO> {
         // 사용자 정보 획득
         val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+            ?: throw UserNotFoundException()
 
-        // flagActive가 null인 경우 true로 설정하여 활성화된 데이터만 조회
-        val activeFilter = filter.copy(flagActive = filter.flagActive ?: true)
+        // DateUtils를 활용하여 String 날짜를 LocalDate로 변환 (기존 변환 로직 유지)
+        val planStartDateFrom = DateUtils.parseDate(filter.planStartDateFrom)
+        val planStartDateTo = DateUtils.parseDate(filter.planStartDateTo)
+        val planEndDateFrom = DateUtils.parseDate(filter.planEndDateFrom)
+        val planEndDateTo = DateUtils.parseDate(filter.planEndDateTo)
 
         // 생산계획 목록 조회 (DTO로 반환)
         return productionPlanRepository.getProductionPlanList(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
-            prodPlanId = activeFilter.prodPlanId,
-            orderId = activeFilter.orderId,
-            orderDetailId = activeFilter.orderDetailId,
-            productId = activeFilter.productId,
-            productName = activeFilter.productName,
-            materialCategory = activeFilter.materialCategory,
-            shiftType = activeFilter.shiftType,
-            planStartDateFrom = activeFilter.planStartDateFrom,
-            planStartDateTo = activeFilter.planStartDateTo,
-            planEndDateFrom = activeFilter.planEndDateFrom,
-            planEndDateTo = activeFilter.planEndDateTo,
-            flagActive = activeFilter.flagActive
+            prodPlanId = filter.prodPlanId,
+            orderId = filter.orderId,
+            orderDetailId = filter.orderDetailId,
+            productId = filter.productId,
+            productName = filter.productName,
+            materialCategory = filter.materialCategory,
+            shiftType = filter.shiftType,
+            planStartDateFrom = planStartDateFrom,
+            planStartDateTo = planStartDateTo,
+            planEndDateFrom = planEndDateFrom,
+            planEndDateTo = planEndDateTo,
+            flagActive = filter.flagActive ?: true // 기본값 true 설정
         )
     }
 
@@ -70,7 +82,7 @@ class ProductionPlanService(
         try {
             // 1. 사용자 정보 획득 - 파라미터로 받은 정보가 우선, 없으면 SecurityContext에서 조회
             val currentUser = getCurrentUserPrincipalOrNull()
-                ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+                ?: throw UserNotFoundException()
 
             // 생성 요청 처리
             createdRows?.forEach { input ->
@@ -131,81 +143,79 @@ class ProductionPlanService(
             return true
         } catch (e: Exception) {
             log.error("생산계획 저장 중 오류 발생", e)
-            throw e  // 오류를 상위로 전파하도록 변경
+            throw ProductionPlanSaveFailedException()
         }
     }
 
     /**
      * 생산계획을 소프트 삭제하는 메서드 (flagActive = false로 설정)
+     * 활성화된 작업지시가 있는 생산계획은 삭제할 수 없음
      */
-    fun softDeleteProductionPlan(prodPlanId: String): Boolean {
+    fun softDeleteProductionPlans(prodPlanIds: List<String>): ProductionPlanDeleteResult {
         try {
             // 사용자 정보 획득
             val currentUser = getCurrentUserPrincipalOrNull()
-                ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+                ?: throw UserNotFoundException()
 
-            // UK 필드를 활용하여 정확한 레코드 조회
-            val existingPlan = productionPlanRepository.findBySiteAndCompCdAndProdPlanId(
-                currentUser.getSite(),
-                currentUser.compCd,
-                prodPlanId
-            )
+            var deletedCount = 0
+            var skippedCount = 0
+            val skippedPlans = mutableListOf<String>()
 
-            existingPlan?.let {
-                // flagActive를 false로 설정
-                // it.flagActive = false
-                // it.updateCommonCol(currentUser)
-                it.softDelete(currentUser) // 엔티티 메소드 호출
+            prodPlanIds.forEach { prodPlanId ->
+                // UK 필드를 활용하여 정확한 레코드 조회
+                val existingPlan = productionPlanRepository.findBySiteAndCompCdAndProdPlanId(
+                    currentUser.getSite(),
+                    currentUser.compCd,
+                    prodPlanId
+                )
 
-                productionPlanRepository.save(it)
-                return true
+                existingPlan?.let {
+                    // 활성화된 작업지시가 있는지 확인
+                    val hasActiveWorkOrders = workOrderRepository.existsBySiteAndCompCdAndProdPlanIdAndFlagActive(
+                        currentUser.getSite(),
+                        currentUser.compCd,
+                        prodPlanId,
+                        true // flagActive = true인 작업지시 확인
+                    )
+
+                    if (hasActiveWorkOrders) {
+                        // 활성화된 작업지시가 있으면 삭제하지 않음
+                        skippedCount++
+                        skippedPlans.add(prodPlanId)
+                        log.warn("활성화된 작업지시가 있어 삭제할 수 없는 생산계획: {}", prodPlanId)
+                    } else {
+                        // 활성화된 작업지시가 없으면 삭제 진행
+                        it.softDelete(currentUser)
+                        productionPlanRepository.save(it)
+                        deletedCount++
+                    }
+                } ?: log.warn("삭제(비활성화)할 생산계획 없음: {}", prodPlanId)
             }
 
-            log.warn("삭제(비활성화)할 생산계획 없음: {}", prodPlanId)
-            return false
+            if (skippedCount > 0) {
+                log.warn("활성화된 작업지시로 인해 삭제되지 않은 생산계획: {} ({}개)", skippedPlans, skippedCount)
+            }
+
+            log.info("생산계획 다중 삭제 완료: 요청 {}, 처리 {}, 건너뜀 {}", prodPlanIds.size, deletedCount, skippedCount)
+            
+            val message = when {
+                deletedCount == prodPlanIds.size -> "모든 생산계획이 성공적으로 삭제되었습니다."
+                deletedCount > 0 && skippedCount > 0 -> "${deletedCount}개 삭제 완료, ${skippedCount}개는 활성화된 작업지시로 인해 삭제되지 않았습니다."
+                deletedCount == 0 && skippedCount > 0 -> "활성화된 작업지시로 인해 삭제할 수 없는 생산계획입니다."
+                else -> "삭제할 수 있는 생산계획이 없습니다."
+            }
+
+            return ProductionPlanDeleteResult(
+                success = deletedCount > 0 || (deletedCount + skippedCount) == prodPlanIds.size,
+                totalRequested = prodPlanIds.size,
+                deletedCount = deletedCount,
+                skippedCount = skippedCount,
+                skippedPlans = skippedPlans,
+                message = message
+            )
         } catch (e: Exception) {
             log.error("생산계획 소프트 삭제 중 오류 발생", e)
-            throw e  // 오류를 상위로 전파하도록 변경
+            throw ProductionPlanSaveFailedException()
         }
-    }
-
-    /*
-    레포트 화면에서 계획대비 실적조회를 하기 위한 메서드
-     */
-
-    fun getPlanVsActualData(filter: PlanVsActualFilter): List<PlanVsActualGraphQLDto> {
-        val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
-
-        val materialIds = filter.systemMaterialIds?.filterNotNull()?.takeIf { it.isNotEmpty() }
-
-        // 인터페이스 프로젝션 사용
-        val results = productionPlanRepository.planVsActual(
-            site = currentUser.getSite(),
-            compCd = currentUser.compCd,
-            systemMaterialIds = materialIds,
-            flagActive = true,
-            startDate = filter.startDate,
-            endDate = filter.endDate
-        )
-        
-        // 인터페이스 프로젝션 결과를 GraphQL 응답용 DTO로 변환
-        return results.map { it.toGraphQLResponse() }
-    }
-
-    fun getPeriodicProduction(filter: PlanVsActualFilter): List<PeriodicProductionResponseDto> {
-        val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
-
-        val materialIds = filter.systemMaterialIds?.takeIf { it.isNotEmpty() }
-
-        return productionPlanRepository.periodicProduction(
-            site = currentUser.getSite(),
-            compCd = currentUser.compCd,
-            systemMaterialIds = materialIds,
-            flagActive = true,
-            startDate = filter.startDate,
-            endDate = filter.endDate
-        )
     }
 }

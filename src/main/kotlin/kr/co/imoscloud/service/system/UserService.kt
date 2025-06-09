@@ -1,4 +1,4 @@
-package kr.co.imoscloud.service.sysrtem
+package kr.co.imoscloud.service.system
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

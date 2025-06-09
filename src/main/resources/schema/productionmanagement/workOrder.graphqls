@@ -5,9 +5,9 @@ extend type Query {
 
 extend type Mutation {
     saveWorkOrder(createdRows: [WorkOrderInput], updatedRows: [WorkOrderUpdate]): Boolean
-    deleteWorkOrder(workOrderId: String!): Boolean
-    startWorkOrder(workOrderId: String!): Boolean
-    completeWorkOrder(workOrderId: String!): Boolean
+    deleteWorkOrders(workOrderIds: [String!]!): WorkOrderDeleteResult
+    startWorkOrders(workOrderIds: [String!]!): WorkOrderOperationResult
+    completeWorkOrders(workOrderIds: [String!]!): WorkOrderOperationResult
 }
 
 input WorkOrderFilter {
@@ -53,4 +53,22 @@ input WorkOrderUpdate {
     shiftType: String
     state: String
     flagActive: Boolean
+}
+
+type WorkOrderDeleteResult {
+    success: Boolean!
+    totalRequested: Int!
+    deletedCount: Int!
+    skippedCount: Int!
+    skippedWorkOrders: [String!]!
+    message: String!
+}
+
+type WorkOrderOperationResult {
+    success: Boolean!
+    totalRequested: Int!
+    processedCount: Int!
+    skippedCount: Int!
+    skippedWorkOrders: [String!]!
+    message: String!
 }

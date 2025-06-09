@@ -3,9 +3,11 @@ package kr.co.imoscloud.fetcher.productionmanagement
 import com.netflix.graphql.dgs.*
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
+import kr.co.imoscloud.exception.auth.UserNotFoundException
 import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
+import kr.co.imoscloud.service.productionmanagement.ProductionPlanAnalyticsService
 import kr.co.imoscloud.util.DateUtils
 import kr.co.imoscloud.util.SecurityUtils
 import org.slf4j.LoggerFactory
@@ -13,55 +15,20 @@ import org.slf4j.LoggerFactory
 @DgsComponent
 class ProductionPlanDataFetcher(
     private val productionPlanService: ProductionPlanService,
+    private val productionPlanAnalyticsService: ProductionPlanAnalyticsService,
     private val workOrderRepository: WorkOrderRepository,
 ) {
     private val log = LoggerFactory.getLogger(ProductionPlanDataFetcher::class.java)
 
-    // 생산계획 목록 조회 - DTO를 직접 GraphQL 응답으로 사용
+    // 생산계획 목록 조회 - ProductionPlanFilter DTO를 직접 사용
     @DgsQuery
-    fun productionPlans(@InputArgument("filter") filterInput: Map<String, Any>?): List<ProductionPlanDTO> {
+    fun productionPlans(@InputArgument("filter") filter: ProductionPlanFilter?): List<ProductionPlanDTO> {
         try {
-            // Map으로 받은 입력값을 ProductionPlanFilter로 변환
-            val filter = ProductionPlanFilter()
-
-            filterInput?.let { input ->
-                // 문자열 필드들 설정
-                filter.prodPlanId = input["prodPlanId"] as? String
-                filter.orderId = input["orderId"] as? String
-                filter.orderDetailId = input["orderDetailId"] as? String
-                filter.productId = input["productId"] as? String
-                filter.productName = input["productName"] as? String
-                filter.materialCategory = input["materialCategory"] as? String
-                filter.shiftType = input["shiftType"] as? String
-
-                // 계획시작일 날짜 필드 변환
-                if (input.containsKey("planStartDateFrom")) {
-                    val startDateFromStr = input["planStartDateFrom"] as? String
-                    filter.planStartDateFrom = DateUtils.parseDate(startDateFromStr)
-                }
-
-                if (input.containsKey("planStartDateTo")) {
-                    val startDateToStr = input["planStartDateTo"] as? String
-                    filter.planStartDateTo = DateUtils.parseDate(startDateToStr)
-                }
-
-                // 계획종료일 날짜 필드 변환
-                if (input.containsKey("planEndDateFrom")) {
-                    val endDateFromStr = input["planEndDateFrom"] as? String
-                    filter.planEndDateFrom = DateUtils.parseDate(endDateFromStr)
-                }
-
-                if (input.containsKey("planEndDateTo")) {
-                    val endDateToStr = input["planEndDateTo"] as? String
-                    filter.planEndDateTo = DateUtils.parseDate(endDateToStr)
-                }
-
-                // Boolean 필드 설정
-                filter.flagActive = input["flagActive"] as? Boolean ?: true
-            }
+            // 필터가 null인 경우 기본 필터 생성
+            val productionPlanFilter = filter ?: ProductionPlanFilter(flagActive = true)
 
             // DTO를 직접 반환
-            return productionPlanService.getProductionPlans(filter)
+            return productionPlanService.getProductionPlans(productionPlanFilter)
         } catch (e: SecurityException) {
             log.error("인증 오류: {}", e.message)
             return emptyList()
@@ -104,17 +71,31 @@ class ProductionPlanDataFetcher(
 
     // 생산계획 삭제 (소프트 삭제로 변경)
     @DgsMutation
-    fun deleteProductionPlan(
-        @InputArgument("prodPlanId") prodPlanId: String
-    ): Boolean {
+    fun deleteProductionPlans(
+        @InputArgument("prodPlanIds") prodPlanIds: List<String>
+    ): ProductionPlanDeleteResult {
         try {
-            return productionPlanService.softDeleteProductionPlan(prodPlanId)
+            return productionPlanService.softDeleteProductionPlans(prodPlanIds)
         } catch (e: SecurityException) {
             log.error("인증 오류: {}", e.message)
-            return false
+            return ProductionPlanDeleteResult(
+                success = false,
+                totalRequested = prodPlanIds.size,
+                deletedCount = 0,
+                skippedCount = 0,
+                skippedPlans = emptyList(),
+                message = "인증 오류가 발생했습니다: ${e.message}"
+            )
         } catch (e: Exception) {
             log.error("생산계획 삭제 중 오류 발생", e)
-            return false
+            return ProductionPlanDeleteResult(
+                success = false,
+                totalRequested = prodPlanIds.size,
+                deletedCount = 0,
+                skippedCount = 0,
+                skippedPlans = emptyList(),
+                message = "삭제 중 오류가 발생했습니다: ${e.message}"
+            )
         }
     }
 
@@ -127,7 +108,7 @@ class ProductionPlanDataFetcher(
         try {
             // 사용자 정보 가져오기
             val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
-                ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+                ?: throw UserNotFoundException()
 
             return workOrderRepository.getWorkOrdersByProdPlanId(
                 site = currentUser.getSite(),
@@ -143,14 +124,16 @@ class ProductionPlanDataFetcher(
         }
     }
 
+    // === 통계/분석 관련 메서드들 (분리된 서비스 사용) ===
+
     @DgsQuery
     fun planVsActual(@InputArgument("filter") filterInput: PlanVsActualFilter): List<PlanVsActualGraphQLDto> {
-        return productionPlanService.getPlanVsActualData(filterInput)
+        return productionPlanAnalyticsService.getPlanVsActualData(filterInput)
     }
 
-    //planVsActual랑 같은 필터 사용
+    // planVsActual과 같은 필터 사용
     @DgsQuery
     fun periodicProduction(@InputArgument("filter") filterInput: PlanVsActualFilter): List<PeriodicProductionResponseDto> {
-        return productionPlanService.getPeriodicProduction(filterInput)
+        return productionPlanAnalyticsService.getPeriodicProduction(filterInput)
     }
 }

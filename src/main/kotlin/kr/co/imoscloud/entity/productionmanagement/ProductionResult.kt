@@ -6,7 +6,15 @@ import kr.co.imoscloud.security.UserPrincipal
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "PRODUCTION_RESULT")
+@Table(
+    name = "PRODUCTION_RESULT",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_PROD_RESULT",
+            columnNames = ["SITE", "COMP_CD", "PROD_RESULT_ID"]
+        )
+    ]
+)
 class ProductionResult(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,6 +66,11 @@ class ProductionResult(
     @Column(name = "PROD_END_TIME")
     var prodEndTime: LocalDateTime? = null,
 ) : CommonCol() {
+    
+    // JOIN으로 가져올 createUserName 필드 (DB에 저장되지 않음)
+    @Transient
+    var createUserName: String? = null
+    
     fun softDelete(updater: UserPrincipal) {
         this.flagActive = false
         this.updateCommonCol(updater)

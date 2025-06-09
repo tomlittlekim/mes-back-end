@@ -1,59 +1,137 @@
 package kr.co.imoscloud.repository.productionmanagement
 
-import com.querydsl.core.BooleanBuilder
-import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.imoscloud.entity.productionmanagement.DefectInfo
 import kr.co.imoscloud.entity.productionmanagement.QDefectInfo
 import kr.co.imoscloud.entity.productionmanagement.QProductionResult
-import kr.co.imoscloud.model.productionmanagement.DefectInfoFilter
+import kr.co.imoscloud.entity.standardInfo.QCode
+import kr.co.imoscloud.entity.system.QUser
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 class DefectInfoRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : DefectInfoRepositoryCustom, QuerydslRepositorySupport(DefectInfo::class.java) {
 
-    override fun getDefectInfoByProdResultId(
+    /**
+     * 다중 생산실적 ID로 불량정보 목록 조회 (배치 삭제용)
+     */
+    override fun getDefectInfosByProdResultIds(
+        site: String,
+        compCd: String,
+        prodResultIds: List<String>
+    ): List<DefectInfo> {
+        if (prodResultIds.isEmpty()) return emptyList()
+        
+        val defectInfo = QDefectInfo.defectInfo
+
+        return queryFactory
+            .selectFrom(defectInfo)
+            .where(
+                defectInfo.site.eq(site),
+                defectInfo.compCd.eq(compCd),
+                defectInfo.prodResultId.`in`(prodResultIds),
+                defectInfo.flagActive.eq(true) // 활성화된 데이터만 조회
+            )
+            .fetch()
+    }
+
+    /**
+     * 필터 조건으로 불량 정보 조회 (QueryDSL + JOIN으로 createUserName 포함)
+     */
+    override fun getDefectInfosWithUserName(
+        site: String,
+        compCd: String,
+        defectId: String?,
+        prodResultId: String?,
+        productId: String?,
+        equipmentId: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?
+    ): List<DefectInfo> {
+        val defectInfo = QDefectInfo.defectInfo
+        val productionResult = QProductionResult.productionResult
+        val code = QCode.code
+        val user = QUser.user
+
+        val results = queryFactory
+            .select(defectInfo, code.codeName, productionResult.equipmentId, user.userName)
+            .from(defectInfo)
+            .leftJoin(productionResult).on(
+                defectInfo.site.eq(productionResult.site)
+                    .and(defectInfo.compCd.eq(productionResult.compCd))
+                    .and(defectInfo.prodResultId.eq(productionResult.prodResultId))
+            )
+            .leftJoin(code).on(
+                code.site.eq("default")
+                    .and(code.compCd.eq("default"))
+                    .and(defectInfo.defectCause.eq(code.codeId))
+                    .and(code.codeClassId.eq("DEFECT_TYPE"))
+                    .and(code.flagActive.eq(true))
+            )
+            .leftJoin(user).on(
+                defectInfo.createUser.eq(user.loginId)
+                    .and(user.flagActive.eq(true))
+            )
+            .where(
+                defectInfo.site.eq(site),
+                defectInfo.compCd.eq(compCd),
+                defectInfo.flagActive.eq(true),
+                defectId?.let { defectInfo.defectId.like("%${it}%") },
+                prodResultId?.let { defectInfo.prodResultId.like("%${it}%") },
+                productId?.let { defectInfo.productId.eq(it) },
+                equipmentId?.let { productionResult.equipmentId.eq(it) },
+                fromDate?.let { defectInfo.createDate.goe(it) },
+                toDate?.let { defectInfo.createDate.loe(it) }
+            )
+            .orderBy(defectInfo.id.desc())
+            .fetch()
+
+        return results.map {
+            val defectInfoEntity = it.get(0, DefectInfo::class.java)!!
+            val defectCauseName = it.get(1, String::class.java)
+            val equipmentIdValue = it.get(2, String::class.java)
+            val createUserName = it.get(3, String::class.java)
+
+            defectInfoEntity.apply {
+                this.defectCauseName = defectCauseName
+                this.equipmentId = equipmentIdValue
+                this.createUserName = createUserName
+            }
+        }
+    }
+
+    /**
+     * 생산실적 ID로 불량 정보 조회 (QueryDSL + JOIN으로 createUserName 포함)
+     */
+    override fun getDefectInfosByProdResultIdWithUserName(
         site: String,
         compCd: String,
         prodResultId: String
     ): List<DefectInfo> {
         val defectInfo = QDefectInfo.defectInfo
         val productionResult = QProductionResult.productionResult
+        val code = QCode.code
+        val user = QUser.user
 
-        // 필요한 모든 필드를 직접 선택하여 한 번의 쿼리로 데이터 가져오기
-        return queryFactory
-            .select(
-                Projections.fields(
-                    DefectInfo::class.java,
-                    defectInfo.id,
-                    defectInfo.site,
-                    defectInfo.compCd,
-                    defectInfo.prodResultId,
-                    defectInfo.defectId,
-                    defectInfo.productId,
-                    defectInfo.defectQty,
-                    defectInfo.resultInfo,
-                    defectInfo.state,
-                    defectInfo.defectCause,
-                    defectInfo.createDate,
-                    defectInfo.createUser,
-                    defectInfo.updateDate,
-                    defectInfo.updateUser,
-                    defectInfo.flagActive,
-                    productionResult.equipmentId.`as`("equipmentId")
-                )
-            )
+        val results = queryFactory
+            .select(defectInfo, code.codeName, productionResult.equipmentId, user.userName)
             .from(defectInfo)
-            .leftJoin(productionResult)
-            .on(
-                defectInfo.site.eq(productionResult.site),
-                defectInfo.compCd.eq(productionResult.compCd),
-                defectInfo.prodResultId.eq(productionResult.prodResultId)
+            .leftJoin(productionResult).on(
+                defectInfo.site.eq(productionResult.site)
+                    .and(defectInfo.compCd.eq(productionResult.compCd))
+                    .and(defectInfo.prodResultId.eq(productionResult.prodResultId))
+            )
+            .leftJoin(code).on(
+                code.site.eq("default")
+                    .and(code.compCd.eq("default"))
+                    .and(defectInfo.defectCause.eq(code.codeId))
+                    .and(code.codeClassId.eq("DEFECT_TYPE"))
+                    .and(code.flagActive.eq(true))
+            )
+            .leftJoin(user).on(
+                defectInfo.createUser.eq(user.loginId)
+                    .and(user.flagActive.eq(true))
             )
             .where(
                 defectInfo.site.eq(site),
@@ -63,170 +141,19 @@ class DefectInfoRepositoryImpl(
             )
             .orderBy(defectInfo.createDate.desc())
             .fetch()
-    }
 
-    override fun getDefectInfoByFilter(
-        site: String,
-        compCd: String,
-        filter: DefectInfoFilter?
-    ): List<DefectInfo> {
-        val defectInfo = QDefectInfo.defectInfo
-        val productionResult = QProductionResult.productionResult
+        return results.map {
+            val defectInfoEntity = it.get(0, DefectInfo::class.java)!!
+            val defectCauseName = it.get(1, String::class.java)
+            val equipmentIdValue = it.get(2, String::class.java)
+            val createUserName = it.get(3, String::class.java)
 
-        // 기본 조건 설정
-        val whereClause = BooleanBuilder()
-            .and(defectInfo.site.eq(site))
-            .and(defectInfo.compCd.eq(compCd))
-            .and(defectInfo.flagActive.eq(true))
-
-        // 필터 조건 추가
-        filter?.let {
-            // 불량정보ID 필터 (LIKE 연산)
-            it.defectId?.let { defectId ->
-                whereClause.and(defectInfo.defectId.like("%$defectId%"))
-            }
-
-            // 생산실적ID 필터 (LIKE 연산)
-            it.prodResultId?.let { prodResultId ->
-                whereClause.and(defectInfo.prodResultId.like("%$prodResultId%"))
-            }
-
-            // 제품ID 필터 (정확한 일치)
-            it.productId?.let { productId ->
-                whereClause.and(defectInfo.productId.eq(productId))
-            }
-
-            // 설비ID 필터 - ProductionResult 테이블에서 필터링
-            it.equipmentId?.let { equipmentId ->
-                whereClause.and(productionResult.equipmentId.eq(equipmentId))
-            }
-
-            // 등록일 기간 필터 (fromDate)
-            it.fromDate?.let { fromDateStr ->
-                try {
-                    // yyyy-MM-dd 형식으로 입력된 경우를 처리
-                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                    val fromDate = LocalDate.parse(fromDateStr, formatter)
-                    val startOfDay = LocalDateTime.of(fromDate, LocalTime.MIN)
-                    whereClause.and(defectInfo.createDate.goe(startOfDay))
-                } catch (e: Exception) {
-                    // yyyy-MM-ddTHH:mm:ss 형식으로 입력된 경우를 처리
-                    try {
-                        val formatterWithTime = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-                        val fromDateTime = LocalDateTime.parse(fromDateStr, formatterWithTime)
-                        whereClause.and(defectInfo.createDate.goe(fromDateTime))
-                    } catch (e: Exception) {
-                        // 날짜 형식이 잘못된 경우 필터링 조건을 적용하지 않음
-                    }
-                }
-            }
-            
-            // 등록일 기간 필터 (toDate)
-            it.toDate?.let { toDateStr ->
-                try {
-                    // yyyy-MM-dd 형식으로 입력된 경우를 처리
-                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                    val toDate = LocalDate.parse(toDateStr, formatter)
-                    // 다음 날 자정(00:00:00)으로 설정하고 그 값보다 작은 값만 포함
-                    val nextDay = toDate.plusDays(1)
-                    val startOfNextDay = LocalDateTime.of(nextDay, LocalTime.MIN)
-                    whereClause.and(defectInfo.createDate.lt(startOfNextDay))
-                } catch (e: Exception) {
-                    // yyyy-MM-ddTHH:mm:ss 형식으로 입력된 경우를 처리
-                    try {
-                        val formatterWithTime = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-                        val toDateTime = LocalDateTime.parse(toDateStr, formatterWithTime)
-                        whereClause.and(defectInfo.createDate.loe(toDateTime))
-                    } catch (e: Exception) {
-                        // 날짜 형식이 잘못된 경우 필터링 조건을 적용하지 않음
-                    }
-                }
+            defectInfoEntity.apply {
+                this.defectCauseName = defectCauseName
+                this.equipmentId = equipmentIdValue
+                this.createUserName = createUserName
             }
         }
-
-        // 한 번의 쿼리로 조인을 통해 필요한 모든 데이터 가져오기
-        return queryFactory
-            .select(
-                Projections.fields(
-                    DefectInfo::class.java,
-                    defectInfo.id,
-                    defectInfo.site,
-                    defectInfo.compCd,
-                    defectInfo.prodResultId,
-                    defectInfo.defectId,
-                    defectInfo.productId,
-                    defectInfo.defectQty,
-                    defectInfo.resultInfo,
-                    defectInfo.state,
-                    defectInfo.defectCause,
-                    defectInfo.createDate,
-                    defectInfo.createUser,
-                    defectInfo.updateDate,
-                    defectInfo.updateUser,
-                    defectInfo.flagActive,
-                    productionResult.equipmentId.`as`("equipmentId")
-                )
-            )
-            .from(defectInfo)
-            .leftJoin(productionResult)
-            .on(
-                defectInfo.site.eq(productionResult.site),
-                defectInfo.compCd.eq(productionResult.compCd),
-                defectInfo.prodResultId.eq(productionResult.prodResultId)
-            )
-            .where(whereClause)
-            .orderBy(defectInfo.id.desc())
-            .distinct()
-            .fetch()
     }
 
-    override fun getDefectInfoForStats(
-        site: String,
-        compCd: String,
-        fromDate: LocalDateTime,
-        toDate: LocalDateTime
-    ): List<DefectInfo> {
-        val defectInfo = QDefectInfo.defectInfo
-        val productionResult = QProductionResult.productionResult
-
-        // 한 번의 쿼리로 조인을 통해 필요한 모든 데이터 가져오기
-        return queryFactory
-            .select(
-                Projections.fields(
-                    DefectInfo::class.java,
-                    defectInfo.id,
-                    defectInfo.site,
-                    defectInfo.compCd,
-                    defectInfo.prodResultId,
-                    defectInfo.defectId,
-                    defectInfo.productId,
-                    defectInfo.defectQty,
-                    defectInfo.resultInfo,
-                    defectInfo.state,
-                    defectInfo.defectCause,
-                    defectInfo.createDate,
-                    defectInfo.createUser,
-                    defectInfo.updateDate,
-                    defectInfo.updateUser,
-                    defectInfo.flagActive,
-                    productionResult.equipmentId.`as`("equipmentId")
-                )
-            )
-            .from(defectInfo)
-            .leftJoin(productionResult)
-            .on(
-                defectInfo.site.eq(productionResult.site),
-                defectInfo.compCd.eq(productionResult.compCd),
-                defectInfo.prodResultId.eq(productionResult.prodResultId)
-            )
-            .where(
-                defectInfo.site.eq(site),
-                defectInfo.compCd.eq(compCd),
-                defectInfo.createDate.between(fromDate, toDate),
-                defectInfo.flagActive.eq(true)
-            )
-            .orderBy(defectInfo.createDate.asc())
-            .distinct()
-            .fetch()
-    }
 }

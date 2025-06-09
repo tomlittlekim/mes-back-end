@@ -11,7 +11,7 @@ extend type Mutation {
         createdRows: [ProductionResultInput],
         defectInfos: [DefectInfoInput]
     ): Boolean
-    deleteProductionResult(prodResultId: String!): Boolean
+    deleteProductionResults(prodResultIds: [String!]!): Boolean
     
     # 모바일 전용 생산실적 뮤테이션
     startProductionAtMobile(input: ProductionResultInput!): String
@@ -56,6 +56,7 @@ type ProductionResult {
     prodEndTime: String     # 생산종료일시 추가
     createDate: String
     createUser: String
+    createUserName: String  # 생성자 이름 추가
     updateDate: String
     updateUser: String
     flagActive: Boolean
@@ -73,7 +74,7 @@ input ProductionResultInput {
     warehouseId: String
     resultInfo: String
     defectCause: String
-    prodStartTime: String! # 생산시작일시 추가
-    prodEndTime: String! # 생산종료일시 추가
+    prodStartTime: String! # 생산시작일시 (필수)
+    prodEndTime: String # 생산종료일시 (비필수 - 모바일에서 생산시작 시에는 null 가능)
     flagActive: Boolean
 }

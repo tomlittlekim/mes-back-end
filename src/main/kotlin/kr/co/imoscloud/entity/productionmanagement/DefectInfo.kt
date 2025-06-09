@@ -5,7 +5,15 @@ import kr.co.imoscloud.entity.CommonCol
 import kr.co.imoscloud.security.UserPrincipal
 
 @Entity
-@Table(name = "DEFECT_INFO")
+@Table(
+    name = "DEFECT_INFO",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_DEFECT_INFO",
+            columnNames = ["SITE", "COMP_CD", "PROD_RESULT_ID", "DEFECT_ID"]
+        )
+    ]
+)
 class DefectInfo(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +47,18 @@ class DefectInfo(
     @Column(name = "DEFECT_CAUSE", columnDefinition = "TEXT")
     var defectCause: String? = null,
 ) : CommonCol() {
+    // CODE 테이블과 JOIN하여 가져오는 불량원인명 (데이터베이스 컬럼이 아님)
+    @Transient
+    var defectCauseName: String? = null
+
+    // ProductionResult 테이블과 JOIN하여 가져오는 설비ID (데이터베이스 컬럼이 아님)
+    @Transient
+    var equipmentId: String? = null
+
+    // User 테이블과 JOIN하여 가져오는 생성자명 (데이터베이스 컬럼이 아님)
+    @Transient
+    var createUserName: String? = null
+
     fun softDelete(updater: UserPrincipal) {
         this.flagActive = false
         this.updateCommonCol(updater)

@@ -12,6 +12,8 @@ class DgsConfiguration {
     @DgsRuntimeWiring
     fun addScalars(builder: RuntimeWiring.Builder): RuntimeWiring.Builder {
         // graphql-java-extended-scalars 라이브러리의 DateTime 스칼라 사용
-        return builder.scalar(ExtendedScalars.DateTime)
+        return builder
+            .scalar(ExtendedScalars.DateTime)
+            .scalar(ExtendedScalars.Json)
     }
 }

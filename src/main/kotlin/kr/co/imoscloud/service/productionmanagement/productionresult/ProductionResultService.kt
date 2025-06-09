@@ -60,8 +60,8 @@ class ProductionResultService(
         commandService.saveProductionResult(createdRows, defectInfos)
 
     /**
-     * 생산실적 소프트 삭제
+     * 생산실적 소프트 삭제 (다중)
      */
-    fun softDeleteProductionResult(prodResultId: String): Boolean =
-        commandService.softDeleteProductionResult(prodResultId)
+    fun softDeleteProductionResults(prodResultIds: List<String>): Boolean =
+        commandService.softDeleteProductionResults(prodResultIds)
 }

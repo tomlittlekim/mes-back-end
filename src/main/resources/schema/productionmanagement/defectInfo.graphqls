@@ -36,9 +36,11 @@ type DefectInfo {
     resultInfo: String
     state: String
     defectCause: String
+    defectCauseName: String
     equipmentId: String
     createDate: String
     createUser: String
+    createUserName: String
     updateDate: String
     updateUser: String
     flagActive: Boolean

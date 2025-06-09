@@ -4,14 +4,15 @@ input KpiFilter{
 }
 
 type Graph{
-    timeLabel:String,
-    label:String,
-    value:String
+    timeLabel: String
+    label: String
+    value: String
 }
 
 extend type Query {
     getPowerData:[Graph]
     getProductDefect(filter: KpiFilter):[Graph]
     getPopupPowerData(filter: KpiFilter):[Graph]
+    getProductionYieldRate(filter: KpiFilter):[Graph]
     getEquipmentOperationData(filter: KpiFilter):[Graph]
 }

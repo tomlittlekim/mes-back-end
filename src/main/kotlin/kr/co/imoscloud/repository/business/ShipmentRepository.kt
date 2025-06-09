@@ -1,6 +1,5 @@
 package kr.co.imoscloud.repository.business
 
-import jakarta.transaction.Transactional
 import kr.co.imoscloud.entity.business.ShipmentDetail
 import kr.co.imoscloud.entity.business.ShipmentHeader
 import kr.co.imoscloud.service.business.MaterialWithOrderDetail

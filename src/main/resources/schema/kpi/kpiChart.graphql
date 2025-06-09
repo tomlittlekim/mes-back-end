@@ -1,0 +1,30 @@
+# KPI 지표별 필터 입력 타입
+input KpiSubscriptionFilter {
+    kpiIndicatorCd: String,  # 선택적으로 사용 가능 (없으면 모든 구독 지표 조회)
+    date: String!            # 기준 날짜
+    range: String!           # 조회 범위 (day, week, month)
+}
+
+# 전체 KPI 차트 조회를 위한 입력 타입
+input KpiChartRequest {
+    indicatorFilters: [KpiSubscriptionFilter]  # 개별 지표별 필터 (해당 지표에만 적용)
+}
+
+# KPI 차트 데이터 응답 모델
+type KpiChartData {
+    kpiIndicatorCd: String!
+    kpiTitle: String!
+    categoryCd: String!
+    categoryNm: String
+    chartType: String!
+    unit: String
+    targetValue: Float
+    chartData: [JSON!]!
+}
+
+scalar JSON
+
+extend type Query {
+    # 구독 중인 KPI 지표 데이터 (지표별 필터 적용)
+    getKpiChartData(filters: [KpiSubscriptionFilter!]!): [KpiChartData!]!
+}

@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.sensor
 
+import kr.co.imoscloud.exception.equipment.DeviceNotFoundException
 import kr.co.imoscloud.model.kpi.ChartResponseModel
 import kr.co.imoscloud.model.kpi.KpiFilter
 import kr.co.imoscloud.repository.SensorStatusRep
@@ -36,8 +37,8 @@ class EquipmentPowerService(
         return result.map{
             ChartResponseModel(
                 timeLabel = it?.createDate.toString(),
-                label = it?.deviceId ?: "UNKNOWN",
-                value = it?.power?:0.0
+                label = it?.deviceId ?: throw DeviceNotFoundException(),
+                value = it.power?:0.0
             )
         }
     }
@@ -67,7 +68,7 @@ class EquipmentPowerService(
         return result.map{
             ChartResponseModel(
                 timeLabel = it?.createDate.toString(),
-                label = it?.deviceId?: throw IllegalArgumentException("라벨이 존재하지 않습니다. "),
+                label = it?.deviceId?: throw DeviceNotFoundException(),
                 value = it.power?:0.0
             )
         }

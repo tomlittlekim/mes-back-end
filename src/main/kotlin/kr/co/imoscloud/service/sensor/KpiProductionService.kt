@@ -1,6 +1,7 @@
 package kr.co.imoscloud.service.sensor
 
 import kr.co.imoscloud.constants.CoreEnum
+import kr.co.imoscloud.exception.auth.CompanyNotFoundException
 import kr.co.imoscloud.model.kpi.ChartResponseModel
 import kr.co.imoscloud.model.kpi.KpiFilter
 import kr.co.imoscloud.repository.productionmanagement.ProductionRateDayRep
@@ -26,7 +27,7 @@ class KpiProductionService(
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
         val site = userPrincipal.getSite()
         val compCd = userPrincipal.compCd
-        val companyName = userPrincipal.companyName ?: "UNKNOWN"
+        val companyName = userPrincipal.companyName ?: throw CompanyNotFoundException()
         val (startDate, endDate) = KpiUtils.getDateRange(filter)
 
         return when (filter.range) {
@@ -56,7 +57,7 @@ class KpiProductionService(
         val userPrincipal = SecurityUtils.getCurrentUserPrincipal()
         val site = userPrincipal.getSite()
         val compCd = userPrincipal.compCd
-        val companyName = userPrincipal.companyName ?: "UNKNOWN"
+        val companyName = userPrincipal.companyName ?: throw CompanyNotFoundException()
         val (startDate, endDate) = KpiUtils.getDateRange(filter)
 
         return when (filter.range) {

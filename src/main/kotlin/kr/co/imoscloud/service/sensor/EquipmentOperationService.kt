@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.sensor
 
+import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.model.kpi.ChartResponseModel
 import kr.co.imoscloud.model.kpi.KpiFilter
 import kr.co.imoscloud.service.system.CompanyService
@@ -13,9 +14,7 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.aggregation.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.stereotype.Service
-import java.text.SimpleDateFormat
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.*
 
@@ -144,12 +143,12 @@ class EquipmentOperationService(
         )
 
         val addFieldOp = when (groupKey) {
-            "hour" -> AddFieldsOperation
+            CoreEnum.DateRangeType.HOUR.value -> AddFieldsOperation
                 .addField("hour")
                 .withValue(Document("\$hour", "\$timestamp"))
                 .build()
 
-            "day" -> AddFieldsOperation
+            CoreEnum.DateRangeType.DAY.value -> AddFieldsOperation
                 .addField("day")
                 .withValue(
                     Document(
@@ -199,7 +198,7 @@ class EquipmentOperationService(
         val aggregationOps = mutableListOf<AggregationOperation>()
         aggregationOps.add(match)
         aggregationOps.add(addHourFieldOp)   // 항상 hour 필드 생성(업무시간 필터 위해)
-        if (groupKey == "day") aggregationOps.add(addFieldOp) // day 그룹이면 day 필드 추가
+        if (groupKey == CoreEnum.DateRangeType.DAY.value) aggregationOps.add(addFieldOp) // day 그룹이면 day 필드 추가
         aggregationOps.add(matchWorkHour)
         aggregationOps.add(group)
         aggregationOps.add(project)

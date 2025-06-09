@@ -1,5 +1,6 @@
 package kr.co.imoscloud.service.productionmanagement
 
+import kr.co.imoscloud.exception.auth.UserNotFoundException
 import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
 import kr.co.imoscloud.util.SecurityUtils.getCurrentUserPrincipalOrNull
@@ -22,7 +23,7 @@ class ProductionPlanAnalyticsService(
      */
     fun getPlanVsActualData(filter: PlanVsActualFilter): List<PlanVsActualGraphQLDto> {
         val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+            ?: throw UserNotFoundException()
 
         val materialIds = filter.systemMaterialIds?.filterNotNull()?.takeIf { it.isNotEmpty() }
 
@@ -46,7 +47,7 @@ class ProductionPlanAnalyticsService(
      */
     fun getPeriodicProduction(filter: PlanVsActualFilter): List<PeriodicProductionResponseDto> {
         val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+            ?: throw UserNotFoundException()
 
         val materialIds = filter.systemMaterialIds?.takeIf { it.isNotEmpty() }
 

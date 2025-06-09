@@ -3,6 +3,8 @@ package kr.co.imoscloud.service.productionmanagement
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
+import kr.co.imoscloud.exception.auth.UserNotFoundException
+import kr.co.imoscloud.exception.productionmanagement.ProductionPlanSaveFailedException
 import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.material.MaterialRepository
 import kr.co.imoscloud.repository.productionmanagement.ProductionPlanRepository
@@ -28,7 +30,7 @@ class ProductionPlanService(
     fun getProductMaterials(): List<MaterialMaster?> {
         // 사용자 정보 획득
         val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+            ?: throw UserNotFoundException()
 
         // 제품 조회
         return materialMasterRepository.findBySiteAndCompCdAndMaterialTypeInAndFlagActiveOrderByMaterialNameAsc(
@@ -46,7 +48,7 @@ class ProductionPlanService(
     fun getProductionPlans(filter: ProductionPlanFilter): List<ProductionPlanDTO> {
         // 사용자 정보 획득
         val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+            ?: throw UserNotFoundException()
 
         // DateUtils를 활용하여 String 날짜를 LocalDate로 변환 (기존 변환 로직 유지)
         val planStartDateFrom = DateUtils.parseDate(filter.planStartDateFrom)
@@ -80,7 +82,7 @@ class ProductionPlanService(
         try {
             // 1. 사용자 정보 획득 - 파라미터로 받은 정보가 우선, 없으면 SecurityContext에서 조회
             val currentUser = getCurrentUserPrincipalOrNull()
-                ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+                ?: throw UserNotFoundException()
 
             // 생성 요청 처리
             createdRows?.forEach { input ->
@@ -141,7 +143,7 @@ class ProductionPlanService(
             return true
         } catch (e: Exception) {
             log.error("생산계획 저장 중 오류 발생", e)
-            throw e  // 오류를 상위로 전파하도록 변경
+            throw ProductionPlanSaveFailedException()
         }
     }
 
@@ -153,7 +155,7 @@ class ProductionPlanService(
         try {
             // 사용자 정보 획득
             val currentUser = getCurrentUserPrincipalOrNull()
-                ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+                ?: throw UserNotFoundException()
 
             var deletedCount = 0
             var skippedCount = 0
@@ -213,7 +215,7 @@ class ProductionPlanService(
             )
         } catch (e: Exception) {
             log.error("생산계획 소프트 삭제 중 오류 발생", e)
-            throw e  // 오류를 상위로 전파하도록 변경
+            throw ProductionPlanSaveFailedException()
         }
     }
 }

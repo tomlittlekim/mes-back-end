@@ -1,6 +1,8 @@
 package kr.co.imoscloud.service.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.DefectInfo
+import kr.co.imoscloud.exception.productionmanagement.DefectInfoSaveFailedException
+import kr.co.imoscloud.exception.productionmanagement.InvalidProdResultIdException
 import kr.co.imoscloud.model.productionmanagement.DefectInfoFilter
 import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
 import kr.co.imoscloud.repository.productionmanagement.DefectInfoRepository
@@ -88,7 +90,7 @@ class DefectInfoService(
 
             // 입력값 유효성 검사
             if (prodResultId.isBlank()) {
-                return false
+                throw InvalidProdResultIdException()
             }
 
             // 모든 불량정보에 prodResultId 설정 보장
@@ -139,7 +141,7 @@ class DefectInfoService(
 
             return true
         } catch (e: Exception) {
-            throw e  // 트랜잭션 롤백을 위해 예외를 다시 던짐
+            throw DefectInfoSaveFailedException()
         }
     }
 

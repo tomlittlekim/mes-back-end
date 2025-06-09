@@ -1,6 +1,7 @@
 package kr.co.imoscloud.service.productionmanagement.productionresult
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionResult
+import kr.co.imoscloud.exception.productionmanagement.ProductionQtyExceededException
 import kr.co.imoscloud.model.productionmanagement.DefectInfoInput
 import kr.co.imoscloud.model.productionmanagement.ProductionResultInput
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
@@ -72,7 +73,7 @@ class ProductionResultCommandService(
                         val totalGoodQty = existingTotalGoodQty + currentAccumulatedQty + goodQty
                         
                         if (totalGoodQty > orderQty) {
-                            throw IllegalArgumentException("총 생산 양품수량이 작업지시수량(${orderQty})을 초과할 수 없습니다. 현재 등록된 양품수량: ${existingTotalGoodQty}, 현재 배치 처리 중인 수량: ${currentAccumulatedQty}, 추가하려는 수량: ${goodQty}")
+                            throw ProductionQtyExceededException()
                         }
                         
                         // 현재 작업지시의 누적 수량 업데이트

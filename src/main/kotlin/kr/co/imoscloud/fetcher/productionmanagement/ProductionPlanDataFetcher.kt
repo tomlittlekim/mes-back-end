@@ -3,6 +3,7 @@ package kr.co.imoscloud.fetcher.productionmanagement
 import com.netflix.graphql.dgs.*
 import kr.co.imoscloud.entity.material.MaterialMaster
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
+import kr.co.imoscloud.exception.auth.UserNotFoundException
 import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
 import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
@@ -107,7 +108,7 @@ class ProductionPlanDataFetcher(
         try {
             // 사용자 정보 가져오기
             val currentUser = SecurityUtils.getCurrentUserPrincipalOrNull()
-                ?: throw SecurityException("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.")
+                ?: throw UserNotFoundException()
 
             return workOrderRepository.getWorkOrdersByProdPlanId(
                 site = currentUser.getSite(),

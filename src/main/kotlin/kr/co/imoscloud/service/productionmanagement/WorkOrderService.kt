@@ -1,6 +1,7 @@
 package kr.co.imoscloud.service.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.WorkOrder
+import kr.co.imoscloud.exception.productionmanagement.WorkOrderSaveFailedException
 import kr.co.imoscloud.model.productionmanagement.*
 import kr.co.imoscloud.repository.productionmanagement.ProductionResultRepository
 import kr.co.imoscloud.repository.productionmanagement.WorkOrderRepository
@@ -98,7 +99,7 @@ class WorkOrderService(
             return true
         } catch (e: Exception) {
             log.error("작업지시 저장 중 오류 발생", e)
-            return false
+            throw WorkOrderSaveFailedException()
         }
     }
 
@@ -154,7 +155,7 @@ class WorkOrderService(
             )
         } catch (e: Exception) {
             log.error("작업지시 다중 시작 중 오류 발생", e)
-            throw e
+            throw WorkOrderSaveFailedException()
         }
     }
 
@@ -210,7 +211,7 @@ class WorkOrderService(
             )
         } catch (e: Exception) {
             log.error("작업지시 다중 완료 중 오류 발생", e)
-            throw e
+            throw WorkOrderSaveFailedException()
         }
     }
 
@@ -280,7 +281,7 @@ class WorkOrderService(
             )
         } catch (e: Exception) {
             log.error("작업지시 소프트 삭제 중 오류 발생", e)
-            throw e  // 오류를 상위로 전파하도록 변경
+            throw WorkOrderSaveFailedException()
         }
     }
 }

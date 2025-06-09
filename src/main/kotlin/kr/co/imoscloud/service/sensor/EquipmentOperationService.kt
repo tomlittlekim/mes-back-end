@@ -3,12 +3,14 @@ package kr.co.imoscloud.service.sensor
 import kr.co.imoscloud.constants.CoreEnum
 import kr.co.imoscloud.model.kpi.ChartResponseModel
 import kr.co.imoscloud.model.kpi.KpiFilter
+import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
 import kr.co.imoscloud.service.system.CompanyService
 import kr.co.imoscloud.util.KpiUtils.dateFormatter
 import kr.co.imoscloud.util.KpiUtils.getParams
 import kr.co.imoscloud.util.KpiUtils.mongoDateTimeFormatter
 import kr.co.imoscloud.util.SecurityUtils
 import org.bson.Document
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.aggregation.*
@@ -23,6 +25,9 @@ class EquipmentOperationService(
     private val mongoTemplate: MongoTemplate,
     private val companyService: CompanyService,
 ) {
+
+    private val log = LoggerFactory.getLogger(EquipmentOperationService::class.java)
+
     /**
      * 설비 가동률 데이터 조회
      */
@@ -105,7 +110,7 @@ class EquipmentOperationService(
         val results = mongoTemplate.aggregate(aggregation, "sensor_power", Document::class.java)
 
         val end = System.currentTimeMillis()
-        println("sensor_power 실행시간(ms): ${end - start}")
+        log.info("sensor_power 실행시간(ms): ${end - start}")
 
         return results.mappedResults.map {
             ChartResponseModel(
@@ -209,12 +214,12 @@ class EquipmentOperationService(
         val results = mongoTemplate.aggregate(aggregation, "sensor_power_seoul", Document::class.java)
 
         val end = System.currentTimeMillis()
-        println("sensor_power 실행시간(ms): ${end - start}")
+        log.info("sensor_power 실행시간(ms): ${end - start}")
 
         return results.mappedResults.map {
             val timeLabel: String = when (groupKey) {
-                "hour" -> it.getInteger("timeLabel").toString()
-                "day" -> it.getString("timeLabel")
+                CoreEnum.DateRangeType.HOUR.value -> it.getInteger("timeLabel").toString()
+                CoreEnum.DateRangeType.DAY.value -> it.getString("timeLabel")
                 else -> it.getString("timeLabel")
             }
 

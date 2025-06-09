@@ -47,7 +47,7 @@ class UserRoleService(
         var modifyRole: UserRole = req.roleId
             ?.let { roleId ->
                 rcm.roleRepo.findByRoleIdAndFlagActiveIsTrue(roleId)
-                    ?.modify(changedRole, req.sequence, loginUser)
+                    ?.modify(req, changedRole, loginUser)
                     ?: throw IllegalArgumentException("권한 정보가 존재하지 않습니다. ")
             }
             ?:run { UserRole.create(req, changedRole.priorityLevel, loginUser) }

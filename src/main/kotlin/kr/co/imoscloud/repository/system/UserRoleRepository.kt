@@ -71,7 +71,7 @@ interface UserRoleRepository: JpaRepository<UserRole, Long> {
     @Query("""
         update UserRole ur
         set 
-            ur.flagDefault = false,
+            ur.flagActive = false,
             ur.updateUser = :updateUser,
             ur.updateDate = :updateDate
         where ur.roleId = :roleId

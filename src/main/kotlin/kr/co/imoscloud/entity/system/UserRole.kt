@@ -47,10 +47,10 @@ class UserRole(
         ).apply { createCommonCol(loginUser) }
     }
 
-    fun modify(changedRole: RoleSummery, sequence: Int?, loginUser: UserPrincipal): UserRole = this.apply {
-        roleName = changedRole.roleName
+    fun modify(req: UserRoleRequest, changedRole: RoleSummery, loginUser: UserPrincipal): UserRole = this.apply {
+        roleName = req.roleName ?: this.roleName
         priorityLevel = changedRole.priorityLevel
-        this.sequence = sequence ?: this.sequence
+        this.sequence = req.sequence ?: this.sequence
         updateCommonCol(loginUser)
     }
 

@@ -9,6 +9,7 @@ interface MenuRoleRepository: JpaRepository<MenuRole, Long> {
     fun findByRoleIdAndMenuId(roleId: Long, menuId: String): MenuRole?
     fun findAllByRoleId(roleId: Long): List<MenuRole>
     fun findByIdIn(ids: List<Long>): List<MenuRole>
+    fun findAllByMenuId(menuId: String): List<MenuRole>
 
     @Modifying
     @Query("""

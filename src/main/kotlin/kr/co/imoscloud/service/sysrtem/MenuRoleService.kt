@@ -75,13 +75,8 @@ class MenuRoleService(
         if (menu.upMenuId != changedUpMenuId) {
             val flagCategory = changedUpMenuId.isNullOrBlank()
 
-            val buildMap: Map<String, List<MenuRole>> = mrcm.groupByKeySelector { it.menuId }
-            val values: List<MenuRole>? = buildMap[menu.menuId]
-
-            values?.let {
-                val updateList = values.map { mr -> mr.modify(flagCategory) }
-                mrcm.saveAllAndSyncCache(updateList)
-            }
+            val menuRoles = mrcm.menuRoleRepo.findAllByMenuId(menu.menuId).map { it.modify(flagCategory) }
+            mrcm.saveAllAndSyncCache(menuRoles)
         }
     }
 

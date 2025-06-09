@@ -5,7 +5,15 @@ import kr.co.imoscloud.entity.CommonCol
 import kr.co.imoscloud.security.UserPrincipal
 
 @Entity
-@Table(name = "WORK_ORDER")
+@Table(
+    name = "WORK_ORDER",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_WORK_ORDER_SITE_COMP_ORDER",
+            columnNames = ["SITE", "COMP_CD", "WORK_ORDER_ID"]
+        )
+    ]
+)
 class WorkOrder(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

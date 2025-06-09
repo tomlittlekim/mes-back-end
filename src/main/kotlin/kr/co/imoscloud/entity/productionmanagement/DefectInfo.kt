@@ -5,7 +5,15 @@ import kr.co.imoscloud.entity.CommonCol
 import kr.co.imoscloud.security.UserPrincipal
 
 @Entity
-@Table(name = "DEFECT_INFO")
+@Table(
+    name = "DEFECT_INFO",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_DEFECT_INFO",
+            columnNames = ["SITE", "COMP_CD", "PROD_RESULT_ID", "DEFECT_ID"]
+        )
+    ]
+)
 class DefectInfo(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

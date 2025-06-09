@@ -6,7 +6,15 @@ import kr.co.imoscloud.security.UserPrincipal
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "PRODUCTION_RESULT")
+@Table(
+    name = "PRODUCTION_RESULT",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_PROD_RESULT",
+            columnNames = ["SITE", "COMP_CD", "PROD_RESULT_ID"]
+        )
+    ]
+)
 class ProductionResult(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -47,8 +47,8 @@ object KpiUtils {
         }
     }
 
-    fun getClusterType(compCd: String): String {
-        return when(compCd){
+    fun getClusterType(site: String): String {
+        return when(site){
             CoreEnum.ClusterType.CLUS_SEOUL.value -> "seoul"
             CoreEnum.ClusterType.CLUS_NGYENGGI.value -> "ngyenggi"
             CoreEnum.ClusterType.CLUS_DONGDAEMOON.value -> "dongdaemoon"

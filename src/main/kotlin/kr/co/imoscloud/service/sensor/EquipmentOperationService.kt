@@ -5,6 +5,7 @@ import kr.co.imoscloud.model.kpi.ChartResponseModel
 import kr.co.imoscloud.model.kpi.KpiFilter
 import kr.co.imoscloud.service.productionmanagement.ProductionPlanService
 import kr.co.imoscloud.service.system.CompanyService
+import kr.co.imoscloud.util.KpiUtils
 import kr.co.imoscloud.util.KpiUtils.dateFormatter
 import kr.co.imoscloud.util.KpiUtils.getParams
 import kr.co.imoscloud.util.KpiUtils.mongoDateTimeFormatter
@@ -31,11 +32,11 @@ class EquipmentOperationService(
     /**
      * 설비 가동률 데이터 조회
      */
-    fun getEquipmentOperationData(filter: KpiFilter): List<ChartResponseModel> {
+    fun getEquipmentOpeGroupData(filter: KpiFilter): List<ChartResponseModel> {
         val localDate = LocalDate.parse(filter.date, dateFormatter)
         val params = getParams(filter.range)
 
-        return getEquipmentOpeGroupData(
+        return getEquipmentTimeOpeGroupData(
             localDate,
             params.daysRange,
             params.groupKey,
@@ -209,9 +210,9 @@ class EquipmentOperationService(
         aggregationOps.add(project)
         aggregationOps.add(sort)
 
-        //TODO:: 추후 컬렉션 지역으로 나뉘면 collectionName KpiUtils.getClusterType 사용으로 분기 처리
+        val clusterName = KpiUtils.getClusterType(userPrincipal.getSite())
         val aggregation = Aggregation.newAggregation(aggregationOps)
-        val results = mongoTemplate.aggregate(aggregation, "sensor_power_seoul", Document::class.java)
+        val results = mongoTemplate.aggregate(aggregation, "sensor_power_${clusterName}", Document::class.java)
 
         val end = System.currentTimeMillis()
         log.info("sensor_power 실행시간(ms): ${end - start}")

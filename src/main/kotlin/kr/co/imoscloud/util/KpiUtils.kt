@@ -1,6 +1,9 @@
 package kr.co.imoscloud.util
 
 import kr.co.imoscloud.constants.CoreEnum
+import kr.co.imoscloud.exception.ErrorCode
+import kr.co.imoscloud.exception.ImosException
+import kr.co.imoscloud.exception.common.InvalidClusterTypeException
 import kr.co.imoscloud.model.kpi.ChartResponseModel
 import kr.co.imoscloud.model.kpi.KpiFilter
 import kr.co.imoscloud.model.kpi.Params
@@ -43,4 +46,16 @@ object KpiUtils {
             map[timeLabel] ?: ChartResponseModel(timeLabel, label, 0.0)
         }
     }
+
+    fun getClusterType(compCd: String): String {
+        return when(compCd){
+            CoreEnum.ClusterType.CLUS_SEOUL.value -> "seoul"
+            CoreEnum.ClusterType.CLUS_NGYENGGI.value -> "ngyenggi"
+            CoreEnum.ClusterType.CLUS_DONGDAEMOON.value -> "dongdaemon"
+            CoreEnum.ClusterType.CLUS_DEAGU.value -> "deagu"
+            CoreEnum.ClusterType.STND_VENDOR.value -> "vendor"
+            else -> throw InvalidClusterTypeException()
+        }
+    }
+
 }

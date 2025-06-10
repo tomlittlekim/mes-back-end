@@ -209,7 +209,7 @@ class EquipmentOperationService(
         aggregationOps.add(project)
         aggregationOps.add(sort)
 
-        //TODO:: 추후 컬렉션 지역으로 나뉘면 collectionName Site 기준으로 조회 분리
+        //TODO:: 추후 컬렉션 지역으로 나뉘면 collectionName KpiUtils.getClusterType 사용으로 분기 처리
         val aggregation = Aggregation.newAggregation(aggregationOps)
         val results = mongoTemplate.aggregate(aggregation, "sensor_power_seoul", Document::class.java)
 

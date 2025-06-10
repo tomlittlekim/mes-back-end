@@ -53,4 +53,14 @@ class CoreEnum {
         WEEK("week"),
         MONTH("month")
     }
+
+    enum class ClusterType(val value: String) {
+        CLUS_SEOUL("CLUS_SEOUL"),
+        CLUS_NGYENGGI("CLUS_NGYENGGI"),
+        CLUS_DONGDAEMOON("CLUS_DONGDAEMOON"),
+        CLUS_DEAGU("CLUS_DEAGU"),
+        STND_VENDOR("STND_VENDOR"),
+    }
+
+
 }

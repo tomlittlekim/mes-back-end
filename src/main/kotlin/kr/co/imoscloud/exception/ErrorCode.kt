@@ -5,6 +5,8 @@ enum class ErrorCode(
     val code: String,
     val message: String
 ) {
+    //공통 오류
+    INVALID_CLUSTER_TYPE(500,"C001","알수없는 클러스터링 타입 입니다."),
 
     //유저 관련 정보
     COMPANY_NOT_FOUND(404, "A001", "회사명을 찾을 수 없습니다."),

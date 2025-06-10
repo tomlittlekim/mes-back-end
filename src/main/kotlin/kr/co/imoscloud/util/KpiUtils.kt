@@ -51,7 +51,7 @@ object KpiUtils {
         return when(compCd){
             CoreEnum.ClusterType.CLUS_SEOUL.value -> "seoul"
             CoreEnum.ClusterType.CLUS_NGYENGGI.value -> "ngyenggi"
-            CoreEnum.ClusterType.CLUS_DONGDAEMOON.value -> "dongdaemon"
+            CoreEnum.ClusterType.CLUS_DONGDAEMOON.value -> "dongdaemoon"
             CoreEnum.ClusterType.CLUS_DEAGU.value -> "deagu"
             CoreEnum.ClusterType.STND_VENDOR.value -> "vendor"
             else -> throw InvalidClusterTypeException()

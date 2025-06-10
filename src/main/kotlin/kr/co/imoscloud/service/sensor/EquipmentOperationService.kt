@@ -32,7 +32,7 @@ class EquipmentOperationService(
     /**
      * 설비 가동률 데이터 조회
      */
-    fun getEquipmentOpeGroupData(filter: KpiFilter): List<ChartResponseModel> {
+    fun getEquipmentOperationData(filter: KpiFilter): List<ChartResponseModel> {
         val localDate = LocalDate.parse(filter.date, dateFormatter)
         val params = getParams(filter.range)
 

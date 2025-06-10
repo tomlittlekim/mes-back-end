@@ -36,7 +36,7 @@ class EquipmentOperationService(
         val localDate = LocalDate.parse(filter.date, dateFormatter)
         val params = getParams(filter.range)
 
-        return getEquipmentTimeOpeGroupData(
+        return getEquipmentOpeGroupData(
             localDate,
             params.daysRange,
             params.groupKey,

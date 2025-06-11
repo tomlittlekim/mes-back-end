@@ -53,7 +53,7 @@ object KpiUtils {
             CoreEnum.ClusterType.CLUS_NGYENGGI.value -> "ngyenggi"
             CoreEnum.ClusterType.CLUS_DONGDAEMOON.value -> "dongdaemoon"
             CoreEnum.ClusterType.CLUS_DEAGU.value -> "deagu"
-            CoreEnum.ClusterType.STND_VENDOR.value -> "vendor"
+            CoreEnum.ClusterType.STND_VENDOR.value -> "stnd"
             else -> throw InvalidClusterTypeException()
         }
     }

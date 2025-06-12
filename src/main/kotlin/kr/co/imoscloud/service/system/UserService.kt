@@ -216,6 +216,25 @@ class UserService(
         return "${user.userName ?: user.loginId} 사용자의 비밀번호 변경 완료"
     }
 
+    @AuthLevel(minLevel = 2)
+    fun resetPasswordByUserInfo(name: String, phoneNum: String): Boolean {
+        val cleanPhoneNumber = phoneNum.replace("-", "").replace(" ", "")
+
+        val user = ucm.userRepo.findByUserNameAndPhoneNumAndFlagActiveIsTrue(name, cleanPhoneNumber)
+            ?: throw IllegalArgumentException("입력하신 이름과 휴대폰번호가 일치하는 활성 사용자를 찾을 수 없습니다.")
+
+        return try {
+            val encodedPwd = pwdEncoder("0000") ?: throw IllegalStateException("비밀번호 인코딩 실패")
+            user.userPwd = encodedPwd
+            user.updateDate = LocalDateTime.now()
+            user.updateUser = "SYSTEM"
+            ucm.saveAllAndSyncCache(listOf(user))
+            true
+        } catch (e: Exception) {
+            throw RuntimeException("비밀번호 초기화 중 오류가 발생했습니다: ${e.message}", e)
+        }
+    }
+
     @AuthLevel(minLevel = 5)
     fun generateOwner(company: Company): User {
         val loginUser = SecurityUtils.getCurrentUserPrincipal()

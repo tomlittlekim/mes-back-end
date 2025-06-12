@@ -53,6 +53,12 @@ class SystemFetcher(
         @InputArgument("newPassword") newPassword: String
     ): String = userService.changePassword(loginId, currentPassword, newPassword)
 
+    @DgsMutation
+    fun resetPasswordByUserInfo(
+        @InputArgument("userName") userName: String,
+        @InputArgument("phoneNum") phoneNum: String,
+    ): Boolean = userService.resetPasswordByUserInfo(userName, phoneNum)
+
 
 
 

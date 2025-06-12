@@ -79,6 +79,7 @@ extend type Mutation {
     deleteUser(loginId: String!): String
     resetPwd(loginId: String!): String
     changePwd(loginId: String!, currentPassword: String!, newPassword: String!): String
+    resetPasswordByUserInfo(userName: String!, phoneNum: String!): Boolean
 }
 
 extend type Query {

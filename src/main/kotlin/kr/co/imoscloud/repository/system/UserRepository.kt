@@ -14,6 +14,7 @@ interface UserRepository : JpaRepository<User, Long> {
     fun findAllByCompCdAndFlagActiveIsTrue(compCd: String): List<User>
     fun findByIdAndFlagActiveIsTrue(id: Long): User?
     fun findAllByFlagActiveIsTrue(): List<User>
+    fun findByUserNameAndPhoneNumAndFlagActiveIsTrue(userName: String, phoneNum: String): User?
 
     @Modifying
     @Query("""

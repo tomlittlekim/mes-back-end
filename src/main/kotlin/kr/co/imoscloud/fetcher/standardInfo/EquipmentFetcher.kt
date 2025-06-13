@@ -57,8 +57,8 @@ data class EquipmentInput(
 )
 
 data class EquipmentUpdate(
-    val factoryId: String,
-    val lineId: String,
+    val factoryId: String?,
+    val lineId: String?,
     val equipmentId: String,
     val equipmentBuyDate: String?,
     val equipmentBuyVendor: String?,

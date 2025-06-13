@@ -87,6 +87,7 @@ class EquipmentService(
 
             equipment?.let{
                 it.factoryId = x.factoryId
+                it.lineId = x.lineId
                 it.equipmentId = x.equipmentId
                 it.equipmentBuyDate = x.equipmentBuyDate
                 it.equipmentBuyVendor = x.equipmentBuyVendor

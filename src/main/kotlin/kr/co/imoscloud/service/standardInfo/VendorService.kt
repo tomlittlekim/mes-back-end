@@ -29,7 +29,8 @@ class VendorService(
             vendorId = vendorFilter.vendorId,
             vendorName = vendorFilter.vendorName,
             ceoName = vendorFilter.ceoName,
-            businessRegNo = vendorFilter.businessRegNo
+            businessRegNo = vendorFilter.businessRegNo,
+            businessType = vendorFilter.businessType,
         )
 
         return vendorList.map {

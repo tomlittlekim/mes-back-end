@@ -222,6 +222,7 @@ interface VendorRep : JpaRepository<Vendor,Long>{
             and   (v.vendorName like concat ('%',:vendorName,'%'))
             and   (v.ceoName like concat ('%',:ceoName,'%'))
             and   (v.businessRegNo like concat ('%',:businessRegNo,'%'))
+            and   (v.businessType like concat ('%',:businessType,'%'))
             and   v.flagActive = true
         """
     )
@@ -231,7 +232,8 @@ interface VendorRep : JpaRepository<Vendor,Long>{
         vendorId:String,
         vendorName:String,
         ceoName:String,
-        businessRegNo:String
+        businessRegNo:String,
+        businessType:String,
     ):List<Vendor?>
 
     @Query(

@@ -47,6 +47,7 @@ data class VendorFilter(
     val vendorName:String,
     val ceoName:String,
     val businessRegNo:String,
+    val businessType:String,
 //    val flagActive:String? = null
 )
 

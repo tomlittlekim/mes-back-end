@@ -3,6 +3,7 @@ input VendorFilter {
     vendorName: String!,
     ceoName: String!,
     businessRegNo: String!,
+    businessType: String!,
 }
 
 input VendorInput {

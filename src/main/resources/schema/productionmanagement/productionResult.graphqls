@@ -8,8 +8,7 @@ extend type Query {
 extend type Mutation {
     # 생산실적 관련 뮤테이션
     saveProductionResult(
-        createdRows: [ProductionResultInput],
-        defectInfos: [DefectInfoInput]
+        createdRows: [ProductionResultInput]
     ): Boolean
     deleteProductionResults(prodResultIds: [String!]!): Boolean
     
@@ -77,4 +76,6 @@ input ProductionResultInput {
     prodStartTime: String! # 생산시작일시 (필수)
     prodEndTime: String # 생산종료일시 (비필수 - 모바일에서 생산시작 시에는 null 가능)
     flagActive: Boolean
+    # 해당 생산실적에 속하는 불량정보 목록 (개선사항)
+    defectInfos: [DefectInfoInput]
 }

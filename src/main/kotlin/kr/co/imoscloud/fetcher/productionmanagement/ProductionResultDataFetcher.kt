@@ -77,11 +77,10 @@ class ProductionResultDataFetcher(
     // 생산실적 저장 (생성)
     @DgsData(parentType = "Mutation", field = "saveProductionResult")
     fun saveProductionResult(
-        @InputArgument("createdRows") createdRows: List<ProductionResultInput>? = null,
-        @InputArgument("defectInfos") defectInfos: List<DefectInfoInput>? = null
+        @InputArgument("createdRows") createdRows: List<ProductionResultInput>? = null
     ): Boolean {
         try {
-            return productionResultService.saveProductionResult(createdRows, defectInfos)
+            return productionResultService.saveProductionResult(createdRows)
         } catch (e: IllegalArgumentException) {
             // 비즈니스 로직 오류는 로그로 남기고 예외를 던짐
             log.warn("생산실적 저장 중 비즈니스 로직 오류: ${e.message}")

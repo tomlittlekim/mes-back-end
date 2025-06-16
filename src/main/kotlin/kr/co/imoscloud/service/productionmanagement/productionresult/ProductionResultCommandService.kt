@@ -30,8 +30,7 @@ class ProductionResultCommandService(
      */
     @Transactional
     fun saveProductionResult(
-        createdRows: List<ProductionResultInput>? = null,
-        defectInfos: List<DefectInfoInput>? = null
+        createdRows: List<ProductionResultInput>? = null
     ): Boolean {
         try {
             val currentUser = getCurrentUserPrincipal()
@@ -142,12 +141,10 @@ class ProductionResultCommandService(
                         }
                     }
 
-                    // 불량정보가 있는 경우 함께 저장
-                    val relatedDefectInfos = defectInfos
-
-                    if (!relatedDefectInfos.isNullOrEmpty()) {
+                    // 해당 생산실적에 연결된 불량정보가 있는 경우 함께 저장 (개선사항)
+                    if (!input.defectInfos.isNullOrEmpty()) {
                         // 각 불량정보에 prodResultId를 명시적으로 설정
-                        val updatedDefectInfos = relatedDefectInfos.map { defectInfo ->
+                        val updatedDefectInfos = input.defectInfos!!.map { defectInfo ->
                             // prodResultId가 없거나 다른 경우 업데이트
                             if (defectInfo.prodResultId.isNullOrBlank() || defectInfo.prodResultId != savedResult.prodResultId) {
                                 defectInfo.copy(prodResultId = savedResult.prodResultId)

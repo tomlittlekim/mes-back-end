@@ -54,10 +54,9 @@ class ProductionResultService(
      * 생산실적 저장 (생성)
      */
     fun saveProductionResult(
-        createdRows: List<ProductionResultInput>? = null,
-        defectInfos: List<DefectInfoInput>? = null
+        createdRows: List<ProductionResultInput>? = null
     ): Boolean =
-        commandService.saveProductionResult(createdRows, defectInfos)
+        commandService.saveProductionResult(createdRows)
 
     /**
      * 생산실적 소프트 삭제 (다중)

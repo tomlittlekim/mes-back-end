@@ -8,8 +8,9 @@ enum class ErrorCode(
     //공통 오류
     INVALID_CLUSTER_TYPE(500,"C001","알수없는 클러스터링 타입 입니다."),
 
-    //유저 관련 정보
-    COMPANY_NOT_FOUND(404, "A001", "회사명을 찾을 수 없습니다."),
+    //회사 관련 정보
+    COMPANY_NOT_FOUND(404, "C001", "회사명을 찾을 수 없습니다."),
+    NOT_EXIST_COMPANY_WORK_TIME(404,"C002","해당 회사의 업무시간을 찾을 수 없습니다."),
 
     //기기 관련 정보
     DEVICE_NOT_FOUND(404,"E001","기기를 찾을 수 없습니다."),

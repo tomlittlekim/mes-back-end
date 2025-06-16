@@ -1,4 +1,4 @@
-package kr.co.imoscloud.exception.auth
+package kr.co.imoscloud.exception.company
 
 import kr.co.imoscloud.exception.ErrorCode
 import kr.co.imoscloud.exception.ImosException

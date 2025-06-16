@@ -8,6 +8,7 @@ import kr.co.imoscloud.dto.CompanyDto
 import kr.co.imoscloud.dto.CompanySearchCondition
 import kr.co.imoscloud.dto.CompanySummery
 import kr.co.imoscloud.entity.system.Company
+import kr.co.imoscloud.exception.company.NotExistCompanyWorkTimeException
 import kr.co.imoscloud.security.UserPrincipal
 import kr.co.imoscloud.util.AuthLevel
 import kr.co.imoscloud.util.SecurityUtils
@@ -106,17 +107,15 @@ class CompanyService(
         return true
     }
 
-
-    //TODO: site 변경
     fun getWorkTime(userPrincipal: UserPrincipal): Pair<String,String> {
         val company = ccm.companyRepo.findBySiteAndCompCdAndFlagActiveIsTrue(
-            site = "gyeonggi",
+            site = userPrincipal.getSite(),
             compCd = userPrincipal.compCd
         )
 
         return Pair(
-            company?.workStartTime?.substring(0,2) ?:throw Exception("해당 기업의 업무 시작 시간이 존재하지 않습니다."),
-            company.workEndTime?.substring(0,2) ?:throw Exception("해당 기업의 업무 종료 시간이 존재하지 않습니다. "),
+            company?.workStartTime?.substring(0,2) ?:throw NotExistCompanyWorkTimeException(),
+            company.workEndTime?.substring(0,2) ?:throw NotExistCompanyWorkTimeException(),
         )
     }
 }

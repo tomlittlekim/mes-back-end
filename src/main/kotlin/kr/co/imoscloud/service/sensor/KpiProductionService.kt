@@ -1,7 +1,7 @@
 package kr.co.imoscloud.service.sensor
 
 import kr.co.imoscloud.constants.CoreEnum
-import kr.co.imoscloud.exception.auth.CompanyNotFoundException
+import kr.co.imoscloud.exception.company.CompanyNotFoundException
 import kr.co.imoscloud.model.kpi.ChartResponseModel
 import kr.co.imoscloud.model.kpi.KpiFilter
 import kr.co.imoscloud.repository.productionmanagement.ProductionRateDayRep

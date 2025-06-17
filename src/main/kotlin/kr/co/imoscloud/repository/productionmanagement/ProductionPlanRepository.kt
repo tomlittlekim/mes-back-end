@@ -1,6 +1,7 @@
 package kr.co.imoscloud.repository.productionmanagement
 
 import kr.co.imoscloud.entity.productionmanagement.ProductionPlan
+import kr.co.imoscloud.model.productionmanagement.DefectInfoProjection
 import kr.co.imoscloud.model.productionmanagement.PeriodicProductionResponseDto
 import kr.co.imoscloud.model.productionmanagement.PlanVsActualResponseDto
 import org.springframework.data.jpa.repository.JpaRepository
@@ -88,7 +89,9 @@ interface ProductionPlanRepository: JpaRepository<ProductionPlan, Long>, Product
             sum(pr.GOOD_QTY) as TOTAL_GOOD_QTY,
             sum(pr.DEFECT_QTY) as TOTAL_DEFECT_QTY,
             ifnull(round(
-            (sum(pr.DEFECT_QTY) / (sum(pr.GOOD_QTY) + sum(pr.DEFECT_QTY))) * 100,2), 0) as TOTAL_DEFECT_RATE
+            (sum(pr.DEFECT_QTY) / (sum(pr.GOOD_QTY) + sum(pr.DEFECT_QTY))) * 100,2), 0) as TOTAL_DEFECT_RATE,
+            mm.UNIT as UNIT,
+            pr.PRODUCT_ID as PRODUCT_ID
         from PRODUCTION_RESULT pr
                  left join MATERIAL_MASTER mm on
                      (mm.SYSTEM_MATERIAL_ID = pr.PRODUCT_ID
@@ -116,7 +119,7 @@ interface ProductionPlanRepository: JpaRepository<ProductionPlan, Long>, Product
                     END
                 )
             )
-        group by mm.MATERIAL_NAME
+        group by mm.MATERIAL_NAME, mm.UNIT, pr.PRODUCT_ID
         having TOTAL_GOOD_QTY > 0
         """,
         nativeQuery = true
@@ -129,4 +132,32 @@ interface ProductionPlanRepository: JpaRepository<ProductionPlan, Long>, Product
         @Param("startDate") startDate: String?,
         @Param("endDate") endDate: String?
     ): List<PeriodicProductionResponseDto>
+
+
+    @Query(
+        value = """
+        SELECT
+            di.DEFECT_QTY as defectQty,
+            di.CREATE_DATE as createDate,
+            IFNULL(c.CODE_NAME, '기타불량') as codeName,
+            IFNULL(c.CODE_DESC, '기타불량') as codeDesc
+        FROM
+        DEFECT_INFO di
+        LEFT JOIN
+        CODE c ON di.defect_cause = c.code_id
+        AND c.CODE_CLASS_ID = 'DEFECT_TYPE'
+        WHERE 1=1
+        AND di.COMP_CD = :compCd
+        AND di.SITE = :site
+        AND di.PRODUCT_ID = :productId
+    """,
+        nativeQuery = true
+    )
+    fun getDefectInfo(
+        @Param("compCd") compCd: String?,
+        @Param("site") site: String?,
+        @Param("productId") productId: String?
+    ): List<DefectInfoProjection>  // Projection으로 변경
+
+
 }

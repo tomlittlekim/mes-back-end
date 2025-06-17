@@ -18,30 +18,6 @@ class ProductionPlanAnalyticsService(
     private val log = LoggerFactory.getLogger(ProductionPlanAnalyticsService::class.java)
 
     /**
-     * 계획 대비 실적 조회
-     * 레포트 화면에서 계획대비 실적조회를 하기 위한 메서드
-     */
-    fun getPlanVsActualData(filter: PlanVsActualFilter): List<PlanVsActualGraphQLDto> {
-        val currentUser = getCurrentUserPrincipalOrNull()
-            ?: throw UserNotFoundException()
-
-        val materialIds = filter.systemMaterialIds?.filterNotNull()?.takeIf { it.isNotEmpty() }
-
-        // 인터페이스 프로젝션 사용
-        val results = productionPlanRepository.planVsActual(
-            site = currentUser.getSite(),
-            compCd = currentUser.compCd,
-            systemMaterialIds = materialIds,
-            flagActive = true,
-            startDate = filter.startDate,
-            endDate = filter.endDate
-        )
-        
-        // 인터페이스 프로젝션 결과를 GraphQL 응답용 DTO로 변환
-        return results.map { it.toGraphQLResponse() }
-    }
-
-    /**
      * 기간별 생산 실적 조회
      * 레포트 화면에서 기간별 생산량 및 불량률 분석용
      */
@@ -60,4 +36,47 @@ class ProductionPlanAnalyticsService(
             endDate = filter.endDate
         )
     }
-} 
+    /**
+     * 불량율 현환에서 불량 내역 보여주는 코드 추가(추가 요청)
+     */
+
+        fun getDefectInfo(productId: String?): List<defectInfoResponse> {
+            val currentUser = getCurrentUserPrincipalOrNull()
+                ?: throw UserNotFoundException()
+
+            val projections = productionPlanRepository.getDefectInfo(
+                site = currentUser.getSite(),
+                compCd = currentUser.compCd,
+                productId = productId
+            )
+
+            return projections.map { projection ->
+                defectInfoResponse.from(projection)  // Projection을 Response로 변환
+            }
+        }
+
+
+    /**
+     * 계획 대비 실적 조회
+     * 레포트 화면에서 계획대비 실적조회를 하기 위한 메서드
+     */
+    fun getPlanVsActualData(filter: PlanVsActualFilter): List<PlanVsActualGraphQLDto> {
+        val currentUser = getCurrentUserPrincipalOrNull()
+            ?: throw UserNotFoundException()
+
+        val materialIds = filter.systemMaterialIds?.filterNotNull()?.takeIf { it.isNotEmpty() }
+
+        // 인터페이스 프로젝션 사용
+        val results = productionPlanRepository.planVsActual(
+            site = currentUser.getSite(),
+            compCd = currentUser.compCd,
+            systemMaterialIds = materialIds,
+            flagActive = true,
+            startDate = filter.startDate,
+            endDate = filter.endDate
+        )
+
+        // 인터페이스 프로젝션 결과를 GraphQL 응답용 DTO로 변환
+        return results.map { it.toGraphQLResponse() }
+    }
+}

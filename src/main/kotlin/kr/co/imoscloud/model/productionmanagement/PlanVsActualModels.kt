@@ -1,5 +1,8 @@
 package kr.co.imoscloud.model.productionmanagement
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 // 인터페이스 기반 프로젝션으로 변경
 interface PlanVsActualResponseDto {
     val prodPlanId: String
@@ -16,6 +19,8 @@ interface PeriodicProductionResponseDto {
     val totalGoodQty: String
     val totalDefectQty: Number
     val totalDefectRate: String
+    val unit: String
+    val productId: String
 }
 
 // GraphQL에서 사용할 구현체 클래스 (필요시 사용)
@@ -58,6 +63,33 @@ data class PlanVsActualFilter(
     val startDate: String? = null,
     val endDate: String? = null,
 )
+
+data class defectInfoResponse(
+    val defectQty: String? = null,
+    val createDate: String? = null,
+    val codeName: String? = null,
+    val codeDesc: String? = null,
+) {
+    companion object {
+        // Projection용 from 메서드만 유지
+        fun from(projection: DefectInfoProjection): defectInfoResponse {
+            return defectInfoResponse(
+                defectQty = projection.getDefectQty(),
+                createDate = projection.getCreateDate()?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                codeName = projection.getCodeName(),
+                codeDesc = projection.getCodeDesc()
+            )
+        }
+    }
+}
+
+
+interface DefectInfoProjection {
+    fun getDefectQty(): String?
+    fun getCreateDate(): LocalDateTime?
+    fun getCodeName(): String?
+    fun getCodeDesc(): String?
+}
 
 //data class PeriodicProductionFilter(
 //    val systemMaterialIds: List<String>? = null,

@@ -136,4 +136,9 @@ class ProductionPlanDataFetcher(
     fun periodicProduction(@InputArgument("filter") filterInput: PlanVsActualFilter): List<PeriodicProductionResponseDto> {
         return productionPlanAnalyticsService.getPeriodicProduction(filterInput)
     }
+
+    @DgsQuery
+    fun getDefectInfo(@InputArgument("productId") productId: String?): List<defectInfoResponse> {
+        return productionPlanAnalyticsService.getDefectInfo(productId)
+    }
 }

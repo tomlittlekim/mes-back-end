@@ -214,6 +214,9 @@ class InventoryService(
             currentUser.compCd
         )
 
+        // inManagementId 저장 (totalPrice 업데이트용)
+        val inManagementId = inventoryIn?.inManagementId
+
         // 재고 조정
         if (inventoryIn?.systemMaterialId != null) {
             var systemMaterialId = inventoryIn.systemMaterialId
@@ -264,6 +267,9 @@ class InventoryService(
             site = currentUser.getSite(),
             compCd = currentUser.compCd,
         )
+
+        // inManagement totalPrice 업데이트 (삭제 후 호출)
+        inManagementId?.let { updateInManagementTotalPrice(it) }
     }
 
     private fun createDetailedInventory(createdRows: List<InventoryInSaveInput?>) {

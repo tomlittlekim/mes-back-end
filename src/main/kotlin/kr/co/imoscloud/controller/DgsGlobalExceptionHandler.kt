@@ -3,8 +3,10 @@ package kr.co.imoscloud.controller
 import com.netflix.graphql.dgs.exceptions.DgsBadRequestException
 import graphql.GraphQLError
 import graphql.schema.DataFetchingEnvironment
+import kr.co.imoscloud.exception.ErrorCode
 import kr.co.imoscloud.exception.ImosException
 import kr.co.imoscloud.model.exception.CustomGraphQLError
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter
 import org.springframework.stereotype.Component
 
@@ -17,6 +19,13 @@ class DgsGlobalExceptionHandler : DataFetcherExceptionResolverAdapter() {
                 errorExtensions = mapOf(
                     "code" to ex.errorCode.code,
                     "status" to ex.errorCode.status
+                )
+            )
+            is DataIntegrityViolationException -> CustomGraphQLError(
+                errorMessage = ErrorCode.GENERIC_SAVE_FAILED.message,
+                errorExtensions = mapOf(
+                    "code" to ErrorCode.GENERIC_SAVE_FAILED.code,
+                    "status" to ErrorCode.GENERIC_SAVE_FAILED.status
                 )
             )
             is DgsBadRequestException -> CustomGraphQLError(

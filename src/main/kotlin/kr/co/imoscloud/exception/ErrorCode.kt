@@ -8,6 +8,7 @@ enum class ErrorCode(
     //공통 오류
     INVALID_CLUSTER_TYPE(400,"CM001","알수없는 클러스터링 타입 입니다."),
     GENERIC_SAVE_FAILED(500,"CM002","저장 및 수정에 실패하였습니다."),
+    INTERNAL_SERVER_ERROR(500,"CM003","서버 에러 발생"),
 
     //회사 관련 정보
     COMPANY_NOT_FOUND(404, "C001", "회사명을 찾을 수 없습니다."),

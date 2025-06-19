@@ -21,7 +21,7 @@ class ExceptionLogAspect(
     private val log = LoggerFactory.getLogger(ExceptionLogAspect::class.java)
 
     @AfterThrowing(
-        pointcut = "within(kr.co.imoscloud.service..*)",
+        pointcut = "within(kr.co.imoscloud.service..*) && !within(kr.co.imoscloud.service.log.ExceptionLogService)",
         throwing = "ex"
     )
     fun logServiceException(joinPoint: JoinPoint, ex: Throwable){

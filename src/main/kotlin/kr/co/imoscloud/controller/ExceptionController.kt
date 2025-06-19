@@ -4,7 +4,6 @@ import kr.co.imoscloud.dto.ErrorResponseDto
 import kr.co.imoscloud.exception.ErrorCode
 import kr.co.imoscloud.exception.ImosException
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -20,12 +19,19 @@ class ExceptionController {
 
         return ResponseEntity.status(errorCode.status).body(errorResponseDto)
     }
-    
+
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrity(e: DataIntegrityViolationException): ResponseEntity<ErrorResponseDto> {
         val dto = ErrorResponseDto.of(ErrorCode.GENERIC_SAVE_FAILED)
 
         return ResponseEntity.status(ErrorCode.GENERIC_SAVE_FAILED.status).body(dto)
+    }
+
+    @ExceptionHandler(Exception::class)
+    fun handleException(e: Exception): ResponseEntity<ErrorResponseDto> {
+        val dto = ErrorResponseDto.of(ErrorCode.INTERNAL_SERVER_ERROR)
+
+        return ResponseEntity.status(ErrorCode.INTERNAL_SERVER_ERROR.status).body(dto)
     }
 
 }
